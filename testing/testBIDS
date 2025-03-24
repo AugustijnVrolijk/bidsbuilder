@@ -1,0 +1,11 @@
+import BIDS_Converter
+from BIDS_Converter.Classes import *
+
+def main():
+    rootStr = "C:/Home"
+    test1 = BidsDataset(root=rootStr)
+    test1.description
+    print("hi")
+
+if __name__ == "__main__":
+    main()

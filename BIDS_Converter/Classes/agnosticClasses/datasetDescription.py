@@ -1,7 +1,14 @@
 import os
 from BIDS_Converter.util.queryASPEN import queryASPEN
 from BIDS_Converter.util.util import popDicts
-from BIDS_Converter.Classes.agnosticClasses.datasetModule import DatasetModule
+
+import sys
+if "BIDS_Converter.Classes.datasetModule.DatasetModule" not in sys.modules:
+    print(sys.modules)
+    from BIDS_Converter.Classes.datasetModule import DatasetModule
+    print("it wasn't there")
+else:
+    print("it was already there")
 from typing import TYPE_CHECKING
  
 if TYPE_CHECKING:

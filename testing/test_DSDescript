@@ -1,12 +1,12 @@
 import BIDS_Converter
-from BIDS_Converter.Classes import *
-
+from BIDS_Converter.Classes.agnosticClasses import *
+from skeletonBids import skeletonBidsDataset 
 
 def main():
     rootStr = "C:/Home"
-    test1 = BidsDataset(root=rootStr)
+    test1 = skeletonBidsDataset(root=rootStr)
     test2 = DatasetDescription(test1)
-    
     print("hi")
+
 if __name__ == "__main__":
     main()

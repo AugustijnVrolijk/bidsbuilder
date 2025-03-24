@@ -1,3 +1,4 @@
+from BIDS_Converter.Classes.agnosticClasses import *
 
 class BidsDataset():
     def __init__(self, root):
@@ -5,17 +6,17 @@ class BidsDataset():
         self.root = root 
         
         self._createAgnosticFiles()
-        pass
 
 
     def _createAgnosticFiles(self):
-        description = "DatasetDescription()"
-        readme = "DatasetReadme()"
-        participants = "ac.DatasetParticipants()"
-        self.children["description"] = description
-        self.children["readme"] = readme
-        self.children["participants"] = participants
-        pass
+        self.description = DatasetDescription(self)
+        self.readme = DatasetReadme(self)
+        self.participants = DatasetParticipants(self)
+
+        self.children["description"] = self.description
+        self.children["readme"] = self.readme
+        self.children["participants"] = self.participants
+        
 
     def createBIDS(self):
 

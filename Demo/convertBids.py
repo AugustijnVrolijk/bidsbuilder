@@ -1,4 +1,5 @@
-from BIDS_Converter.Classes.bidsDataset import BidsDataset
+from BIDS_Converter.Classes import *
+
 """
 21/03/2025 Augustijn Vrolijk
 
@@ -8,6 +9,8 @@ pipeline -> ASPEN request:
                             -root path
                             -subjects, tasks etc...
                             -experiments etc..
+                    
+                    -need to make sure I have a good input, i.e
 
                     -create BidsDataset object
                         -which creates sub objects depending on the input info
@@ -22,9 +25,17 @@ pipeline -> ASPEN request:
                         can parallise this, i.e. create a pool of threads each doing the creating for a subject folder etc..
 
                     return exit status
-
-
 """
+
+def main():
+    rootStr = "C:/Home"
+    test1 = BidsDataset(root=rootStr)
+    test2 = DatasetDescription(test1)
+    print("hi")
+
+if __name__ == "__main__":
+    main()
+
 
 
 

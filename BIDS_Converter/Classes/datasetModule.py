@@ -10,9 +10,7 @@ class DatasetModule():
         self.required = {}
         self.recommended = {} 
         self.optional = {}
-        
 
-        self.setup()
         pass
 
     def setup(self):

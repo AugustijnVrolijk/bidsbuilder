@@ -1,10 +1,9 @@
 from BIDS_Converter.util.queryASPEN import queryASPEN
-from BIDS_Converter.Classes.agnosticClasses.datasetModule import DatasetModule
+from BIDS_Converter.Classes.datasetModule import DatasetModule
 
 class DatasetParticipants(DatasetModule):
     def __init__(self, parent):
-        super().__init__(self, parent)
-        pass
+        super().__init__(parent)
 
     def updateVals(self):
         pass
