@@ -1,5 +1,5 @@
 from util.queryASPEN import queryASPEN
-from bids_dataset import DatasetModule
+from agnosticClasses.datasetModule import DatasetModule
 
 class DatasetParticipants(DatasetModule):
     def __init__(self, parent):

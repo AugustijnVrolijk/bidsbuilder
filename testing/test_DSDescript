@@ -1,0 +1,9 @@
+import BIDS_Converter.Classes as bc
+
+def main():
+    test1 = bc.BidsDataset("C:/Home")
+    test2 = bc.ac.DatasetDescription(test1)
+    
+    print("hi")
+if __name__ == "__main__":
+    main()

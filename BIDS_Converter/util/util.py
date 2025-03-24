@@ -3,7 +3,10 @@ from typing import Any
 def popDicts(*args, val:Any = None):
     dicts = [] 
     for pair in args:
-        dicts.append(popDict(pair[0], pair[1], val))
+        dictToPop = pair[0]
+        labelList = pair[1]
+        assert isinstance(dictToPop, dict) and isinstance(labelList, list)
+        dicts.append(popDict(dictToPop, labelList, val))
     return dicts
 
 def popDict(toPop:dict, Labels:list, val:Any = None):

@@ -1,4 +1,4 @@
-from BIDS_Converter.deps.bids_dataset import BidsDataset
+from BIDS_Converter.Classes.bidsDataset import BidsDataset
 """
 21/03/2025 Augustijn Vrolijk
 
