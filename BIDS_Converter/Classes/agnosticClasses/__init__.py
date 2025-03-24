@@ -4,4 +4,4 @@ from BIDS_Converter.Classes.agnosticClasses.datasetParticipants import DatasetPa
 from BIDS_Converter.Classes.agnosticClasses.datasetReadme import DatasetReadme
 
 
-__all__ = []
+__all__ = ["DatasetReadme", "DatasetModule", "DatasetDescription", "DatasetParticipants"]

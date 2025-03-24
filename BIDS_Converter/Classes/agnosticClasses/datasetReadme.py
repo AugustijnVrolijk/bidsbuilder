@@ -1,4 +1,4 @@
-from util.queryASPEN import queryASPEN
+from BIDS_Converter.util.queryASPEN import queryASPEN
 
 class DatasetReadme():
     def __init__(self, parent):

@@ -1,7 +1,7 @@
 import os
 from BIDS_Converter.util.queryASPEN import queryASPEN
 from BIDS_Converter.util.util import popDicts
-from datasetModule import DatasetModule
+from BIDS_Converter.Classes.agnosticClasses.datasetModule import DatasetModule
 from typing import TYPE_CHECKING
  
 if TYPE_CHECKING:
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class DatasetDescription(DatasetModule):
     def __init__(self, parent:"BidsDataset"):
-        super().__init__(self, parent)
+        super().__init__(parent)
         self.JSONpath = os.path.join(parent.root, "dataset_description.json")
         
         #TO IMPLEMENT: KEY "DatasetLinks" IS REQUIRED IF URI's are used  
