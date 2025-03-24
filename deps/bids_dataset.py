@@ -24,3 +24,4 @@ class BidsDataset():
         for child in self.children:
             child.createBIDS()
         return
+    

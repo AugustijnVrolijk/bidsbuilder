@@ -1,37 +1,67 @@
+import os
 from bids_conversion.util.queryASPEN import queryASPEN
+from bids_conversion.util.util import popDicts
+from bids_dataset import DatasetModule
 from typing import TYPE_CHECKING
+
 
 if TYPE_CHECKING:
     from bids_conversion.deps.bids_dataset import BidsDataset
 
-class DatasetDescription():
+class DatasetDescription(DatasetModule):
     def __init__(self, parent:"BidsDataset"):
-        self.parent = parent
-        self.root = parent.root
+        super().__init__(self, parent)
+
+        self.JSONpath = os.path.join(self.parent.root, "dataset_description.json")
+        
+        #TO IMPLEMENT: KEY "DatasetLinks" IS REQUIRED IF URI's are used  
+         
+        reqs = ["Name", "BIDSVersion"]
+
+        #TO IMPLEMENT: KEY "Authors" is RECOMMENDED if Citation.cff is not present 
+        #SEE NOTE BELOW for GeneratedBy   
+
+        reco = ["HEDVersion", "DatasetType", "License", "GeneratedBy", "SourceDatasets"]
+
+        opts = ["Acknowledgements", "HowToAcknowledge", "Funding", "EthicsApprovals", "ReferencesAndLinks", "DatasetDOI"] 
+        
+
+
+    def query(self):
+        self.query = ""
+
+        return self.query
+
+    def setup(self):
         pass
 
-    def updateVals(self):
-        pass
+    def createBIDS(self):
 
+        for child in self.children:
+            child.createBIDS()
+        return
+
+
+def getGeneratedBy():
+    from bids_conversion.checks import checkValidURI
+
+    container = {
+       "Type":None,
+       "Tag":None,
+       "URI":None,
+    } 
+    checkValidURI(container["URI"])
+
+    generatedByDict = {
+       "Name":None,
+       "Version":None,
+       "Description":None,
+       "CodeURL":None,
+       "Container":container
+    } 
+    return generatedByDict
 
 """
-    Create or update the dataset_description.json file for a fixed dataset.
-
-    Parameters:
-    - bids_root (str or Path): Path to the root of the BIDS dataset.
-
-    Returns:
-    - None
-    
-    # Path to the dataset_description.json file
-    bids_root = Path(bids_root)
-
-    # Check that the bids_root directory exists
-    # if not bids_root.exists():
-    #     raise FileNotFoundError(f"BIDS root directory does not exist: {bids_root}")
-
-    description_file = bids_root / "dataset_description.json"
-
     # Hardcoded metadata
     description_data = {
         "Name": "iEEG Dataset 24H for Graz",
