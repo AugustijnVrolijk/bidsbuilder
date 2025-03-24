@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bids_conversion.deps.bids_dataset import BidsDataset
+    from deps.bids_dataset import BidsDataset
 
 
 class DatasetModule():

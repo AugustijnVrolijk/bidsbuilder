@@ -1,4 +1,5 @@
 import agnosticClasses as ac
+import BIDS_Converter
 
 class BidsDataset():
     def __init__(self, root):
@@ -13,7 +14,6 @@ class BidsDataset():
         description = ac.DatasetDescription()
         readme = ac.DatasetReadme()
         participants = ac.DatasetParticipants()
-
         self.children["description"] = description
         self.children["readme"] = readme
         self.children["participants"] = participants

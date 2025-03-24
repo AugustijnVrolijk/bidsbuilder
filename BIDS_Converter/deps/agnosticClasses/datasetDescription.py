@@ -1,12 +1,11 @@
 import os
-from bids_conversion.util.queryASPEN import queryASPEN
-from bids_conversion.util.util import popDicts
+from util.queryASPEN import queryASPEN
+from util.util import popDicts
 from bids_dataset import DatasetModule
 from typing import TYPE_CHECKING
-
-
+ 
 if TYPE_CHECKING:
-    from bids_conversion.deps.bids_dataset import BidsDataset
+    from deps.bids_dataset import BidsDataset
 
 class DatasetDescription(DatasetModule):
     def __init__(self, parent:"BidsDataset"):
@@ -15,7 +14,7 @@ class DatasetDescription(DatasetModule):
         self.JSONpath = os.path.join(self.parent.root, "dataset_description.json")
         
         #TO IMPLEMENT: KEY "DatasetLinks" IS REQUIRED IF URI's are used  
-         
+        self.recommended
         reqs = ["Name", "BIDSVersion"]
 
         #TO IMPLEMENT: KEY "Authors" is RECOMMENDED if Citation.cff is not present 
@@ -24,12 +23,11 @@ class DatasetDescription(DatasetModule):
         reco = ["HEDVersion", "DatasetType", "License", "GeneratedBy", "SourceDatasets"]
 
         opts = ["Acknowledgements", "HowToAcknowledge", "Funding", "EthicsApprovals", "ReferencesAndLinks", "DatasetDOI"] 
-        
 
+        popDicts((self.required, reqs),(self.recommended, reco),(self.optional, opts))
 
     def query(self):
         self.query = ""
-
         return self.query
 
     def setup(self):
@@ -43,7 +41,7 @@ class DatasetDescription(DatasetModule):
 
 
 def getGeneratedBy():
-    from bids_conversion.checks import checkValidURI
+    from checks.checks import checkValidURI
 
     container = {
        "Type":None,
@@ -86,7 +84,10 @@ def getGeneratedBy():
 """
 
 def main():
-    pass
-
+    from bids_dataset import BidsDataset
+    test1 = BidsDataset("C:/Home")
+    test2 = DatasetDescription(test1)
+    
+    print("hi")
 if __name__ == "__main__":
     main()
