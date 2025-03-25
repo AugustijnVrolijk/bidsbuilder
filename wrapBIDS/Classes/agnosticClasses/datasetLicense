@@ -1,0 +1,4 @@
+
+class DatasetLicense():
+    def __init__():
+        pass

@@ -12,9 +12,9 @@ class BidsDataset():
         self.description = DatasetDescription(self)
         self.readme = DatasetReadme(self)
         self.participants = DatasetParticipants(self)
-        self.citation = ""
-        self.changes = ""
-        self.license = ""
+        self.citation = DatasetCitation(self)
+        self.changes = DatasetChanges(self)
+        self.license = DatasetLicense(self)
         self.children["description"] = self.description
         self.children["readme"] = self.readme
         self.children["participants"] = self.participants
