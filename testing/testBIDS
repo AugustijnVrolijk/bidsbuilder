@@ -1,5 +1,5 @@
-import BIDS_Converter
-from BIDS_Converter.Classes import *
+import wrapBIDS
+from wrapBIDS.Classes import *
 
 def main():
     rootStr = "C:/Home"

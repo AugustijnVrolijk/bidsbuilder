@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from wrapBIDS.Classes.bidsDataset import BidsDataset
 
-class DatasetDescription(DatasetModule):
+class Description(DatasetModule):
     def __init__(self, parent:"BidsDataset"):
         super().__init__(parent)
         self.path = os.path.join(parent.root, "dataset_description.json")

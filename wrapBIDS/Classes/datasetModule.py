@@ -4,20 +4,24 @@ if TYPE_CHECKING:
     from wrapBIDS.Classes.bidsDataset import BidsDataset
 
 
-class DatasetModule():
-    def __init__(self, parent:"BidsDataset"):
+class DatasetCore():
+    def __init__(self, parent):
         self.parent = parent
+        pass
+
+    def _write_BIDS(self):
+        pass
+
+    def _read_BIDS(self):
+        pass
+
+class DatasetModule(DatasetCore):
+    def __init__(self, parent:"BidsDataset"):
+        super().__init__(parent)
         self.required = {}
         self.recommended = {} 
         self.optional = {}
 
-        pass
-
-    def setup(self):
-        result = self.fetchQuery()
-        self.populateVals(result)
-
-    def fetchQuery(self):
         pass
 
     def populateVals(self):
@@ -33,5 +37,4 @@ class DatasetModule():
                 Warning(f"no value for recommended field:{key}")
         pass
 
-    def createBIDS(self):
-        pass
+    

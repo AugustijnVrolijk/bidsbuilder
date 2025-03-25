@@ -9,12 +9,12 @@ class BidsDataset():
 
 
     def _createAgnosticFiles(self):
-        self.description = DatasetDescription(self)
-        self.readme = DatasetReadme(self)
-        self.participants = DatasetParticipants(self)
-        self.citation = DatasetCitation(self)
-        self.changes = DatasetChanges(self)
-        self.license = DatasetLicense(self)
+        self.description = Description(self)
+        self.readme = Readme(self)
+        self.participants = Participants(self)
+        self.citation = Citation(self)
+        self.changes = Changes(self)
+        self.license = License(self)
         self.children["description"] = self.description
         self.children["readme"] = self.readme
         self.children["participants"] = self.participants
@@ -29,3 +29,7 @@ class BidsDataset():
     def readBIDS(self):
         for child in self.children:
             child.readBIDS()
+
+    def updateDescription(self, **kwargs):
+        self.description.update(kwargs)
+        return

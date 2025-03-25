@@ -1,12 +1,17 @@
-import BIDS_Converter
-from BIDS_Converter.Classes.agnosticClasses import *
+import os
+from wrapBIDS.Classes.agnosticClasses import *
 from skeletonBids import skeletonBidsDataset 
 
 def main():
-    rootStr = "C:/Home"
+    rootStr = os.path.normpath("C:/Home")
     test1 = skeletonBidsDataset(root=rootStr)
-    test2 = DatasetDescription(test1)
-    print("hi")
+    test2 = Readme(test1)
+    test3 = os.path.join(test2.path, ".json")
+    fileExt = [".tsv", ".json"]
+    print(test3)
 
+    for ext in fileExt:
+        filepath = f"{test2.path}{ext}"
+        print(filepath)
 if __name__ == "__main__":
     main()

@@ -1,13 +1,13 @@
-from wrapBIDS.Classes.agnosticClasses.datasetDescription import DatasetDescription
-from wrapBIDS.Classes.agnosticClasses.datasetParticipants import DatasetParticipants
-from wrapBIDS.Classes.agnosticClasses.datasetReadme import DatasetReadme
-from wrapBIDS.Classes.agnosticClasses.datasetChanges import DatasetChanges
-from wrapBIDS.Classes.agnosticClasses.datasetCitation import DatasetCitation
-from wrapBIDS.Classes.agnosticClasses.datasetLicense import DatasetLicense
-from wrapBIDS.Classes.agnosticClasses.datasetSamples import DatasetSamples
-from wrapBIDS.Classes.agnosticClasses.datasetPhenotype import DatasetPhenotype
+from wrapBIDS.Classes.agnosticClasses.Description import Description
+from wrapBIDS.Classes.agnosticClasses.Participants import Participants
+from wrapBIDS.Classes.agnosticClasses.Readme import Readme
+from wrapBIDS.Classes.agnosticClasses.Changes import Changes
+from wrapBIDS.Classes.agnosticClasses.Citation import Citation
+from wrapBIDS.Classes.agnosticClasses.License import License
+from wrapBIDS.Classes.agnosticClasses.Samples import Samples
+from wrapBIDS.Classes.agnosticClasses.Phenotype import Phenotype
 
 
-__all__ = ["DatasetReadme", "DatasetDescription", "DatasetParticipants",
-            "DatasetChanges","DatasetLicense","DatasetCitation", "DatasetSamples", 
-            "DatasetPhenotype"]
+__all__ = ["Readme", "Description", "Participants",
+            "Changes","License","Citation", "Samples", 
+            "Phenotype"]
