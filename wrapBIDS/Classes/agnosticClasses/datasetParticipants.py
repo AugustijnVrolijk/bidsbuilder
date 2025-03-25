@@ -1,5 +1,5 @@
-from BIDS_Converter.util.queryASPEN import queryASPEN
-from BIDS_Converter.Classes.datasetModule import DatasetModule
+from wrapBIDS.util.queryASPEN import queryASPEN
+from wrapBIDS.Classes.datasetModule import DatasetModule
 
 class DatasetParticipants(DatasetModule):
     def __init__(self, parent):

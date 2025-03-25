@@ -1,4 +1,4 @@
-from BIDS_Converter.Classes.agnosticClasses import *
+from wrapBIDS.Classes.agnosticClasses import *
 
 class BidsDataset():
     def __init__(self, root):
@@ -12,7 +12,9 @@ class BidsDataset():
         self.description = DatasetDescription(self)
         self.readme = DatasetReadme(self)
         self.participants = DatasetParticipants(self)
-
+        self.citation = ""
+        self.changes = ""
+        self.license = ""
         self.children["description"] = self.description
         self.children["readme"] = self.readme
         self.children["participants"] = self.participants
@@ -24,3 +26,6 @@ class BidsDataset():
             child.createBIDS()
         return
     
+    def readBIDS(self):
+        for child in self.children:
+            child.readBIDS()

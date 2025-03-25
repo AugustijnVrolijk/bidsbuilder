@@ -1,5 +1,5 @@
-from BIDS_Converter.Classes import *
-
+from wrapBIDS.Classes import *
+from wrapBIDS.Classes.agnosticClasses import *
 """
 21/03/2025 Augustijn Vrolijk
 
@@ -25,25 +25,40 @@ pipeline -> ASPEN request:
                         can parallise this, i.e. create a pool of threads each doing the creating for a subject folder etc..
 
                     return exit status
+
+
+BIDS take as input pandas dataframes. So that whole bit is fully able to be public, 
+then on this end we have to create a couple scripts to populate pandas dataframes from the sql database
+i.e. a couple queries that are used.
 """
+
+"""
+skeleton class, defining whether to add stuff like license.cff and other stuff
+
+generate bids_dataset
+populate it:
+
+main():
+    bids = bids_dataset()
+    bids.addDescription(info needed)
+    bids.addParticipants(stuff)
+
+or
+
+main():
+    bids = bids_dataset()
+    bids.readBids()
+    (read the bids structure and populate objects from what is already there)
+
+"""
+
+
 
 def main():
     rootStr = "C:/Home"
     test1 = BidsDataset(root=rootStr)
     test2 = DatasetDescription(test1)
     print("hi")
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-def main():
-      
-    
-    bids = BidsDataset()
-
 
 if __name__ == "__main__":
     main()

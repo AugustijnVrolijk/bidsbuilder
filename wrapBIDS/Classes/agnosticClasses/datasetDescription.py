@@ -1,23 +1,23 @@
 import os
-from BIDS_Converter.util.queryASPEN import queryASPEN
-from BIDS_Converter.util.util import popDicts
+from wrapBIDS.util.util import popDicts
 
 import sys
 if "BIDS_Converter.Classes.datasetModule.DatasetModule" not in sys.modules:
-    print(sys.modules)
-    from BIDS_Converter.Classes.datasetModule import DatasetModule
-    print("it wasn't there")
-else:
-    print("it was already there")
+    #print(sys.modules)
+    from wrapBIDS.Classes.datasetModule import DatasetModule
+    #print("it wasn't there")
+#else
+    #print("it was already there")
+
 from typing import TYPE_CHECKING
  
 if TYPE_CHECKING:
-    from BIDS_Converter.Classes.bidsDataset import BidsDataset
+    from wrapBIDS.Classes.bidsDataset import BidsDataset
 
 class DatasetDescription(DatasetModule):
     def __init__(self, parent:"BidsDataset"):
         super().__init__(parent)
-        self.JSONpath = os.path.join(parent.root, "dataset_description.json")
+        self.path = os.path.join(parent.root, "dataset_description.json")
         
         #TO IMPLEMENT: KEY "DatasetLinks" IS REQUIRED IF URI's are used  
 
