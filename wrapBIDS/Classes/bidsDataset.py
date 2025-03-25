@@ -33,3 +33,18 @@ class BidsDataset():
     def updateDescription(self, **kwargs):
         self.description.update(kwargs)
         return
+    
+
+
+    """"
+    reading files
+        -tsv
+        -json
+
+    data specific       -sql queries
+        -mne.io.raw
+
+           
+    
+    
+    """

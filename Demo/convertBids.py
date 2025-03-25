@@ -46,8 +46,10 @@ main():
 or
 
 main():
-    bids = bids_dataset()
+    bids = bids_dataset(path)
     bids.readBids()
+    bids.addSubject(subject name)
+
     (read the bids structure and populate objects from what is already there)
 
 """
@@ -57,7 +59,7 @@ main():
 def main():
     rootStr = "C:/Home"
     test1 = BidsDataset(root=rootStr)
-    test2 = DatasetDescription(test1)
+    test2 = Description(test1)
     print("hi")
 
 if __name__ == "__main__":

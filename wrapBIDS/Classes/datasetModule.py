@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from wrapBIDS.util.categoryDict import catDict
 
 if TYPE_CHECKING:
     from wrapBIDS.Classes.bidsDataset import BidsDataset
@@ -18,10 +19,7 @@ class DatasetCore():
 class DatasetModule(DatasetCore):
     def __init__(self, parent:"BidsDataset"):
         super().__init__(parent)
-        self.required = {}
-        self.recommended = {} 
-        self.optional = {}
-
+        self.test = catDict()
         pass
 
     def populateVals(self):

@@ -17,34 +17,23 @@ if TYPE_CHECKING:
 class Description(DatasetModule):
     def __init__(self, parent:"BidsDataset"):
         super().__init__(parent)
-        self.path = os.path.join(parent.root, "dataset_description.json")
+        self.path = os.path.join(parent.root, "dataset_description")
+        self.extensions = [".json"]
         
+
+
         #TO IMPLEMENT: KEY "DatasetLinks" IS REQUIRED IF URI's are used  
-
         reqs = ["Name", "BIDSVersion"]
-
         #TO IMPLEMENT: KEY "Authors" is RECOMMENDED if Citation.cff is not present 
         #SEE NOTE BELOW for GeneratedBy   
-
         reco = ["HEDVersion", "DatasetType", "License", "GeneratedBy", "SourceDatasets"]
-
         opts = ["Acknowledgements", "HowToAcknowledge", "Funding", "EthicsApprovals", "ReferencesAndLinks", "DatasetDOI"] 
 
         popDicts((self.required, reqs),(self.recommended, reco),(self.optional, opts))
 
-    def query(self):
-        self.query = ""
-        return self.query
-
-    def setup(self):
-        pass
-
     def createBIDS(self):
 
-        for child in self.children:
-            child.createBIDS()
         return
-
 
 def getGeneratedBy():
     from checks.checks import checkValidURI
