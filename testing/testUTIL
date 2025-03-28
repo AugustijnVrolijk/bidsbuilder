@@ -34,6 +34,31 @@ def testCatDict():
     path = r"C:\Users\augus\BCI_Stuff\Aspen\toShare\dataset_description.json"
     
     
+    curData = {"Name":"testValName", 
+               "DatasetType":"testValDatasetType",
+               "Authors":"testValAuthors", 
+               "DatasetDOI":"testValDatasetDOI",
+               "UnspecifiedAttr":"testValUnspecifiedAttr"}
+    
+    required = ["Name"]
+    recommended = ["DatasetType","Authors"]
+    optional = ["DatasetDOI"] 
+    
+    test.populateSelf(curData, required=required, recommended=recommended, optional=optional)
+
+    assert test.recommended == {"DatasetType":"testValDatasetType",
+                            "Authors":"testValAuthors"}
+    assert test._get_val_cat('Name') == ('testValName', 'required')
+    assert test._get_val_cat('UnspecifiedAttr') == ('testValUnspecifiedAttr', 'optional')
+    assert test["DatasetType"] == "testValDatasetType"
+    print("hi")
+
+def testCatDict2():
+    from wrapBIDS.util.io import _read_JSON, _write_JSON
+    test = catDict()
+    path = r"C:\Users\augus\BCI_Stuff\Aspen\toShare\dataset_description.json"
+    
+    
     curData = _read_JSON(path)
     required = ["Name", "BIDSVersion"]
     recommended = ["HEDVersion", "DatasetType", "License", "GeneratedBy", "SourceDatasets", "Authors", "DatasetLinks"]

@@ -23,7 +23,7 @@ class catDict(dict):
         tKey, _ = self._resolve_key(key)
         return super().__getitem__(tKey)
 
-    def _get_val_cat_pair(self, key):
+    def _get_val_cat(self, key):
         tKey, cat = self._resolve_key(key)
         return (super().__getitem__(tKey), cat)
 
@@ -105,19 +105,3 @@ class catDict(dict):
             for key,value in rawDict.items():
                 self.__setitem__((key, self.defaultCat), value)
         
-
-def main():
-
-    testDict = catDict()
-    testDict["tester"] = 1243
-
-    print("hello")
-    pass
-
-
-if __name__ == "__main__":
-    main()
-
-
-
-
