@@ -105,3 +105,6 @@ class catDict(dict):
             for key,value in rawDict.items():
                 self.__setitem__((key, self.defaultCat), value)
         
+#TODO: CHECK OUT THE SCHEMA
+# EVERYTHING IS MACHINE READABLE: SO DONT NEED ALL THE AGNOSTIC CLASSES; I NEED A CORE CLASS
+# AND I NEED A  
