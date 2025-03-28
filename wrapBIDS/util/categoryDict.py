@@ -2,7 +2,7 @@ import re
 import json
 from pathlib import Path
 
-class catDict():
+class catDict(dict):
     def __init__(self, categories:list=["required","recommended","optional"]):
         self.categories = categories
         self.defaultCat = categories[-1]
@@ -69,38 +69,25 @@ class catDict():
     def __repr__(self):
         return f"catDict({self.combined})"
 
-    def _write_JSON(self, path):
-       pass
-
-    def _read_JSON(self, path, **kwargs):
-        #**kwargs is a dictionary defining categories for names
-        if path[-5:] != ".json":
-            raise ValueError(f"file {path} is not a json")
+    def populateSelf(self, rawDict, **kwargs):
+        for cat, keys in kwargs.items():
+            for key in keys:
+                val = vals.pop(key, None)  
+                self.__setattr__((key, cat),val)
+            
+        for key,value in vals.items():
+            
+            pass
         
-        with open(path, 'r') as f:
-            jsonString = f.read()
-            vals = json.loads(jsonString)
-            if not isinstance(vals, dict):
-                raise ValueError(f"File {path} is a json containing {vals}, not a dict which was expected")
+def popDicts(toPop:catDict, rawDict:dict, **kwargs):
 
-            for cat, keys in kwargs.items():
-                for key in keys:
-                    val = vals.pop(key, None)  
-                    self.__setattr__((key, cat),val)
-                
-            for key,value in vals.items():
-                
-                pass
-                
-
-        """
-        read JSON File and populate catDict object.
-        """
-        pass
+    pass
+        
 
 def main():
     testDict = catDict()
     testDict["tester"] = 1243
+
     print("hello")
     pass
 
@@ -109,23 +96,5 @@ if __name__ == "__main__":
     main()
 
 
-"""
-https://github.com/mne-tools/mne-bids/blob/main/mne_bids/utils.py#L228
-https://github.com/mne-tools/mne-bids/blob/main/mne_bids/write.py
 
-def _write_json(fname, dictionary, overwrite=False):
-    #Write JSON to a file.
-    fname = Path(fname)
-    if fname.exists() and not overwrite:
-        raise FileExistsError(
-            f'"{fname}" already exists. Please set overwrite to True.'
-        )
 
-    json_output = json.dumps(dictionary, indent=4, ensure_ascii=False)
-    with open(fname, "w", encoding="utf-8") as fid:
-        fid.write(json_output)
-        fid.write("\n")
-
-    logger.info(f"Writing '{fname}'...")
-
-"""

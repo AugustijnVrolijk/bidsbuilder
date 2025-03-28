@@ -23,11 +23,11 @@ class Description(DatasetModule):
 
 
         #TO IMPLEMENT: KEY "DatasetLinks" IS REQUIRED IF URI's are used  
-        reqs = ["Name", "BIDSVersion"]
+        self.required = ["Name", "BIDSVersion"]
         #TO IMPLEMENT: KEY "Authors" is RECOMMENDED if Citation.cff is not present 
         #SEE NOTE BELOW for GeneratedBy   
-        reco = ["HEDVersion", "DatasetType", "License", "GeneratedBy", "SourceDatasets"]
-        opts = ["Acknowledgements", "HowToAcknowledge", "Funding", "EthicsApprovals", "ReferencesAndLinks", "DatasetDOI"] 
+        self.recommended = ["HEDVersion", "DatasetType", "License", "GeneratedBy", "SourceDatasets"]
+        self.optional = ["Acknowledgements", "HowToAcknowledge", "Funding", "EthicsApprovals", "ReferencesAndLinks", "DatasetDOI"] 
 
         popDicts((self.required, reqs),(self.recommended, reco),(self.optional, opts))
 

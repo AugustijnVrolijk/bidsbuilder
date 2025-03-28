@@ -19,7 +19,7 @@ class DatasetCore():
 class DatasetModule(DatasetCore):
     def __init__(self, parent:"BidsDataset"):
         super().__init__(parent)
-        self.test = catDict()
+        self.params = catDict()
         pass
 
     def populateVals(self):
