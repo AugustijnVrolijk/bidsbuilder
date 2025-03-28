@@ -1,4 +1,5 @@
 from wrapBIDS.util.util import popDict, popDicts
+from wrapBIDS.util.categoryDict import catDict
 
 def testPopDicts():
     test1 = {} 
@@ -26,3 +27,21 @@ def testPopDicts():
     assert test5 == verify5
 
     return
+
+def testCatDict():
+    from wrapBIDS.util.io import _read_JSON, _write_JSON
+    test = catDict()
+    path = r"C:\Users\augus\BCI_Stuff\Aspen\toShare\dataset_description.json"
+    
+    
+    curData = _read_JSON(path)
+    required = ["Name", "BIDSVersion"]
+    recommended = ["HEDVersion", "DatasetType", "License", "GeneratedBy", "SourceDatasets", "Authors", "DatasetLinks"]
+    optional = ["Acknowledgements", "HowToAcknowledge", "Funding", "EthicsApprovals", "ReferencesAndLinks", "DatasetDOI"] 
+    
+    test.populateSelf(curData, required=required, recommended=recommended, optional=optional)
+    newPath = r"C:\Users\augus\BCI_Stuff\Aspen\toShare\test_dataset_description.json"
+    _write_JSON(newPath,test, True)
+
+if __name__ == "__main__":
+    testCatDict()
