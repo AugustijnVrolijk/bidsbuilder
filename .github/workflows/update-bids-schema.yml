@@ -19,8 +19,9 @@ jobs:
       - name: Clone BIDS Specification Schema
         run: |
           rm -rf bids-schema  # Remove old schema folder if exists
-          git clone --depth 1 https://github.com/bids-standard/bids-specification/tree/47e531d06bf57d95675526162ca62ca25715cc55/src/schema bids-schema
-
+          git clone --depth 1 https://github.com/bids-standard/bids-specification.git temp_repo
+          mv temp_repo/src/schema bids-schema
+          rm -rf temp_repo
       - name: Commit and Push if Changes Exist
         run: |
           git config --global user.name "github-actions[bot]"
