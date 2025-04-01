@@ -1,0 +1,31 @@
+name: Sync BIDS Schema
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs daily at midnight UTC
+  workflow_dispatch:  # Allows manual trigger
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-bids-schema:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout your repo
+        uses: actions/checkout@v4
+
+      - name: Clone BIDS Specification Schema
+        run: |
+          rm -rf bids-schema  # Remove old schema folder if exists
+          git clone --depth 1 https://github.com/bids-standard/bids-specification/tree/47e531d06bf57d95675526162ca62ca25715cc55/src/schema bids-schema
+
+      - name: Commit and Push if Changes Exist
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add bids-schema
+          git diff --staged --quiet || git commit -m "Update BIDS Schema from upstream"
+          git push
+
