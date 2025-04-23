@@ -1,11 +1,10 @@
 import wrapBIDS
-from wrapBIDS.Classes import *
+from wrapBIDS import *
 
 def main():
     rootStr = r"C:\Users\augus\BCI_Stuff\Aspen\toShare"
     test1 = BidsDataset(root=rootStr)    
-    test1.description.readCurrent()
-
+    test1.create()
     print("hi")
 
 if __name__ == "__main__":

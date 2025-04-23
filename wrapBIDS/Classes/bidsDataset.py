@@ -1,14 +1,16 @@
 from wrapBIDS.Classes.agnosticClasses import *
+from wrapBIDS.util.util import checkPath
+import bidsschematools, bidsschematools.schema
 
 class BidsDataset():
-    def __init__(self, root):
-        self.children = {} 
-        self.root = root 
-        
-        self._createAgnosticFiles()
+    initialised = False
+    schema = bidsschematools.schema.load_schema()
 
-
-    def _createAgnosticFiles(self):
+    def __init__(self, root:str = None):
+        self.children = {}
+        self.root = root
+    
+    def _createCommon(self):
         self.description = Description(self)
         self.readme = Readme(self)
         self.participants = Participants(self)
@@ -18,24 +20,43 @@ class BidsDataset():
         self.children["description"] = self.description
         self.children["readme"] = self.readme
         self.children["participants"] = self.participants
-        
 
-    def createBIDS(self):
+    def create(self, force=False):
+        self._removeRedundant()
+
+        exists, msg = checkPath(self.root)
+        
 
         for child in self.children:
             child.createBIDS()
         return
     
-    def readBIDS(self):
+    def _removeRedundant(self):
+
         for child in self.children:
-            child.readBIDS()
+            if child:
+                child._removeRedundant()
+            else:
+                child._deleteSelf()
+                #consider using __del__ method in order to just call pop. Concerns around whether the garbage collection always occurs
 
-    def updateDescription(self, **kwargs):
-        self.description.update(kwargs)
-        return
-    
+                self.children.pop(child)
 
+    def read(self, path:str = None):
+        if path:
+            self.root = path
 
+        exists, msg = checkPath(self.root)
+        if not exists == 2:
+            FileExistsError(msg)
+        
+
+        """
+        do some stuff
+        """
+
+        self.initialised = True
+        
     """"
     reading files
         -tsv

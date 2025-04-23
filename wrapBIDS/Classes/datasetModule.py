@@ -16,6 +16,10 @@ class DatasetCore():
     def _read_BIDS(self):
         pass
 
+    def deleteSelf(self):
+  
+        return
+    
 class DatasetModule(DatasetCore):
     def __init__(self, parent:"BidsDataset"):
         super().__init__(parent)

@@ -1,0 +1,21 @@
+BIDS SCHEMA: USED TO CHECK BIDS VALIDITY
+MOST OF IT CAN BE USED TO GENERATE VALID BIDS FOLDERS
+
+DATASET CLASS
+DATA CLASS
+    -> has a static variable to help build the dataset i.e. hasSession (if its true all subjects must build a session folder)
+
+Tree like structure, with dataset object at the root
+    do data objects have children or one big object?
+
+One master DATASET object:
+    - creates a schema object from "schema = bidsschematools.schema.load_schema()"
+    - OPTIONS:
+        1 - populate sub-objects from 
+
+
+
+MAKING THE FOLDER
+    two steps:
+        - iterate through the folder and delete any un-added stuff (unused optional fields or optional files)
+        - make all 
