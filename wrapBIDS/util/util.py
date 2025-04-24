@@ -92,7 +92,7 @@ def _getPathStatus(path:str) -> Tuple[int, int, str, str]:
 
     return exs_val, perms_val, exs_msg, perms_msg 
 
-def checkPath(path:str, force:bool = False, flag:str=None) -> bool:
+def checkPath(path:str, force:bool = False, flag:str=None) -> tuple[bool|str | None]:
     """
     check path and create folder struct if necessary
     
@@ -102,57 +102,83 @@ def checkPath(path:str, force:bool = False, flag:str=None) -> bool:
         - flag: additional flags for different behaviour
             levels:
                 -"read" doesn't matter if the folder doesn't have write permissions,
-                can still read from the folder
-
+                can still read from the folder (used if you want to load in from a folder)
+                -"write" doesn't matter if the folder doesn't have read permissions,
+                can still write to a folder (used if you want to write your data to a folder)
     returns:
         - success: whether the path was successfully created/found depending on the flag
     
     """
+    def getInput(msg:str, force:bool = False) -> bool:
+        if force:
+            return True
+        
+        print(f"{path}\n{msg}\nWould you like to continue anyway?\n(y\\n)")
+        retval = False
+        while True:
+            val = input().strip().lower()
+            yes = ("y", "yes", "ye")
+            no = ("n", "no")
+            if val in yes:
+                retval = True
+                break
+            elif val in no:
+                retval = False
+                break
+            print("Input not recognised, please input 'yes'/'y' or 'no'/'n' ")
+        return retval
+
+    #INPUT FLAGS
     readOnly = False
-    flag = flag.strip().lower()
+    writeOnly = False
+    
     if flag == None:
         pass
-    elif flag == "read":
-        readOnly = True
     else:
-        raise SyntaxError("unknown flag given to checkPath")
-    
-    exists, perm, exists_msg, perm_msg = _getPathStatus(path)
+        flag = flag.strip().lower()
 
+    if flag == "read":
+        readOnly = True
+    elif flag == "write":
+        writeOnly = True
+    elif flag != None:
+        raise SyntaxError("unknown flag given to checkPath")
+        
+    #GET PATH STATUS
+    exists, perm, exists_msg, perm_msg = _getPathStatus(path)    
+
+    #RETURN INVALID CHECKS
     if exists == -1: #folder is invald
         return False, exists_msg
     elif perm == -1 and exists != 0: #folder exists and has no permissions
         return False, perm_msg
+    elif perm != 2:
+        if perm == 1 and readOnly:
+            return False, perm_msg
+        elif perm == 0 and  writeOnly:
+            return False, perm_msg
 
-
-
-    elif exists == 2:
-        if getInput():
-            return
-
-
-
-        def getInput(msg:str, force:bool = False):
-            if force:
-                return True
-            
-            print(f"{msg}\nWould you like to continue anyway?\n(y\\n)")
-            retval = False
-            while True:
-                val = input().strip().lower()
-                yes = ("y", "yes", "ye")
-                no = ("n", "no")
-                if val in yes:
-                    retval = True
-                    break
-                elif val in no:
-                    retval = False
-                    break
-                print("Input not recognised, please input 'yes'/'y' or 'no'/'n' ")
-            return retval
-    return
-
-def makeFolder(path:str):
+    #CHECK FOR USE SPECIFIC
+    if exists == 2: #dir is not populated
+        if readOnly:
+            return getInput(exists_msg, force), exists_msg #check if you want to proceed with empty dir
+        else:
+            return True
+    elif exists == 1: #dir is already populated
+        if readOnly:
+            return True
+        else:
+            return getInput(exists_msg, force), exists_msg
+    elif exists == 0: #dir doesn't exist
+        if readOnly:
+            return False, ""
+        else:
+            retVal = getInput(exists_msg, force)
+            if retVal:
+                toMake = Path(path)
+                toMake.mkdir(parents=True, exist_ok=False)
+                exists_msg = "target path has been created"
+            return retVal, exists_msg
     return
 
 if __name__ == "__main__":
@@ -164,5 +190,5 @@ if __name__ == "__main__":
              r"C:\\System Volume Information",
              r"C:\\$Recycle.Bin"]
     for path in paths:
-        val1, val2, str1, str2 = _getPathStatus(path)
-        print(f"{path}\n{val1}\n{str1}\n{val2}\n{str2}\n")
+        print(path)
+        print(checkPath(path))
