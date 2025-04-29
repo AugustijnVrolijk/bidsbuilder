@@ -1,7 +1,7 @@
 import bidsschematools as bst
 import bidsschematools.schema
 import bidsschematools.types
-import bidsschematools.utils
+import re
 
 bidsschematools.schema.filter_schema
 
@@ -22,4 +22,4 @@ def printKeys(schema):
             raw_keys.append(key)
     return raw_keys
 
-print("hello")
+

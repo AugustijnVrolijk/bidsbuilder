@@ -1,4 +1,4 @@
-from wrapBIDS.Classes.agnosticClasses import *
+from wrapBIDS.Modules.agnosticClasses import *
 from wrapBIDS.util.util import checkPath
 import bidsschematools, bidsschematools.schema
 
@@ -9,7 +9,9 @@ class BidsDataset():
     def __init__(self, root:str = None):
         self.children = {}
         self.root = root
-    
+        self._make_skeletonBIDS()
+
+    """
     def _createCommon(self):
         self.description = Description(self)
         self.readme = Readme(self)
@@ -20,13 +22,18 @@ class BidsDataset():
         self.children["description"] = self.description
         self.children["readme"] = self.readme
         self.children["participants"] = self.participants
+    """
 
-    def create(self, force=False):
+    def _make_skeletonBIDS(self):
+        return
+
+    def make(self, force=False):
         self._removeRedundant()
-
-        exists, msg = checkPath(self.root)
         
-
+        exists, msg = checkPath(self.root)
+        if not exists:
+            raise FileExistsError(msg)
+        
         for child in self.children:
             child.createBIDS()
         return
@@ -47,8 +54,8 @@ class BidsDataset():
             self.root = path
 
         exists, msg = checkPath(self.root)
-        if not exists == 2:
-            FileExistsError(msg)
+        if not exists():
+            raise FileExistsError(msg)
         
 
         """
@@ -64,8 +71,4 @@ class BidsDataset():
 
     data specific       -sql queries
         -mne.io.raw
-
-           
-    
-    
     """

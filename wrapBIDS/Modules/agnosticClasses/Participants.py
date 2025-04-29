@@ -1,10 +1,10 @@
 import os
-from wrapBIDS.Classes.datasetModule import DatasetModule
+from wrapBIDS.Modules.datasetModule import DatasetModule
 
 from typing import TYPE_CHECKING
  
 if TYPE_CHECKING:
-    from wrapBIDS.Classes.bidsDataset import BidsDataset
+    from wrapBIDS.bidsDataset import BidsDataset
 
 
 class Participants(DatasetModule):

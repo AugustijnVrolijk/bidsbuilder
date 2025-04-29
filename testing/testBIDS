@@ -4,7 +4,7 @@ from wrapBIDS import *
 def main():
     rootStr = r"C:\Users\augus\BCI_Stuff\Aspen\toShare"
     test1 = BidsDataset(root=rootStr)    
-    test1.create()
+    test1.make()
     print("hi")
 
 if __name__ == "__main__":

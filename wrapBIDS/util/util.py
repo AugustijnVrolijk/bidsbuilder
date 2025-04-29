@@ -1,6 +1,7 @@
 import os
 from typing import Any, Tuple
 from pathlib import Path
+from wrapBIDS.util.bidsSchema import bidsSchema
 
 def popDicts(*args, val:Any = None):
     dicts = [] 
@@ -171,7 +172,7 @@ def checkPath(path:str, force:bool = False, flag:str=None) -> tuple[bool|str | N
             return getInput(exists_msg, force), exists_msg
     elif exists == 0: #dir doesn't exist
         if readOnly:
-            return False, ""
+            return False, exists_msg
         else:
             retVal = getInput(exists_msg, force)
             if retVal:
@@ -189,6 +190,7 @@ if __name__ == "__main__":
              r"C:\Windows\System32\config",
              r"C:\\System Volume Information",
              r"C:\\$Recycle.Bin"]
+    
     for path in paths:
         print(path)
         print(checkPath(path))

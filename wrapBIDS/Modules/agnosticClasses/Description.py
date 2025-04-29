@@ -1,11 +1,11 @@
 import os
 from wrapBIDS.util.io import _read_JSON
-from wrapBIDS.Classes.datasetModule import DatasetModule
+from wrapBIDS.Modules.datasetModule import DatasetModule
 from mne.utils import logger
 from typing import TYPE_CHECKING
  
 if TYPE_CHECKING:
-    from wrapBIDS.Classes.bidsDataset import BidsDataset
+    from wrapBIDS.bidsDataset import BidsDataset
 
 class Description(DatasetModule):
     def __init__(self, parent:"BidsDataset"):

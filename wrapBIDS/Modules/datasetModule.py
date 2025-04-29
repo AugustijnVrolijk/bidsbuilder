@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from wrapBIDS.util.categoryDict import catDict
 
 if TYPE_CHECKING:
-    from wrapBIDS.Classes.bidsDataset import BidsDataset
+    from wrapBIDS.bidsDataset import BidsDataset
 
 
 class DatasetCore():
@@ -20,6 +20,9 @@ class DatasetCore():
   
         return
     
+    def __contains__(self, key): #used for selector parsing "in", need it to point it to whatever is needed
+        return
+
 class DatasetModule(DatasetCore):
     def __init__(self, parent:"BidsDataset"):
         super().__init__(parent)
