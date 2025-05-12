@@ -104,7 +104,35 @@ class catDict(dict):
             logger.warning(f"Unknown keys {rawDict.items()}, adding as {self.defaultCat} values")
             for key,value in rawDict.items():
                 self.__setitem__((key, self.defaultCat), value)
-        
-#TODO: CHECK OUT THE SCHEMA
-# EVERYTHING IS MACHINE READABLE: SO DONT NEED ALL THE AGNOSTIC CLASSES; I NEED A CORE CLASS
-# AND I NEED A  
+
+class WatchableDict:
+    def __init__(self, initial=None):
+        self._data = initial or {}
+        self._callbacks = {}  # key -> list of callbacks
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        old_value = self._data.get(key, None)
+        self._data[key] = value
+        if old_value != value:
+            self._trigger(key, value)
+
+    def _trigger(self, key, value):
+        for cb in self._callbacks.get(key, []):
+            cb(value)
+
+    def on_change(self, key, callback):
+        if key not in self._callbacks:
+            self._callbacks[key] = []
+        self._callbacks[key].append(callback)
+
+    def get(self, key, default=None):
+        return self._data.get(key, default)
+
+    def keys(self):
+        return self._data.keys()
+
+    def items(self):
+        return self._data.items()

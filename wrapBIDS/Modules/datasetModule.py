@@ -6,8 +6,8 @@ if TYPE_CHECKING:
 
 
 class DatasetCore():
-    def __init__(self, parent):
-        self.parent = parent
+    dataset:"BidsDataset" = None
+    def __init__(self):
         pass
 
     def _write_BIDS(self):
@@ -17,15 +17,30 @@ class DatasetCore():
         pass
 
     def deleteSelf(self):
-  
         return
     
     def __contains__(self, key): #used for selector parsing "in", need it to point it to whatever is needed
         return
 
-class DatasetModule(DatasetCore):
-    def __init__(self, parent:"BidsDataset"):
-        super().__init__(parent)
+class JSONFile(DatasetCore):
+    pass
+
+class TSVFile(DatasetCore):
+    pass
+
+class coreFileWrapper(DatasetCore):
+    def __init__(self, level, path = None, stem = None, entities = None, extensions = None):
+        self.level = level
+        self.path = path
+        self.stem = stem
+        self.entities = entities
+        self.extensions = extensions
+        print(level)
+        print(path)
+        print(stem)
+        print(entities)
+        print(extensions)
+        exit()
         self.params = catDict()
         pass
 

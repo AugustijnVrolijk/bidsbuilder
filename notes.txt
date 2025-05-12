@@ -101,19 +101,18 @@ It seems there are a couple exception cases, i.e. continous.yaml is actually a c
 ------------------------------------------------------
 conditional/builder selectors UPDATE
 
-it seems we can make files by iterating through 
+it seems we can make files by iterating through rules/files/common for starting files
+then rule/files/raw for any added data
+
+then apply all selectors and json/ tabular/sidecar as conditionals ONLY
+
+Add hooks using  @property and @property.setter to intercept the changing of a parameter and look at linked "hooks"
+
+hooks are found when parsing through selectors and resolved to the specific object if possible otherwise kept vague,
+i.e. exists("citation.cff", "dataset") is always resolvable, but something more abstract, "task" in entities is not resolvable
+
+Need to figure out how the hooks add / remove metadata / where it is stored
+
+seperate wrapper dicts for entities/ metadata/ etc..? 
 
 
-class car:
-    colour = None
-
-    def __init__(self, colour)
-        colour = colour
-
-    @classmethod
-    def changeColour(cls)
-        cls.colour
-
-car(red)
-
-car(blue)

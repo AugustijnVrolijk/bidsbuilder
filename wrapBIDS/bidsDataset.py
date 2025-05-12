@@ -1,4 +1,4 @@
-from wrapBIDS.Modules.agnosticClasses import *
+from wrapBIDS.Modules import *
 from wrapBIDS.util.util import checkPath
 import bidsschematools, bidsschematools.schema
 
@@ -9,22 +9,21 @@ class BidsDataset():
     def __init__(self, root:str = None):
         self.children = {}
         self.root = root
+        self.tree = {}
+        DatasetCore.dataset = self
         self._make_skeletonBIDS()
 
-    """
-    def _createCommon(self):
-        self.description = Description(self)
-        self.readme = Readme(self)
-        self.participants = Participants(self)
-        self.citation = Citation(self)
-        self.changes = Changes(self)
-        self.license = License(self)
-        self.children["description"] = self.description
-        self.children["readme"] = self.readme
-        self.children["participants"] = self.participants
-    """
-
     def _make_skeletonBIDS(self):
+        
+        exceptions = ["scans", "sessions", "phenotype"]
+        for file in self.schema.rules.files.common.core.keys():
+            print(self.schema.rules.files.common.core[file])
+        for tabFile in self.schema.rules.files.common.tables.keys():
+            print(tabFile)
+            """
+            Exceptions for scans, sessions and phenotype
+            """
+            
         return
 
     def make(self, force=False):
@@ -72,3 +71,6 @@ class BidsDataset():
     data specific       -sql queries
         -mne.io.raw
     """
+
+if __name__ == "__main__":
+    test = BidsDataset()

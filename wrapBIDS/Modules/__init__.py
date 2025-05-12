@@ -1,3 +1,3 @@
-from wrapBIDS.bidsDataset import BidsDataset
+from wrapBIDS.Modules.datasetModule import DatasetCore, DatasetModule
 
-__all__ = ["BidsDataset"]
+__all__ = ["DatasetCore", "DatasetModule"]
