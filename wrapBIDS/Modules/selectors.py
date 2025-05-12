@@ -3,8 +3,7 @@ import re
 from decorator import decorator
 from collections.abc import Callable
 from typing import Any, Tuple, Dict
-from wrapBIDS.Modules.interpretedFunctions import count, exists, index, intersects, allequal, length, match, max, min, sorted, substr, nType, notImplemented
-
+from wrapBIDS.Modules.interpretedFunctions import *
 
 class selectorHook():
     def __init__(self, func:Callable):
@@ -23,6 +22,8 @@ def resolveSelector():
         return selectorHook(func)
     return inner
 
+
+@resolveSelector
 class selFunc():
     def __init__(self, func:str, fglobals:dict, flocals:dict):
         if not isinstance(func, str) or not isinstance(fglobals, dict) or not isinstance(flocals, dict):
@@ -34,7 +35,6 @@ class selFunc():
 
     def __call__(self) -> Any:
         return eval(self.func, globals=self.fglobals, locals=self.flocals)
-
 
 
 class SelectorParser():
@@ -74,21 +74,21 @@ class SelectorParser():
     }
 
     OPERATOR_FUNCS = {
-        "==":"==",
-        "!=":"!=",
-        "<":"<",
-        ">":">",
-        "<=":"<=",
-        ">=":">=",
-        "in":"in", #look at __contains__() in datasetCore
+        #"==":"==",
+        #"!=":"!=",
+        #"<":"<",
+        #">":">",
+        #"<=":"<=",
+        #">=":">=",
+        #"in":"in", #look at __contains__() in datasetCore then don't need to interpret function differently
         "!":"not",
         "&&":"and",
         "||":"or",
         #".":"",
         #"[]":"",
-        "-":"-",
-        "*":"*",
-        "/":"/"
+        #"-":"-",
+        #"*":"*",
+        #"/":"/"
         }
     
     @classmethod
@@ -126,6 +126,7 @@ class SelectorParser():
 
         return flocals
 
+    @classmethod
     def _find_field_ref() -> Any:
         """
           PARSE ANY FIELD_MAP KEYS WITHIN THE FUNCTION EVAL STRING:
@@ -203,6 +204,7 @@ def tester():
 
 if __name__ == "__main__":
     tester()
+
 """
 OPERATOR_FUNCS = {
     '==': operator.eq,
@@ -223,3 +225,5 @@ OPERATOR_FUNCS = {
     "/":operator.truediv,
     }
 """
+
+

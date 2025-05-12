@@ -19,3 +19,101 @@ MAKING THE FOLDER
     two steps:
         - iterate through the folder and delete any un-added stuff (unused optional fields or optional files)
         - make all 
+
+-----------------------------------
+search for related info in the schema by querying based on file datatype, modality and suffix if any files exists with the same one then build
+
+
+
+------------------------------------
+SELECTORS:
+
+two types:
+    builder selectors: i.e. path = "dataset_description.json"
+
+                or 
+                    datatype == "nirs"
+                    suffix == "channels"
+                    extension == ".tsv"
+
+    conditional selectors i.e. json.NIRSCoordinateSystem == "other"
+                or
+                
+                !exists("citation.cff")
+
+
+types of builder fields: 
+    "subject": notImplemented,
+    "path": notImplemented,
+    "entities": notImplemented,
+    "datatype": notImplemented,
+    "suffix": notImplemented,
+    "extension": notImplemented,
+    "modality": notImplemented,
+
+Primary issues:
+    seperating "builder" and "conditional" selectors:
+        builders must be used to add needed metadata to a file.
+        whereas conditionals must be used to hook to existing matching files and add metadata if hooked fields change
+
+Different parsing depending on where in the schema:
+    add data:
+        rules/files/raw: datatypes are a "conditional",
+
+
+    -> Files are only added under rules/files
+        sidecars, tabular_data, json etc... are only selectors
+
+Options:
+    - interpret "selectors" once at runtime (as much as we can)    -> probably the better option?
+                        OR
+      interpret them each time? 
+
+    - interpret the schema completely? i.e. convert it into a graph and then fill in data, i.e. merge the metadata under rules and objects into one already
+                        OR
+    - dynamically interpret at runtime... 
+
+
+
+
+Underlying issue:
+    a lot of extra stuff, possibly interpreting everything adds a couple seconds of unnecessary stuff each time we make a dataset even though 95% of it won't be used
+    also requires everything to be implemented, whereas if we interpret as we go then some stuff (which never gets touched really, i.e. some checks before they are implemented) can be ignored
+    and not needed to be implemented
+
+solution:
+    dynamic approach -> interpret at runtime, but if something gets interpreted (a selector) then replace it in the schema with the selector object hook rather than re interpret if called again
+                    -> high chance of reuse (i.e. if we do a eeg dataset and call on eeg hooks, then we will probably add more than one subject of eeg data)
+
+        -> do we call on files if they match modality/datatype/suffix? or call them all. Issue mainly regarding a couple have overlap -> intersect a couple of modalities, but I think this is 
+        only ever in the general files, i.e. in MRI, and then it intersects lower modalities               selectors:- intersects([suffix], ["physio", "stim"]) in "continuous.yaml"
+        as well as a couple of them can often apply (task/ events etc...)
+                                                                            OR 
+        -> do we call every rule/json, sidecar etc.. file and perform all checks? is this redundant?
+
+
+
+It seems there are a couple exception cases, i.e. continous.yaml is actually a correspondance to "pyhsio" or "stim" which are special timeseries files defined under rules/files/raw/task.yaml
+
+    solutions: map out every exception case and deal with them once we know all of them
+                or just take no shortcuts and iterate through everything so "exceptions" would be covered anyway
+
+------------------------------------------------------
+conditional/builder selectors UPDATE
+
+it seems we can make files by iterating through 
+
+
+class car:
+    colour = None
+
+    def __init__(self, colour)
+        colour = colour
+
+    @classmethod
+    def changeColour(cls)
+        cls.colour
+
+car(red)
+
+car(blue)
