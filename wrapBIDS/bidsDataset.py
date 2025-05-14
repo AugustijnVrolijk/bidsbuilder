@@ -1,6 +1,7 @@
-from wrapBIDS.Modules import *
+from wrapBIDS.modules import *
 from wrapBIDS.util.util import checkPath
-from wrapBIDS.Modules.commonFiles import resolveCoreClassType
+from wrapBIDS.util.datasetTree import FileTree
+from wrapBIDS.modules.commonFiles import resolveCoreClassType
 import bidsschematools, bidsschematools.schema
 
 class BidsDataset():
@@ -10,7 +11,7 @@ class BidsDataset():
     def __init__(self, root:str = None):
         self.children = {}
         self.root = root
-        self.tree = {}
+        self.tree = FileTree(path=root, link=self)
         DatasetCore.dataset = self
         self._make_skeletonBIDS()
 
@@ -18,8 +19,9 @@ class BidsDataset():
 
         exceptions = ["scans", "sessions", "phenotype"]
         for file in self.schema.rules.files.common.core.keys():
-            self.children[file] = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties)
-        
+            tObj = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties)
+            self.tree.addPath()
+
         for tabFile in self.schema.rules.files.common.tables.keys():
             if tabFile in exceptions:
                 print(tabFile)

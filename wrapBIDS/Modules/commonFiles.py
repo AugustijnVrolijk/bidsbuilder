@@ -1,6 +1,6 @@
 from functools import wraps
 from pathlib import Path
-from wrapBIDS.Modules.coreModule import DatasetCore
+from wrapBIDS.modules.coreModule import DatasetCore
 from typing import TYPE_CHECKING
 
 

@@ -115,4 +115,7 @@ Need to figure out how the hooks add / remove metadata / where it is stored
 
 seperate wrapper dicts for entities/ metadata/ etc..? 
 
+------------------------------------------------------
+FileTree is a standalone tree with attributes describing the paths as well as a reference to the object.
 
+BidsDataset has a reference to File tree, as well as dictionary objects, i.e. Subject, session or datatype objects

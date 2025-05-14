@@ -3,7 +3,7 @@ import re
 from decorator import decorator
 from collections.abc import Callable
 from typing import Any, Tuple, Dict
-from wrapBIDS.Modules.interpretedFunctions import *
+from wrapBIDS.modules.interpretedFunctions import *
 
 class selectorHook():
     def __init__(self, func:Callable):
