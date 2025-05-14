@@ -1,5 +1,5 @@
 import os
-from wrapBIDS.Modules.datasetModule import DatasetModule
+from wrapBIDS.Modules.coreModule import DatasetModule
 
 from typing import TYPE_CHECKING
  

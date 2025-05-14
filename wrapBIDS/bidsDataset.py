@@ -1,5 +1,6 @@
 from wrapBIDS.Modules import *
 from wrapBIDS.util.util import checkPath
+from wrapBIDS.Modules.commonFiles import resolveCoreClassType
 import bidsschematools, bidsschematools.schema
 
 class BidsDataset():
@@ -14,12 +15,17 @@ class BidsDataset():
         self._make_skeletonBIDS()
 
     def _make_skeletonBIDS(self):
-        
+
         exceptions = ["scans", "sessions", "phenotype"]
         for file in self.schema.rules.files.common.core.keys():
-            print(self.schema.rules.files.common.core[file])
+            self.children[file] = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties)
+        
         for tabFile in self.schema.rules.files.common.tables.keys():
-            print(tabFile)
+            if tabFile in exceptions:
+                print(tabFile)
+            else:
+                self.children[file] = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties)
+
             """
             Exceptions for scans, sessions and phenotype
             """

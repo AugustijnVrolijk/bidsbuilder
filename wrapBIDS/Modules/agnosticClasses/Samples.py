@@ -1,6 +1,6 @@
 import os
 from typing import TYPE_CHECKING
-from wrapBIDS.Modules.datasetModule import DatasetCore
+from wrapBIDS.Modules.coreModule import DatasetCore
 
 if TYPE_CHECKING:
     from wrapBIDS.bidsDataset import BidsDataset

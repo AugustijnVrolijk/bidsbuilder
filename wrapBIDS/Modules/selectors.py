@@ -13,17 +13,6 @@ class selectorHook():
     def __call__(self, *args, **kwargs):
         return self.objectiveFunc(*args, **kwargs)
 
-
-
-def resolveSelector():
-    @decorator
-    def inner(func, *args, **kwargs):
-        
-        return selectorHook(func)
-    return inner
-
-
-@resolveSelector
 class selFunc():
     def __init__(self, func:str, fglobals:dict, flocals:dict):
         if not isinstance(func, str) or not isinstance(fglobals, dict) or not isinstance(flocals, dict):

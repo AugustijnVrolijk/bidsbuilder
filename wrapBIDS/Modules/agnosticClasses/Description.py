@@ -1,6 +1,6 @@
 import os
 from wrapBIDS.util.io import _read_JSON
-from wrapBIDS.Modules.datasetModule import DatasetModule
+from wrapBIDS.Modules.coreModule import DatasetModule
 from mne.utils import logger
 from typing import TYPE_CHECKING
  
