@@ -13,20 +13,22 @@ from typing import Union, TYPE_CHECKING
 from pathlib import Path
 from functools import cached_property
 from typing_extensions import Self
+from wrapBIDS.modules.coreModule import DatasetCore
+
 
 if TYPE_CHECKING:
-    from wrapBIDS.modules.coreModule import DatasetCore
     from wrapBIDS.bidsDataset import BidsDataset
 
-@define
+@define(slots=True)
 class UserFileEntry:
     """Partial reimplementation of :class:`os.DirEntry`.
 
     :class:`os.DirEntry` can't be instantiated from Python, but this can.
+
+    TAKEN FROM src/bids_validator/types/files.py
     """
 
-    path: str = field(repr=False, converter=os.fspath)
-    name: str = field(init=False)
+    name: str = field(repr=False)
     link: Union['DatasetCore', 'BidsDataset'] = field(repr=False)
     is_dir: bool = field(repr=False, default=False)
     parent: Union['FileTree', None] = field(repr=False, default=None)
@@ -34,11 +36,28 @@ class UserFileEntry:
     _stat: os.stat_result = field(init=False, repr=False, default=None)
     _lstat: os.stat_result = field(init=False, repr=False, default=None)
 
-    def __attrs_post_init__(self) -> None:
-        self.name = os.path.basename(self.path)
+
+    """
+    TODO: ADD A SETTER FOR NAME, IF NAME CHANGES, 
+    NEED TO CHANGE THE REFERENCE IN IT'S PARENT,
+    I.e update the key to refer to the correct name
+
+    CHECK IF attrs HAS A BETTER WAY OF DOING THIS; ITS POSSIBLE
+    THERE IS AN INBUILT FUNCTION WHICH TRIGGERS ON ATTRIBUTE CHANGES
+    
+    on_setattr (Callable | list[Callable] | None | Literal[attrs.setters.NO_OP]) –
+      Allows to overwrite the on_setattr setting from attr.s. If left None, the on_setattr value from attr.s is used. 
+      Set to attrs.setters.NO_OP to run no setattr hooks for this attribute – regardless of the setting in define().
+
+    """
+
+     __attrs_post_init__(self) -> None:
+        if isinstance(self.link, DatasetCore):
+            self.link.name = self.name
+        return
 
     def __fspath__(self) -> str:
-        return self.path
+        return str(self.path)
 
     def fetch_instance(self) -> 'DatasetCore':
         return self.link
@@ -69,6 +88,7 @@ class UserFileEntry:
         _stat = self.stat(follow_symlinks=False)
         return stat.S_ISLNK(_stat.st_mode)
 
+    @cached_property
     def relative_path(self) -> str:
         """The path of the current FileTree, relative to the root.
 
@@ -80,7 +100,11 @@ class UserFileEntry:
 
         return posixpath.join(self.parent.relative_path, self.name)
     
-@define
+    @cached_property
+    def path(self):
+        return self.parent.path / self.name
+
+@define(slots=True)
 class FileTree(UserFileEntry):
     """Represent a FileTree with cached metadata."""
     #FileTree must be directory
@@ -88,20 +112,32 @@ class FileTree(UserFileEntry):
 
     children: dict[str, 'FileTree'] = field(repr=False, factory=dict)
 
-    def addPath(self, relpath: os.PathLike, obj_ref: 'DatasetCore', is_dir:bool=False):
+    def addPath(self, raw_path: os.PathLike, obj_ref: 'DatasetCore', is_dir:bool=False):
         
-        """ADD A CHECK IN CASE INTERMEDIATE FOLDERS NEED TO BE MADE, I.E. Relpath given is for a session folder
-        so the subject folder needs to be made"""
-
-        if is_dir:
-            tClass = FileTree
+        relpath = Path(raw_path)
+        parts = relpath.parts
+        if len(parts) == 0:
+            raise ValueError(f"relpath misisng value: {relpath}")
+        
+        #DEPENDS ON SCHEMA SYNTAX, IF A LEADING "/" ALWAYS MEANS ITS AT THE DATASET ROOT WE CAN CHECK THAT PARENT IS NONE
+        if relpath.root:
+            parts = parts[1:]
+    
+        if len(parts) == 1:
+            if is_dir:
+                tClass = FileTree
+            else:
+                tClass = UserFileEntry
+            new_entry = tClass(name=parts[0], link=obj_ref, parent=self, is_dir=is_dir)
+            
+            self.children[new_entry.name] = new_entry
         else:
-            tClass = UserFileEntry
-        new_entry = tClass(path=relpath, link=obj_ref, parent=self, is_dir=is_dir)
+            #CURRENT APPROACH WILL NOT BUILD INTERMEDIATE FOLDERS
+            try:
+                self.children[parts[0]].addPath(posixpath.join(*parts[1:]),obj_ref,is_dir)
+            except:
+                raise KeyError(f"given path {relpath} refers to an intermediate folder which has not been created")
         
-        self.children[new_entry.name] = new_entry
-    
-    
     """NEEDS TO BE REWORKED TO WORK WITH MY CHANGES"""
     @classmethod
     def read_from_filesystem(
@@ -122,6 +158,22 @@ class FileTree(UserFileEntry):
             }
         return self
 
+    def fetch(self, relpath: os.PathLike) -> 'DatasetCore':
+        relpath = Path(relpath)
+        parts = relpath.parts
+        if len(parts) == 0:
+            raise ValueError(f"relpath misisng value: {relpath}")
+        
+        if relpath.root:
+            parts = parts[1:]
+        
+        child = self.children.get(parts[0])
+
+        if len(parts) == 1:
+            return child.link
+        else:
+            return child.fetch(posixpath.join(*parts[1:]))
+
     def __contains__(self, relpath: os.PathLike) -> bool:
         parts = Path(relpath).parts
         if len(parts) == 0:
@@ -141,3 +193,10 @@ class FileTree(UserFileEntry):
 
         return posixpath.join(self.parent.relative_path,f'{self.name}/')
     
+    @cached_property
+    def path(self) -> Path:
+
+        if self.parent is None:
+            return Path(self.name) 
+
+        return self.parent.path / self.name

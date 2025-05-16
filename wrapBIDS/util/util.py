@@ -3,6 +3,8 @@ from typing import Any, Tuple
 from pathlib import Path
 from wrapBIDS.util.bidsSchema import bidsSchema
 
+from collections.abc import MutableMapping 
+
 def popDicts(*args, val:Any = None):
     dicts = [] 
     for pair in args:
@@ -181,6 +183,13 @@ def checkPath(path:str, force:bool = False, flag:str=None) -> tuple[bool|str | N
                 exists_msg = "target path has been created"
             return retVal, exists_msg
     return
+
+def isDir(schema:MutableMapping, filename:str) -> bool:
+    for key in schema.keys():
+        if key.lower().strip() == filename.lower().strip():
+            return True
+    
+    return False
 
 if __name__ == "__main__":
     paths = [r"C:\Users\augus\BCI_Stuff\Aspen\bids_conversion", 

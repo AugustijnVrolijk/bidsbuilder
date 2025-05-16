@@ -1,36 +1,46 @@
+import bidsschematools, bidsschematools.schema
+
+from pathlib import Path
+
 from wrapBIDS.modules import *
-from wrapBIDS.util.util import checkPath
+from wrapBIDS.util.util import checkPath, isDir
 from wrapBIDS.util.datasetTree import FileTree
 from wrapBIDS.modules.commonFiles import resolveCoreClassType
-import bidsschematools, bidsschematools.schema
+
 
 class BidsDataset():
     initialised = False
     schema = bidsschematools.schema.load_schema()
 
-    def __init__(self, root:str = None):
+    def __init__(self, root:str = Path.cwd()):
         self.children = {}
         self.root = root
-        self.tree = FileTree(path=root, link=self)
+        self.tree = FileTree(name=root, link=self, is_dir=True, parent=None)
         DatasetCore.dataset = self
+        
         self._make_skeletonBIDS()
 
     def _make_skeletonBIDS(self):
 
+        #Exceptions for scans, sessions and phenotype
         exceptions = ["scans", "sessions", "phenotype"]
+        print("init make skeletons")
         for file in self.schema.rules.files.common.core.keys():
-            tObj = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties)
-            self.tree.addPath()
+            if file in exceptions:
+                continue
+            is_dir = isDir(self.schema.rules.directories.raw, file)
+            tObj = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties, is_dir=is_dir)
+            #NEED TO UPDATE IT TO GIVE THE NAME RATHER THAN THE STEM
+            self.tree.addPath(tObj.name, tObj, is_dir)
 
         for tabFile in self.schema.rules.files.common.tables.keys():
             if tabFile in exceptions:
-                print(tabFile)
-            else:
-                self.children[file] = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties)
+                continue
+            is_dir = isDir(self.schema.rules.directories.raw, tabFile)
+            tObj = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties, is_dir=is_dir)
+            self.tree.addPath(tObj.name, tObj, is_dir)
 
-            """
-            Exceptions for scans, sessions and phenotype
-            """
+        print("hello")
             
         return
 
@@ -46,7 +56,6 @@ class BidsDataset():
         return
     
     def _removeRedundant(self):
-
         for child in self.children:
             if child:
                 child._removeRedundant()
@@ -55,6 +64,8 @@ class BidsDataset():
                 #consider using __del__ method in order to just call pop. Concerns around whether the garbage collection always occurs
 
                 self.children.pop(child)
+
+
 
     def read(self, path:str = None):
         if path:

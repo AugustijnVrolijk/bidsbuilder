@@ -32,18 +32,13 @@ def convertPath(cls):
 class coreFileWrapper(DatasetCore):
     
     @convertPath
-    def __init__(self, level, stem = None, extensions = None):
+    def __init__(self, level, name = None):
+        super().__init__(name, level=level)
         self.level = level
-        self.stem = stem
-        self.extensions = extensions
+        self.name = name
 
-        if not stem:
-            raise ValueError(f"stem {stem} must be defined as a string representing the path with no extensions")
-
-        if self.extensions:
-            self.isFile = True
-        else:
-            self.isFile = False
+        if not name:
+            raise ValueError(f"stem {name} must be defined as a string representing the path with no extensions")
 
     def _getPaths(self):
         paths = []
@@ -68,35 +63,44 @@ class coreFileWrapper(DatasetCore):
         pass
 
 class coreJSON(coreFileWrapper):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        pass
+    def __init__(self, level:str, stem:str, extensions:list):
+        #extensions is a list
+        self.extension = extensions[0]
+        assert self.extension == ".json"
+        name = stem + self.extension
+        super().__init__(level=level, name=name)
     
 class coreTSV(coreFileWrapper):
-    def __init__(self, level, stem=None, extensions=None):
-        super().__init__(level, stem, extensions)
-        pass
-    
+    def __init__(self, level:str, stem:str, extensions:list):
+        self.extensions = extensions
+        self.stem = stem
+        assert ".tsv" in self.extensions
+        name = stem + ".tsv"
+        super().__init__(level=level, name=name)
+
 class coreUnknown(coreFileWrapper):
-    def __init__(self, level, stem=None, extensions=None):
-        super().__init__(level, stem, extensions)
-        pass
+    def __init__(self, level:str, stem:str, extensions:list=[]):
+        self.extensions = extensions
+        self.stem = stem
+        if self.extensions:
+            name = stem + self.extensions[0]
+        else:
+            name = stem
+        super().__init__(level=level, name=name)
 
 class coreFolder(coreFileWrapper):
-    def __init__(self, level, stem=None, extensions=None):
-        super().__init__(level, stem, extensions)
-        pass
+    def __init__(self, level:str, stem:str):
+        super().__init__(level=level, name=stem)
 
 
 @convertPath
-def resolveCoreClassType(*args, **kwargs) -> DatasetCore:
+def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> coreFileWrapper:
     """Resolve by looking at extensions"""
     extensions = kwargs.get("extensions", [])
-
-    if ".json" in extensions and len(extensions) == 1:
-        cls = coreJSON
-    elif len(extensions) == 0:
+    if is_dir:
         cls = coreFolder
+    elif ".json" in extensions and len(extensions) == 1:
+        cls = coreJSON
     elif "json" in extensions and ".tsv" in extensions:
         cls = coreTSV
     else:

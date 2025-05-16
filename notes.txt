@@ -119,3 +119,7 @@ seperate wrapper dicts for entities/ metadata/ etc..?
 FileTree is a standalone tree with attributes describing the paths as well as a reference to the object.
 
 BidsDataset has a reference to File tree, as well as dictionary objects, i.e. Subject, session or datatype objects
+
+
+Can use @property to easily perform conditions such as acq in file.entities. I set entities as a @property method, 
+which when called collates the entities from its parents

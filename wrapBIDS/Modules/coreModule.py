@@ -1,13 +1,49 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from wrapBIDS.util.categoryDict import catDict
+
+import attrs
 
 if TYPE_CHECKING:
     from wrapBIDS.bidsDataset import BidsDataset
+    from wrapBIDS.util.datasetTree import UserFileEntry
+    #from wrapBIDS.util.datasetTree import UserFileEntry
 
 class DatasetCore():
     dataset:"BidsDataset" = None
-    def __init__(self):
-        pass
+
+    def __init__(self, path:str, **kwargs):
+        self._name:str = path
+        self._exists:bool = False
+        self.level:str = kwargs.pop("level", "optional")
+        if self.level == "required":
+            self._exists = True
+        self._tree_reference:Union['UserFileEntry'|None] = None
+
+    @property
+    def name(self) -> str:
+        return self._name
+    
+    @name.setter
+    def name(self, val:str):
+        if not self._tree_reference is None:
+            self._tree_reference.name = val
+        self._name = val
+        return 
+    
+    def _tree_reference(self):
+        return
+    
+    @property 
+    def exists(self):
+        return self._exists
+    
+    @exists.setter
+    def exists(self, value):
+        if not isinstance(value, bool):
+            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
+
+        if self.level != "required":
+            self._exists = value
 
     def _write_BIDS(self):
         pass
