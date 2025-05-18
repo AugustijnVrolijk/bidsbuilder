@@ -1,4 +1,4 @@
-wrapBIDS is a library facilitating the creation and manipulation of BIDS approved datasets via pythonic wrappers of all required files and metadata.
+# wrapBIDS is a library facilitating the creation and manipulation of BIDS approved datasets via pythonic wrappers of all required files and metadata. #
 
 wrapBIDS interprets the bids schema (https://github.com/bids-standard/bids-specification/tree/master/src/schema) using the bidsschematools library.
 
@@ -9,16 +9,16 @@ Base classes are added to support core functions such as json sidecars, tabular 
 All features can be reached via the use of a BidsDataset object, which integrates all other modules to allow for an easily modifiable and customisable dataset wrapper.
 
 Currently features:
-    Tree representation of folder for retrieval of objects via their paths
-    Interpreter for schema selectors and checks
-    Base classes for common files
+* Tree representation of folder for retrieval of objects via their paths
+* Interpreter for schema selectors and checks
+* Base classes for common files
 
 Future features:
-    Base classes for data files
-    Configuration for auto-completing metadata
-    Advanced tools for bulk completion of metadata parameters
-    conversion of raw data to bids-approved formats
+* Base classes for data files
+* Configuration for auto-completing metadata
+* Advanced tools for bulk completion of metadata parameters
+* Conversion of raw data to bids-approved formats
 
 Possible future features:
-    web-based UI to easily modify and interact with datasets without needing to use Python
+* Web-based UI to easily modify and interact with datasets without needing to use Python
 
