@@ -30,9 +30,6 @@ class DatasetCore():
         self._name = val
         return 
     
-    def _tree_reference(self):
-        return
-    
     @property 
     def exists(self):
         return self._exists

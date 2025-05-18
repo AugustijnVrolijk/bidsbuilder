@@ -28,9 +28,9 @@ class UserFileEntry:
     TAKEN FROM src/bids_validator/types/files.py
     """
 
-    name: str = field(repr=False)
+    #have to add alias otherwise it gets stripped of "_" and gets changed to "name"
+    _name: str = field(repr=True, alias="_name")
     link: Union['DatasetCore', 'BidsDataset'] = field(repr=False)
-    is_dir: bool = field(repr=False, default=False)
     parent: Union['FileTree', None] = field(repr=False, default=None)
 
     _stat: os.stat_result = field(init=False, repr=False, default=None)
@@ -51,10 +51,27 @@ class UserFileEntry:
 
     """
 
-     __attrs_post_init__(self) -> None:
+    def __attrs_post_init__(self) -> None:
         if isinstance(self.link, DatasetCore):
-            self.link.name = self.name
+            #is self.link.name = self.name redundant? Or will I always instantiate it already knowing the instance name
+            #self.link.name = self.name
+            self.link._tree_reference = self
         return
+
+    @property
+    def name(self) -> str:
+        return self._name
+    
+    @name.setter
+    def name(self, new_name:str):
+        if new_name in self.parent.children.keys():
+            raise KeyError(f"key {new_name} already exists in {self.parent}")
+        
+        #add new entry to parent dict
+        self.parent.children[new_name] = self
+        #remove old
+        self.parent.children.pop(self.name)
+        self._name = new_name
 
     def __fspath__(self) -> str:
         return str(self.path)
@@ -88,7 +105,8 @@ class UserFileEntry:
         _stat = self.stat(follow_symlinks=False)
         return stat.S_ISLNK(_stat.st_mode)
 
-    @cached_property
+    #cannot be @cachedproperty as the name can change in which case the cached version is incorred
+    @property
     def relative_path(self) -> str:
         """The path of the current FileTree, relative to the root.
 
@@ -100,7 +118,8 @@ class UserFileEntry:
 
         return posixpath.join(self.parent.relative_path, self.name)
     
-    @cached_property
+    #cannot be @cachedproperty as the name can change in which case the cached version is incorred
+    @property
     def path(self):
         return self.parent.path / self.name
 
@@ -128,7 +147,7 @@ class FileTree(UserFileEntry):
                 tClass = FileTree
             else:
                 tClass = UserFileEntry
-            new_entry = tClass(name=parts[0], link=obj_ref, parent=self, is_dir=is_dir)
+            new_entry = tClass(_name=parts[0], link=obj_ref, parent=self)
             
             self.children[new_entry.name] = new_entry
         else:
@@ -181,7 +200,8 @@ class FileTree(UserFileEntry):
         child = self.children.get(parts[0], False)
         return child and (len(parts) == 1 or posixpath.join(*parts[1:]) in child)
 
-    @cached_property
+    #cannot be @cachedproperty as the name can change in which case the cached version is incorred
+    @property
     def relative_path(self) -> str:
         """The path of the current FileTree, relative to the root.
 
@@ -193,7 +213,8 @@ class FileTree(UserFileEntry):
 
         return posixpath.join(self.parent.relative_path,f'{self.name}/')
     
-    @cached_property
+    #cannot be @cachedproperty as the name can change in which case the cached version is incorred
+    @property
     def path(self) -> Path:
 
         if self.parent is None:

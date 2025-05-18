@@ -15,7 +15,7 @@ class BidsDataset():
     def __init__(self, root:str = Path.cwd()):
         self.children = {}
         self.root = root
-        self.tree = FileTree(name=root, link=self, is_dir=True, parent=None)
+        self.tree = FileTree(_name=root, link=self, parent=None)
         DatasetCore.dataset = self
         
         self._make_skeletonBIDS()
@@ -40,7 +40,7 @@ class BidsDataset():
             tObj = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties, is_dir=is_dir)
             self.tree.addPath(tObj.name, tObj, is_dir)
 
-        print("hello")
+        print(self.tree.children)
             
         return
 
