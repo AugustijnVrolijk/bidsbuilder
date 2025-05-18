@@ -1,44 +1,24 @@
-tools and scripts to convert data from the ASPEN database at UMC utrecht into a BIDS friendly format
+wrapBIDS is a library facilitating the creation and manipulation of BIDS approved datasets via pythonic wrappers of all required files and metadata.
 
+wrapBIDS interprets the bids schema (https://github.com/bids-standard/bids-specification/tree/master/src/schema) using the bidsschematools library.
 
-Input: -Github BIDS schema, YAML format so machine readable, can be used to define classes, requirments and options etc...
+The interpreted schema enables quick retrieval of required metadata when adding data, wrapBIDS complements this by adding a system of hooks based on schema selectors and checks, enabling dynamic changing of required metadata linked to schema dependencies.
 
-        Kinds of data:
-            - Raw data (in unknown format) -> use MNE-BIDS tools to convert
-            - Data complementing raw data (JSON sidecars) 
-            - Unknown data -> must be manually filled in (authors, readme, etc...)
+Base classes are added to support core functions such as json sidecars, tabular data files, paths from entities and more.
 
-UI:
+All features can be reached via the use of a BidsDataset object, which integrates all other modules to allow for an easily modifiable and customisable dataset wrapper.
 
-    Let you choose paths, for raw data /sidecar jsons.
-    have mapping dictionaries to allow for automatic conversion of data under different "key" names to the required ones
-    (i.e. in editable config).
-    Options to select and write down unknown data that must be manually filled in.
+Currently features:
+    Tree representation of folder for retrieval of objects via their paths
+    Interpreter for schema selectors and checks
+    Base classes for common files
 
+Future features:
+    Base classes for data files
+    Configuration for auto-completing metadata
+    Advanced tools for bulk completion of metadata parameters
+    conversion of raw data to bids-approved formats
 
-FILES HAVE:
-    core files (and their fields)
-
-    deriv files
-        (comprise of entities - name)
-        (accompanied by json sidecar - fields)
-
-    raw files:
-        (comprise of entities - name)
-        (accompanied by json sidecar - fields)
-
-
-SCHEMA: using bidsschematools
-    - objects : descriptions for pretty much everything you need (files, what they do, entities, etc..)
-    - rules : the nitty gritty stuff, whether stuff is required, what entities it needs etc...
-            - files: describes the requirements for files, as well as entities, datatypes extensions etc...
-
-
-Create a dataset Tree. 
-Can build it from rules/directories.yaml to describe core files / folders.
-Inate tree structure to allow for backwards and forwards parsing for inheritance of METADATA
-
-When a "dataset" is created, all the required directories / files are created, from rules/files/common/core etc.. 
-with options for their metadata.  
-Options are added to add raw data. Then this is parsed through its specific file type modality/entity etc... updating relevant core files.
+Possible future features:
+    web-based UI to easily modify and interact with datasets without needing to use Python
 
