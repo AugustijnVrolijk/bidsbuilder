@@ -4,17 +4,14 @@ allowing for object retrieval via the fileTree
 """
 
 import os
-import attrs
 import stat
 import posixpath
 
 from attrs import define, field
 from typing import Union, TYPE_CHECKING
 from pathlib import Path
-from functools import cached_property
 from typing_extensions import Self
 from wrapBIDS.modules.coreModule import DatasetCore
-
 
 if TYPE_CHECKING:
     from wrapBIDS.bidsDataset import BidsDataset
@@ -105,20 +102,13 @@ class UserFileEntry:
         _stat = self.stat(follow_symlinks=False)
         return stat.S_ISLNK(_stat.st_mode)
 
-    #cannot be @cachedproperty as the name can change in which case the cached version is incorred
+    #cannot be @cachedproperty as the name can change in which case the cached version is incorrect
     @property
     def relative_path(self) -> str:
-        """The path of the current FileTree, relative to the root.
-
-        Follows parents up to the root and joins with POSIX separators (/).
-        Directories include trailing slashes for simpler matching.
-        """
-        if self.parent is None:
-            return ''
-
+        #The path of the current FileTree, relative to the root.
         return posixpath.join(self.parent.relative_path, self.name)
     
-    #cannot be @cachedproperty as the name can change in which case the cached version is incorred
+    #cannot be @cachedproperty as the name can change in which case the cached version is incorrect
     @property
     def path(self):
         return self.parent.path / self.name
@@ -177,7 +167,9 @@ class FileTree(UserFileEntry):
             }
         return self
 
-    def fetch(self, relpath: os.PathLike) -> 'DatasetCore':
+    def fetch(self, relpath: os.PathLike, reference:bool=True) -> 'DatasetCore':
+        #reference tells whether to return the UserFileEntry|FileTree instance or its linked DatasetCore instance 
+
         relpath = Path(relpath)
         parts = relpath.parts
         if len(parts) == 0:
@@ -189,9 +181,10 @@ class FileTree(UserFileEntry):
         child = self.children.get(parts[0])
 
         if len(parts) == 1:
-            return child.link
-        else:
-            return child.fetch(posixpath.join(*parts[1:]))
+            if reference:
+                return child.link
+            return child
+        return child.fetch(posixpath.join(*parts[1:]), reference)
 
     def __contains__(self, relpath: os.PathLike) -> bool:
         parts = Path(relpath).parts
@@ -200,7 +193,7 @@ class FileTree(UserFileEntry):
         child = self.children.get(parts[0], False)
         return child and (len(parts) == 1 or posixpath.join(*parts[1:]) in child)
 
-    #cannot be @cachedproperty as the name can change in which case the cached version is incorred
+    #cannot be @cachedproperty as the name can change in which case the cached version is incorrect
     @property
     def relative_path(self) -> str:
         """The path of the current FileTree, relative to the root.
@@ -213,7 +206,7 @@ class FileTree(UserFileEntry):
 
         return posixpath.join(self.parent.relative_path,f'{self.name}/')
     
-    #cannot be @cachedproperty as the name can change in which case the cached version is incorred
+    #cannot be @cachedproperty as the name can change in which case the cached version is incorrect
     @property
     def path(self) -> Path:
 

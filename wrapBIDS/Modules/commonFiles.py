@@ -95,13 +95,19 @@ class coreFolder(coreFileWrapper):
 
 @convertPath
 def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> coreFileWrapper:
-    """Resolve by looking at extensions"""
+    """Resolve by looking at extensions
+    
+    Should look into something more robust
+    """
+
+
     extensions = kwargs.get("extensions", [])
     if is_dir:
         cls = coreFolder
     elif ".json" in extensions and len(extensions) == 1:
         cls = coreJSON
-    elif "json" in extensions and ".tsv" in extensions:
+    #this seems to be enough logic at the moment, but could look at only considering if .tsv is present
+    elif ".json" in extensions and ".tsv" in extensions:
         cls = coreTSV
     else:
         cls = coreUnknown

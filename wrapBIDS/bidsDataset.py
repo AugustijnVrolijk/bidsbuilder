@@ -24,7 +24,6 @@ class BidsDataset():
 
         #Exceptions for scans, sessions and phenotype
         exceptions = ["scans", "sessions", "phenotype"]
-        print("init make skeletons")
         for file in self.schema.rules.files.common.core.keys():
             if file in exceptions:
                 continue
@@ -37,7 +36,7 @@ class BidsDataset():
             if tabFile in exceptions:
                 continue
             is_dir = isDir(self.schema.rules.directories.raw, tabFile)
-            tObj = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties, is_dir=is_dir)
+            tObj = resolveCoreClassType(**self.schema.rules.files.common.tables[tabFile]._properties, is_dir=is_dir)
             self.tree.addPath(tObj.name, tObj, is_dir)
 
         print(self.tree.children)
