@@ -3,7 +3,11 @@ import re
 from decorator import decorator
 from collections.abc import Callable
 from typing import Any, Tuple, Dict
-from wrapBIDS.modules.interpretedFunctions import *
+
+from wrapBIDS.interpreter.evaluation_funcs import *
+from wrapBIDS.interpreter.fields_funcs import *
+from wrapBIDS.interpreter.operator_funcs import *
+
 
 class selectorHook():
     def __init__(self, func:Callable):
@@ -13,16 +17,18 @@ class selectorHook():
     def __call__(self, *args, **kwargs):
         return self.objectiveFunc(*args, **kwargs)
 
-class selFunc():
+class selectorFunc():
     def __init__(self, func:str, fglobals:dict, flocals:dict):
         if not isinstance(func, str) or not isinstance(fglobals, dict) or not isinstance(flocals, dict):
-            raise TypeError(f"Wrong type for selFunc func: {func}\nglobals: {fglobals}\nlocals: {flocals}")
+            raise TypeError(f"Wrong type for selectorFunc func: {func}\nglobals: {fglobals}\nlocals: {flocals}")
         
         self.func = func
         self.fglobals = fglobals
         self.flocals = flocals
 
     def __call__(self) -> Any:
+
+        
         return eval(self.func, globals=self.fglobals, locals=self.flocals)
 
 
@@ -48,38 +54,55 @@ class SelectorParser():
     }
 
     EVAL_FUNCS = {
-    "count":count,
-    "exists":exists,
-    "index":index,
-    "intersects":intersects,
-    "allequal":allequal,
-    "length":length, #consider using default len
-    "match":match,
-    "max":max,
-    "min":min,
-    "sorted":sorted,
-    "substr":substr,
-    "type":nType,
+    "count":notImplemented,
+    "exists":notImplemented,
+    "index":notImplemented,
+    "intersects":notImplemented,
+    "allequal":notImplemented,
+    "length":notImplemented, #consider using default len
+    "match":notImplemented,
+    "max":notImplemented,
+    "min":notImplemented,
+    "sorted":notImplemented,
+    "substr":notImplemented,
+    "type":notImplemented,
     }
 
+    #considered using eval and then not needing to implement operator funcs
+    #but this seemed slower and slightly unsafe with the possibility of interpreting
+    #a function which imported global vars
     OPERATOR_FUNCS = {
-        #"==":"==",
-        #"!=":"!=",
-        #"<":"<",
-        #">":">",
-        #"<=":"<=",
-        #">=":">=",
-        #"in":"in", #look at __contains__() in datasetCore then don't need to interpret function differently
-        "!":"not",
-        "&&":"and",
-        "||":"or",
-        #".":"",
-        #"[]":"",
-        #"-":"-",
-        #"*":"*",
-        #"/":"/"
+        "==":notImplemented,
+        "!=":notImplemented,
+        "<":notImplemented,
+        ">":notImplemented,
+        "<=":notImplemented,
+        ">=":notImplemented,
+        "in":notImplemented, #look at __contains__() in datasetCore then don't need to interpret function differently
+        "!":notImplemented,
+        "&&":notImplemented,
+        "||":notImplemented,
+        #".":notImplemented, special case where we will directly have logic to check for this in _resolve_field
+        #"[]":notImplemented, special case where we will directly have logic to check for this in _resolve_field
+        "-":notImplemented,
+        "*":notImplemented,
+        "/":notImplemented
         }
     
+    @classmethod
+    def parseSelector(cls, r_selector:str) -> selectorFunc:
+        """Main parser function
+        
+        splits functions into tokens, before assigning each token to the correct function
+        Finally assigns the resolved functions to a callable selectorFunc instance
+        """
+        selector_tokens = cls._smart_split(r_selector)
+        reformated_tokens = cls._reformat_op(selector_tokens)
+        objective_func = cls._make_eval_string(reformated_tokens)
+        fglobals, flocals = cls._getReferences(reformated_tokens)
+        return selectorFunc(objective_func, fglobals, flocals)
+    
+
     @classmethod
     def _reformat_op(cls, raw_str:list[str])-> list[str]:
         reformated = []
@@ -155,37 +178,82 @@ class SelectorParser():
                     fglobals[key] = cls.EVAL_FUNCS[key]
                     flocals.update(cls.parse_function_inputs(token, key))
         return fglobals, flocals
+
+    @classmethod
+    def _resolve_function(cls, s:str) -> tuple[str, list[str]]:
+        assert s.startswith(")")
+
+        function:str
+        raw_arguments:str
+        for i in range(len(s)):
+            if s[i] == "(":
+                function = s[:i]
+                raw_arguments = s[(i+1):]
+                break
+        
+        token_arguments = cls._smart_split(raw_arguments, ",")
+        final_arguments:list = []
+        for token in token_arguments:
+            final_arguments.append(cls._resolve_field(token))
+
+        function = cls.EVAL_FUNCS[function]
+        return (function, final_arguments)
     
     @classmethod
-    def parseSelector(cls, r_selector:str) -> selFunc:
-        selector_tokens = SelectorParser._smart_split(r_selector)
-        reformated_tokens = cls._reformat_op(selector_tokens)
-        objective_func = cls._make_eval_string(reformated_tokens)
-        fglobals, flocals = cls._getReferences(reformated_tokens)
-        return selFunc(objective_func, fglobals, flocals)
-    
-    @staticmethod
-    def _make_eval_string(string_tokens:list) -> str:
-        return " ".join(string_tokens)
+    def _resolve_field(cls, s:str):
+        #case 1: string is a unknown string, defined by ""
+        if s.startswith(('"', "'")) and s.endswith(('"', "'")):
+            return s[1:-1]
+
+        #case 2: string has a .
+        if s.find("."):
+            pass
+        else:
+            return
+        return cls.FIELDS_MAP[s]
 
     @staticmethod
-    def _smart_split(s):
-        tokens = re.findall(r'\w+\(.*?\)|[^\s()]+', s)
-                
+    def _smart_split(s:str, splitter:str=" ") -> list[str]:
+        #split based on whitespace
+        tokens = s.split(splitter)
+
+        #need to merge function calls, list comprehensions and seperate not: "!"
         final_tokens = []
-        for token in tokens:
-            if len(token) > 1:
-                if token[0] == '!' and token[1] != "=":
-                    final_tokens.append(token[0])
-                    final_tokens.append(token[1:])
-                else:
-                    final_tokens.append(token)
-                if token.count("(") != token.count(")"):
-                    raise RuntimeError(f"Bug during regex _smart_split on {s}\n split into: {tokens}")
-            else:
-                final_tokens.append(token)
+        tokenLen = len(tokens)
+        i = 0
+        while i < tokenLen:
+            cur = tokens[i]
+
+            #check if I need to merge function
+            if cur.count("(") != cur.count(")"):
+                cur, new_i = SelectorParser._complete_token(tokens[i:], ["(",")"])
+                i += new_i
+                
+            #check if I need to merge list
+            elif cur.count("[") != cur.count("]"):
+                cur, new_i = SelectorParser._complete_token(tokens[i:], ["[","]"])
+                i += new_i
+
+            #seperate not
+            if cur[0] == '!' and cur[1] != "=":
+                final_tokens.append(cur[0])
+                cur = cur[1:]
+
+            final_tokens.append(cur)
+            i += 1
 
         return final_tokens
+
+    @staticmethod
+    def _complete_token(tokens:list[str], checkval:tuple[str, str]) -> tuple[str, int]:
+
+        cur:str = ""
+        for i in range(len(tokens)):
+            cur += f" {tokens[i]}"
+            if cur.count(checkval[0]) == cur.count(checkval[1]):
+                return cur.strip(), i
+
+        raise IndexError("couldn't complete sequence")
    
 
 def tester():

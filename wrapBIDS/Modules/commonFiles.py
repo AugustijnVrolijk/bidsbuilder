@@ -40,6 +40,15 @@ class coreFileWrapper(DatasetCore):
         if not name:
             raise ValueError(f"stem {name} must be defined as a string representing the path with no extensions")
 
+    @property
+    def name(self) -> str:
+        return self._name
+    
+    @name.setter
+    def name(self, _:str):
+        #can't change names for core files
+        return 
+
     def _getPaths(self):
         paths = []
         if self.extensions:

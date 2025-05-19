@@ -3,14 +3,18 @@ import bidsschematools, bidsschematools.schema
 from pathlib import Path
 
 from wrapBIDS.modules import *
-from wrapBIDS.util.util import checkPath, isDir
+from wrapBIDS.util.util import checkPath, isDir, clearSchema
 from wrapBIDS.util.datasetTree import FileTree
 from wrapBIDS.modules.commonFiles import resolveCoreClassType
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping 
 
 class BidsDataset():
     initialised = False
     schema = bidsschematools.schema.load_schema()
+    schema.pop("meta")
 
     def __init__(self, root:str = Path.cwd()):
         self.children = {}
@@ -19,28 +23,39 @@ class BidsDataset():
         DatasetCore.dataset = self
         
         self._make_skeletonBIDS()
+        self._interpret_skeletonBIDS()
 
     def _make_skeletonBIDS(self):
 
         #Exceptions for scans, sessions and phenotype
         exceptions = ["scans", "sessions", "phenotype"]
-        for file in self.schema.rules.files.common.core.keys():
-            if file in exceptions:
-                continue
-            is_dir = isDir(self.schema.rules.directories.raw, file)
-            tObj = resolveCoreClassType(**self.schema.rules.files.common.core[file]._properties, is_dir=is_dir)
-            #NEED TO UPDATE IT TO GIVE THE NAME RATHER THAN THE STEM
-            self.tree.addPath(tObj.name, tObj, is_dir)
 
-        for tabFile in self.schema.rules.files.common.tables.keys():
-            if tabFile in exceptions:
-                continue
-            is_dir = isDir(self.schema.rules.directories.raw, tabFile)
-            tObj = resolveCoreClassType(**self.schema.rules.files.common.tables[tabFile]._properties, is_dir=is_dir)
-            self.tree.addPath(tObj.name, tObj, is_dir)
+        def _pop_from_schema(schema:'MutableMapping'):
+            toPop = []
+            for file in schema.keys():
+                if file in exceptions:
+                    continue
+                is_dir = isDir(self.schema.rules.directories.raw, file)
+                tObj = resolveCoreClassType(**schema[file]._properties, is_dir=is_dir)
+                #NEED TO UPDATE IT TO GIVE THE NAME RATHER THAN THE STEM
+                self.tree.addPath(tObj.name, tObj, is_dir)
+                toPop.append(file)
+
+            for key in toPop:
+                schema.pop(key)
+                
+        _pop_from_schema(self.schema.rules.files.common.core)
+        clearSchema(self.schema.rules.files.common, "core")
+
+        _pop_from_schema(self.schema.rules.files.common.tables)
+        clearSchema(self.schema.rules.files.common, "tables")
 
         print(self.tree.children)
             
+        return
+
+    def _interpret_skeletonBIDS(self):
+        
         return
 
     def make(self, force=False):
