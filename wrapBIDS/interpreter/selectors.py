@@ -1,12 +1,30 @@
 import re
 
-from decorator import decorator
+from functools import wraps
 from collections.abc import Callable
-from typing import Any, Tuple, Dict
+from typing import Any, Tuple, Union
 
 from wrapBIDS.interpreter.evaluation_funcs import *
 from wrapBIDS.interpreter.fields_funcs import *
 from wrapBIDS.interpreter.operator_funcs import *
+
+def feedListToStr(func):
+    """
+    ensures no clashes between path stem and entities, also converts path into stem and entities for easier downstream parsing
+    """
+    @wraps(func)
+    def wrapper(*args):
+        if isinstance(args[0], list) and len(args) == 1:
+            final = []
+            for sub_str in args[0]:
+                assert isinstance(sub_str, str)
+                if not sub_str:
+                    continue
+                final.append(func(sub_str.strip()))
+            return tuple(final)
+        else:
+            return func(*args)
+    return wrapper
 
 
 class selectorHook():
@@ -28,7 +46,7 @@ class selectorFunc():
 
     def __call__(self) -> Any:
 
-        
+
         return eval(self.func, globals=self.fglobals, locals=self.flocals)
 
 
@@ -72,21 +90,22 @@ class SelectorParser():
     #but this seemed slower and slightly unsafe with the possibility of interpreting
     #a function which imported global vars
     OPERATOR_FUNCS = {
-        "==":notImplemented,
-        "!=":notImplemented,
-        "<":notImplemented,
-        ">":notImplemented,
-        "<=":notImplemented,
-        ">=":notImplemented,
-        "in":notImplemented, #look at __contains__() in datasetCore then don't need to interpret function differently
-        "!":notImplemented,
-        "&&":notImplemented,
-        "||":notImplemented,
+        # function, how many arguments from LHS, how many arguments from RHS, enforce all RHS and LHS args equal the set limit
+        "==":(notImplemented,1,1,False),
+        "!=":(notImplemented,1,1,False),
+        "<":(notImplemented,1,1,False),
+        ">":(notImplemented,1,1,False),
+        "<=":(notImplemented,1,1,False),
+        ">=":(notImplemented,1,1,False),
+        "in":(notImplemented,1,1,False), #look at __contains__() in datasetCore then don't need to interpret function differently
+        "!":(notImplemented,0,1,False),
+        "&&":(notImplemented,1,1,True),
+        "||":(notImplemented,1,1,True),
         #".":notImplemented, special case where we will directly have logic to check for this in _resolve_field
         #"[]":notImplemented, special case where we will directly have logic to check for this in _resolve_field
-        "-":notImplemented,
-        "*":notImplemented,
-        "/":notImplemented
+        "-":(notImplemented,1,1,False),
+        "*":(notImplemented,1,1,False),
+        "/":(notImplemented,1,1,False)
         }
     
     @classmethod
@@ -97,91 +116,43 @@ class SelectorParser():
         Finally assigns the resolved functions to a callable selectorFunc instance
         """
         selector_tokens = cls._smart_split(r_selector)
-        reformated_tokens = cls._reformat_op(selector_tokens)
-        objective_func = cls._make_eval_string(reformated_tokens)
-        fglobals, flocals = cls._getReferences(reformated_tokens)
-        return selectorFunc(objective_func, fglobals, flocals)
-    
-
-    @classmethod
-    def _reformat_op(cls, raw_str:list[str])-> list[str]:
-        reformated = []
-        for token in raw_str:
-            if token in cls.OPERATOR_FUNCS.keys():
-                token = cls.OPERATOR_FUNCS[token]
-            reformated.append(token)
-
-        return reformated
+        syntax_tree = cls._build_syntax_tree(selector_tokens)
+        return selectorFunc(syntax_tree)
     
     @classmethod
-    def _find_matching_key(cls, string:str) -> str|None:
-        for key in cls.EVAL_FUNCS.keys():
-            if key in string:
-                return key
-        return None
-
-    @classmethod
-    def parse_function_inputs(cls, func_str: str, key: str) -> dict:
-        if not func_str.startswith(key + "(") or not func_str.endswith(")"):
-            raise ValueError("Function string doesn't start with the expected key.")
-        
-        # Remove the key and outer parentheses
-        inner = func_str[len(key) + 1:-1]
-
-        # Split on commas and strip spaces
-        parts = [part.strip() for part in inner.split(',')]
-
-        flocals = {}
-        for part in parts:
-            if part in cls.FIELDS_MAP.keys():
-                flocals[part] = cls._find_field_ref(part)
-
-        return flocals
-
-    @classmethod
-    def _find_field_ref() -> Any:
-        """
-          PARSE ANY FIELD_MAP KEYS WITHIN THE FUNCTION EVAL STRING:
-                    I.E:    intersects(dataset.modalities, ["pet", "mri"]) NEEDS TO FIND THE REFERENCE TO "dataset.modalities"           
-                """
+    def _build_syntax_tree(cls, tokens):
+        tree = []
+        while len(tree) != 1:
+            for token in tokens:
+                t_token, flag = cls._resolve_token(token)
+                if not flag:
+                    tree.append(t_token)
         return
+
+    @classmethod
+    def _resolve_token(cls, token:str) -> Tuple[Union[list, str], int]:
+        #resolve token and return a flag if it is an operand or operator
+        #flag of 0 is resolved function or field, 1 is unresolved operator
+
+        if "(" in token:
+            assert ")" in token
+            output = cls._resolve_function(token)
+            flag = 0
         
+        elif token in cls.OPERATOR_FUNCS.keys():
+            output = cls.OPERATOR_FUNCS[token]
+            flag = 1
+
+        else:
+            output = cls._resolve_field(token)
+            flag = 0
+        
+        return (output, flag)
+    
     @classmethod
-    def _getReferences(cls, str_tokens:str) -> Tuple[Dict, Dict]:
-        fglobals = {}
-        flocals = {}
-
-        for token in str_tokens:
-            """
-            need to first pre-process token
-            i.e. check if it is a func:
-                get the right function - (careful edge cases, 'sorted(sidecar.VolumeTiming)' returns function = min atm with the simple in)
-                
-            check if func (is there a '(' and ')' pair)
-                if so split on those as well as any spaces and commas inside
-
-                first val is the fglobal value
-
-                rest of values run through find field ref
-
-            find field ref:
-                need to split on . and [] and then process based on that, i.e. if it is present then its a field ref and need to find how to process it based on that dict
-            """
-
-
-            if token in cls.FIELDS_MAP.keys():
-                flocals[token] = cls._find_field_ref(token)
-            else:
-
-                key = cls._find_matching_key(token)
-                if key:
-                    fglobals[key] = cls.EVAL_FUNCS[key]
-                    flocals.update(cls.parse_function_inputs(token, key))
-        return fglobals, flocals
-
-    @classmethod
-    def _resolve_function(cls, s:str) -> tuple[str, list[str]]:
-        assert s.startswith(")")
+    def _resolve_function(cls, s:str) -> Tuple[str, list[str]]:
+        assert s.endswith(")")
+        s = s[:-1]
 
         function:str
         raw_arguments:str
@@ -192,24 +163,33 @@ class SelectorParser():
                 break
         
         token_arguments = cls._smart_split(raw_arguments, ",")
-        final_arguments:list = []
-        for token in token_arguments:
-            final_arguments.append(cls._resolve_field(token))
+        final_arguments:list = cls._resolve_field(token_arguments)
 
         function = cls.EVAL_FUNCS[function]
         return (function, final_arguments)
     
     @classmethod
-    def _resolve_field(cls, s:str):
+    @feedListToStr
+    def _resolve_field(cls, s:str) -> Union[Tuple[Callable, str], Callable,str]:
+        s = s.strip()
         #case 1: string is a unknown string, defined by ""
         if s.startswith(('"', "'")) and s.endswith(('"', "'")):
             return s[1:-1]
 
         #case 2: string has a .
-        if s.find("."):
-            pass
-        else:
-            return
+        if "." in s:
+            tokens = s.split(".")
+            assert len(tokens) == 2
+            return (cls.FIELDS_MAP[tokens[0]], tokens[1])
+        
+        #case 3: string has a []
+        if ("[" in s) and ("]" in s):
+            assert s.startswith('[') and s.endswith(']')
+            s = s[1:-1]
+            tokens = re.split(r"[ ,]", s)
+            return cls._resolve_field(tokens)
+        
+        #final case, its just in the field map
         return cls.FIELDS_MAP[s]
 
     @staticmethod
@@ -245,7 +225,7 @@ class SelectorParser():
         return final_tokens
 
     @staticmethod
-    def _complete_token(tokens:list[str], checkval:tuple[str, str]) -> tuple[str, int]:
+    def _complete_token(tokens:list[str], checkval:Tuple[str, str]) -> Tuple[str, int]:
 
         cur:str = ""
         for i in range(len(tokens)):
