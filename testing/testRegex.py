@@ -72,7 +72,20 @@ def _resolve_function(s:str) -> Tuple[str, list[str]]:
 
     return (function, final_arguments)
 
-strings= {
+strings = {
+    'exists(sidecar.IntendedFor, "subject")':['exists(sidecar.IntendedFor "subject")'],
+    'count(columns.type, "EEG")':['count(columns.type "EEG")'],
+    'intersects(dataset.modalities, ["pet", "mri"])':['intersects(dataset.modalities ["pet" "mri"])'],
+    'length(columns.onset) > 0':['length(columns.onset)', '>', '0'],
+    'sorted(sidecar.VolumeTiming) == sidecar.VolumeTiming':['sorted(sidecar.VolumeTiming)', '==', 'sidecar.VolumeTiming'],
+    'entities.task != "rest"':['entities.task', '!=', '"rest"'],
+    '"Units" in sidecar && sidecar.Units == "mm"':['"Units"', 'in', 'sidecar', '&&', 'sidecar.Units', '==', '"mm"'],
+    '!exists(sidecar.IntendedFor, "subject")':['!', 'exists(sidecar.IntendedFor "subject")'],
+    '!exists(sidecar.IntendedFor, "subject") != False':['!', 'exists(sidecar.IntendedFor "subject")', '!=', 'False'],
+    'index(["i", "j", "k"], axis)':['index(["i" "j" "k"] axis)'],
+}
+
+strings2= {
     'exists(sidecar.IntendedFor, "subject")':['exists(sidecar.IntendedFor, "subject")'],
     'count(columns.type, "EEG")':['count(columns.type, "EEG")'],
     'intersects(dataset.modalities, ["pet", "mri"])':['intersects(dataset.modalities, ["pet", "mri"])'],
@@ -92,9 +105,11 @@ if __name__ == "__main__":
     
     for key, val in strings.items():
         tester = _smart_split(key)
+        print(tester)
         assert tester == val
-
+    """
     for val in funcs:
         tester = _resolve_function(val)
         print(tester)
+    """
 print("hello")
