@@ -102,9 +102,6 @@ class SelectorParser():
     "type":notImplemented,
     }
 
-    #considered using eval and then not needing to implement operator funcs
-    #but this seemed slower and slightly unsafe with the possibility of interpreting
-    #a function which imported global vars
     OPERATOR_FUNCS = {
         # function, how many arguments from LHS, how many arguments from RHS, enforce all RHS and LHS args equal the set limit
         "==":(notImplemented,1,1,False),
@@ -131,6 +128,22 @@ class SelectorParser():
         "/":(notImplemented,1,1,False)
         }
     
+    token_specification = [
+                ('NUMBER',   r'\d+'),                               # Integer
+                ('STRING',   r'"[^"]*"|\'[^\']*\''),                # String literals
+                ('OP',       r'==|!=|<=|>=|\bin\b|[+\-*/\.<>]'),    # Operators
+                ('LOGIC_OP', r'&&|\|\|'),                           # logic Operators
+                ('ID',       r'[A-Za-z_]\w*'),                      # Identifiers
+                ('LPAREN',   r'\('),                                # Left paren
+                ('RPAREN',   r'\)'),                                # Right paren
+                ('LBRACK',   r'\['),                                # Left bracket
+                ('RBRACK',   r'\]'),                                # Right bracket
+                ('SEP',      r'[, \t]+'),                           # Seperator - need to keep it so I can seperate brackets from indexing lists, to list definitions
+                ('NOT',      r'!'),                                 # Not Operator
+                ('MISMATCH', r'.'),                                 # Any other character
+            ]
+    tok_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_specification)
+    tokenizer = re.compile(tok_regex).match    
     @classmethod
     def createSelector(cls, r_selector:list[str]) -> selectorHook:
         """Main parser function
@@ -150,39 +163,96 @@ class SelectorParser():
     
     @classmethod
     def _build_syntax_tree(cls, selector):
+        selector_tokens = cls._parse_tokens(selector)
 
         """
-        iterate, but do a breadth first rather than depth first.
-        Possibly have a stack of nodes to evaluate
+        RECURSIVELY CALL FUNCTIONS IN REVERSE ORDER OF THEIR PRECEDENCE
 
-        FIRST PHASE = PARSE THE SELECTOR INTO A NESTED LIST AND TOKENISE ACCORDING TO GRAMMAR, I.E. LABEL BASED ON FUNCTION (operator, callable, int, str, list, field, etc..)
+        TEMPLATE:
 
-        SECOND PHASE = INTERPRET THE PARSED LIST AND GENERATE THE EVAL NODES OUT OF THEM USING GRAMMAR RULES
+        Func level1():
+            node = level2()
+            while next_token and next_token.type is in level1.accepted_tokens:
+                do some logic, in the case of and/or it would look like:
+                if self.match("AND"):
+                    op = operator.logical_and
+                elif self.match("OR"):
+                    op = operator.logical_or
 
-        """
+                right_hand_side = level2()
+                node = op(node, right_hand_side)
+            return node
 
-        selector_tokens = cls._parse_selector(selector)
+        where self.match looks a bit like
+
+            match(*types):
+                if self.next_token().type in types:
+                    token = self.next_token.value
+                    self.advance()
+                    return token
+                return None
+
+            advance():
+                self.position += 1
+            
+            next_token():
+                return self.tokens[self.position]
+
+        and self has attributes
+            tokens : list of tokens (each token has a type and value)
+            position : where along the list we are
+
         
-        while len(tree) != 1:
-            for i,token in enumerate(tokens):
-                t_token, flag = cls._resolve_token(token)
-                #flag is 1 if it is an operator, and 0 if it is a operand (callable function or field)
-                if not flag:
-                    tree.append(t_token)
-                    continue
-                #unpack tuple for operators
-                t_token, LHS, RHS, enforce = t_token
+        """
 
 
         return
 
     @classmethod
-    def _parse_selector(cls, selector) -> list[Any]:
+    def _parse_tokens(cls, selector:str) -> list[Any]:
+        assert isinstance(selector, str), "_parse_selector needs a string as input"
+
+        pos = 0
+        tokens = []
+        mo = cls.tokenizer(selector)
+        while mo:
+            kind = mo.lastgroup
+            value = mo.group()
+            if kind == 'MISMATCH':
+                raise RuntimeError(f'Unexpected character {value!r} at position {pos}')
+            else:
+                tokens.append((kind, value))
+            pos = mo.end()
+            mo = cls.tokenizer(selector, pos)
+
+        """
+        Consider yielding the token (kind, value) every iteration and using this parser as a generator
+
+        my generator would then call:
+        
+        for token in cls._parse_selector(token):
+            do something with the token (build AST)
+        """
+        return tokens
+
+        """
         tokens = []
         cur_tok = ""
+
+        operators = ['=', '<', '>', '!', '&', '|', '-', '*', '/', '+'] 
+
+        #what to do for "in"? special case for in? have to eat 3 characters in a row
+        #and if the first two are in, and the third is a space then it is an opp
+        
+        special = ['(', ')', '[', ']']
+        integers = ['1','2','3','4','5','6','7','8','9','0']
+        strings = ['"',"'"]
+        char_sep = [" ",","]
+
         for letter in selector:
-            
+            pass
         return
+        """
 
     @classmethod
     def _resolve_token(cls, token:str) -> Tuple[Union[list, str], int]:

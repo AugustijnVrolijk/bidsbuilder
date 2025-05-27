@@ -35,13 +35,6 @@ class UserFileEntry:
 
 
     """
-    TODO: ADD A SETTER FOR NAME, IF NAME CHANGES, 
-    NEED TO CHANGE THE REFERENCE IN IT'S PARENT,
-    I.e update the key to refer to the correct name
-
-    CHECK IF attrs HAS A BETTER WAY OF DOING THIS; ITS POSSIBLE
-    THERE IS AN INBUILT FUNCTION WHICH TRIGGERS ON ATTRIBUTE CHANGES
-    
     on_setattr (Callable | list[Callable] | None | Literal[attrs.setters.NO_OP]) –
       Allows to overwrite the on_setattr setting from attr.s. If left None, the on_setattr value from attr.s is used. 
       Set to attrs.setters.NO_OP to run no setattr hooks for this attribute – regardless of the setting in define().

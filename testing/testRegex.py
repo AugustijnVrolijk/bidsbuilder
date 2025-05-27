@@ -10,6 +10,7 @@ from functools import wraps
 _smart_split = SelectorParser._smart_split
 _complete_token = SelectorParser._complete_token
 
+tester = SelectorParser._parse_tokens
 
 def feedListToStr(func):
     """
@@ -104,9 +105,9 @@ funcs = ['!exists(sidecar.IntendedFor, "subject")',
 if __name__ == "__main__":
     
     for key, val in strings.items():
-        tester = _smart_split(key)
-        print(tester)
-        assert tester == val
+        temp = tester(key)
+        print(temp)
+        #assert tester == val
     """
     for val in funcs:
         tester = _resolve_function(val)
