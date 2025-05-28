@@ -1,5 +1,5 @@
 import re
-
+import operator as op
 from functools import wraps
 from collections.abc import Callable
 from typing import Any, Tuple, Union, TYPE_CHECKING, Optional
@@ -14,8 +14,21 @@ if TYPE_CHECKING:
     from wrapBIDS.modules.coreModule import DatasetCore
 
 class selectorHook():
-    def __init__(self):
-        self.funcs = []
+    @classmethod
+    def from_raw(cls, r_selector:list[str]) -> 'selectorHook':
+
+        funcs = []
+        for selector in r_selector:
+            parser = SelectorParser.from_raw(selector)
+            abstrct_syntax_tree = parser.parse()
+            func = selectorFunc(abstrct_syntax_tree)
+            func.evaluate_static_nodes()
+            funcs.append(func)
+
+        return cls(funcs)
+
+    def __init__(self, funcs):
+        self.funcs = funcs
         return
 
     def __call__(self, *args, **kwargs):
@@ -39,32 +52,50 @@ def feedListOfStr(func):
             return func(*args)
     return wrapper
 
-@dataclass
-class evalNode:
-    val: Any = None #Can be a Callable, str, int, list, etc..
-    args: Union[Any] = None #in the case it is a callable, defines the arguments to give it
-    is_leaf: bool = None 
-    requires_input: bool = None
-    is_callable: bool = None
-    parent: Optional["evalNode"] = None
+@define(slots=True, repr=False)
+class selectorFunc:
+    val: Any = field(repr=True)                                 #Can be a Callable, str, int, list, etc..
+    args: list[Any] = field(repr=True, default=None)            #in the case it is a callable, defines the arguments to give it
+    requires_input: bool = field(repr=False, default=False)     #Whether it needs the input datasetCore instance in the callable function
+    n_required_args: int = field(repr=False, default=0) 
+    is_callable: bool = field(repr=False, default=False) 
 
-@define(slots=True)
-class selectorFunc():
+    def __str__(self):
+        if self.is_callable:
+            msg = ""
+            if self.requires_input:
+                msg = "datasetCore, "
+            for arg in self.args:
+                msg += f"{str(arg)}, "
+            msg = msg[:-2]
+            return f'{str(self.val.__name__)}({msg})'
+        else:
+            return str(self.val)
 
-    func:evalNode = field(repr=False)
-
-    def __call__(self, caller:"DatasetCore") -> Any:
-        return 
-
-    def evaluate_static_nodes(self) -> None:
-        return 
-
-    def _recursive_run(self, func:Callable, args:list[Any]) -> Any:
-        #check if args is a function
-
-        #if it is, reassign args to the output of that call
-        
+    def evaluate_static_nodes(self):
         return
+
+    def __call__(self, *args):
+        if not self.is_callable:
+            return self.val
+        
+        if self.requires_input:
+            final_args = args  
+        else:
+            final_args = []
+ 
+        for arg in self.args:
+            if isinstance(arg, selectorFunc):
+                final_args.append(arg(*args))
+            else:
+                final_args.append(arg)
+
+        return self.val(*final_args)
+
+@dataclass
+class token():
+    val: str
+    kind: str
 
 class SelectorParser():
     FIELDS_MAP = {
@@ -104,28 +135,28 @@ class SelectorParser():
 
     OPERATOR_FUNCS = {
         # function, how many arguments from LHS, how many arguments from RHS, enforce all RHS and LHS args equal the set limit
-        "==":(notImplemented,1,1,False),
-        "!=":(notImplemented,1,1,False),
-        "<":(notImplemented,1,1,False),
-        ">":(notImplemented,1,1,False),
-        "<=":(notImplemented,1,1,False),
-        ">=":(notImplemented,1,1,False),
-        "in":(notImplemented,1,1,False), #look at __contains__() in datasetCore then don't need to interpret function differently
-        "!":(notImplemented,0,1,False),
+        "==":notImplemented,
+        "!=":notImplemented,
+        "<":notImplemented,
+        ">":notImplemented,
+        "<=":notImplemented,
+        ">=":notImplemented,
+        "in":notImplemented, #look at __contains__() in datasetCore then don't need to interpret function differently
+        "!":notImplemented,
         """
-        && and || are "True" as the grammar used in bids schema seems to show that they are conjoiners of seperate expressions
+        && and || as the grammar used in bids schema seems to show that they are conjoiners of seperate expressions
         i.e. '"SliceTiming" == sidecar.Unit || "AcquisitionDuration" in sidecar' refers to:
                    ("SliceTiming" in sidecar) OR ("AcquisitionDuration" in sidecar)
                                          rather than:
                    ("SliceTiming") in (sidecar OR ("AcquisitionDuration" in sidecar))             
         """
-        "&&":(notImplemented,1,1,True),
-        "||":(notImplemented,1,1,True),
+        "&&":notImplemented,
+        "||":notImplemented,
         #".":notImplemented, special case where we will directly have logic to check for this in _resolve_field
         #"[]":notImplemented, special case where we will directly have logic to check for this in _resolve_field
-        "-":(notImplemented,1,1,False),
-        "*":(notImplemented,1,1,False),
-        "/":(notImplemented,1,1,False)
+        "-":notImplemented,
+        "*":notImplemented,
+        "/":notImplemented,
         }
     
     token_specification = [
@@ -139,28 +170,40 @@ class SelectorParser():
                 ('LBRACK',   r'\['),                                # Left bracket
                 ('RBRACK',   r'\]'),                                # Right bracket
                 ('SEP',      r'[, \t]+'),                           # Seperator - need to keep it so I can seperate brackets from indexing lists, to list definitions
-                ('NOT',      r'!'),                                 # Not Operator
+                ('NOT',      r'!'),                                 # Not Operator - placed below OP so that != can be matched first
                 ('MISMATCH', r'.'),                                 # Any other character
             ]
     tok_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_specification)
     tokenizer = re.compile(tok_regex).match    
-    @classmethod
-    def createSelector(cls, r_selector:list[str]) -> selectorHook:
-        """Main parser function
-        
-        splits functions into tokens, before assigning each token to the correct function
-        Finally assigns the resolved functions to a callable selectorFunc instance
-        """
-
-        final = selectorHook()
-        for selector in r_selector:
-            syntax_tree = cls._build_syntax_tree(selector)
-            func = selectorFunc(syntax_tree)
-            func.evaluate_static_nodes()
-            final.funcs.append(func)
-
-        return final
+    nanToken = token(None, 'NONE')
     
+    @classmethod
+    def from_raw(cls, selector:str) -> 'SelectorParser':
+        """
+        used to instantiate a selectorParser from a raw string,
+        so tokenises the input before returning an instance with the correct tokens
+        """
+        assert isinstance(selector, str), "from_raw needs a string as input"
+
+        pos = 0
+        tokens = []
+        mo = cls.tokenizer(selector)
+        while mo:
+            kind = mo.lastgroup
+            value = mo.group()
+            if kind == 'MISMATCH':
+                raise RuntimeError(f'Unexpected character {value!r} at position {pos}')
+            else:
+                tokens.append(token(val=value, kind=kind))
+            pos = mo.end()
+            mo = cls.tokenizer(selector, pos)
+        return cls(tokens)
+ 
+    def __init__(self, tokens:list):
+        self.tokens:list = tokens
+        self.position:int = 0
+        self.total:int = len(tokens)
+
     @classmethod
     def _build_syntax_tree(cls, selector):
         selector_tokens = cls._parse_tokens(selector)
@@ -207,170 +250,63 @@ class SelectorParser():
 
 
         return
+    
+    @property
+    def cur_token(self) -> token:
+        if self.position < self.total:
+            return self.tokens[self.position]   
+        return SelectorParser.nanToken
+    
+    @property
+    def prev_token(self) -> token:
+        return self.tokens[self.position - 1]
 
-    @classmethod
-    def _parse_tokens(cls, selector:str) -> list[Any]:
-        assert isinstance(selector, str), "_parse_selector needs a string as input"
+    def match(self, *types) -> token:
+        if self.cur_token.val and (self.cur_token.kind in types):
+            self.advance()
+            return self.cur_token
+        raise SyntaxError(f"Expected {types} but got {self.cur_token.kind}")
 
-        pos = 0
-        tokens = []
-        mo = cls.tokenizer(selector)
-        while mo:
-            kind = mo.lastgroup
-            value = mo.group()
-            if kind == 'MISMATCH':
-                raise RuntimeError(f'Unexpected character {value!r} at position {pos}')
+    def advance(self):
+        self.position += 1
+        if self.cur_token.kind == 'SEP':
+            self.advance()
+
+    def parse(self) -> selectorFunc:
+        if self.position != 0:
+            assert self.position == self.total, "SelectorParser did not fully parse selector"
+            raise BufferError("Can only parse tokens once")
+        return self.logic_term()
+    
+    def logic_term(self):
+        node = self.additive_term()
+        while self.cur_token.kind == "LOGIC_OP":
+            if self.cur_token.val == "&&":
+                val = op.and_
+            elif self.cur_token.val == "||":
+                val = op.or_
             else:
-                tokens.append((kind, value))
-            pos = mo.end()
-            mo = cls.tokenizer(selector, pos)
+                raise RuntimeError(f"Unable to match token {self.cur_token} to logic_term()")
+            
+            self.match("LOGIC_OP")
 
-        """
-        Consider yielding the token (kind, value) every iteration and using this parser as a generator
+            right = self.additive_term()
+            node = selectorFunc(val=val, 
+                                args=[node, right],
+                                requires_input=False,
+                                is_callable=True,
+                                n_required_args=2)
+        return node
 
-        my generator would then call:
+    def additive_term(self):
+        pass
+
+    def factor(self):
         
-        for token in cls._parse_selector(token):
-            do something with the token (build AST)
-        """
-        return tokens
-
-        """
-        tokens = []
-        cur_tok = ""
-
-        operators = ['=', '<', '>', '!', '&', '|', '-', '*', '/', '+'] 
-
-        #what to do for "in"? special case for in? have to eat 3 characters in a row
-        #and if the first two are in, and the third is a space then it is an opp
-        
-        special = ['(', ')', '[', ']']
-        integers = ['1','2','3','4','5','6','7','8','9','0']
-        strings = ['"',"'"]
-        char_sep = [" ",","]
-
-        for letter in selector:
-            pass
-        return
-        """
-
-    @classmethod
-    def _resolve_token(cls, token:str) -> Tuple[Union[list, str], int]:
-        #resolve token and return a flag if it is an operand or operator
-        #flag of 0 is resolved function or field, 1 is unresolved operator
-
-        if "(" in token:
-            assert ")" in token
-            output = cls._resolve_function(token)
-            flag = 0
-        
-        elif token in cls.OPERATOR_FUNCS.keys():
-            output = cls.OPERATOR_FUNCS[token]
-            flag = 1
-
-        else:
-            output = cls._resolve_field(token)
-            flag = 0
-        
-        return (output, flag)
-    
-    @classmethod
-    def _resolve_function(cls, s:str) -> Tuple[str, list[str]]:
-        assert s.endswith(")")
-        s = s[:-1]
-
-        function:str
-        raw_arguments:str
-        for i in range(len(s)):
-            if s[i] == "(":
-                function = s[:i]
-                raw_arguments = s[(i+1):]
-                break
-        
-        token_arguments = cls._smart_split(raw_arguments, ",")
-        final_arguments:list = cls._resolve_field(token_arguments)
-
-        function = cls.EVAL_FUNCS[function]
-        return (function, final_arguments)
-    
-    @classmethod
-    @feedListOfStr
-    def _resolve_field(cls, s:str) -> Tuple[Union[Tuple[Callable, str], Callable,str], Union[Tuple[int, int], int]]:
-        s = s.strip()
-        #case 1: string is a unknown string, defined by ""
-        if s.startswith(('"', "'")) and s.endswith(('"', "'")):
-            """
-            Need to check for integers and covnvert them accordingly
-            """
-            return s[1:-1]
-
-        #case 2: string has a .
-        if "." in s:
-            tokens = s.split(".")
-            assert len(tokens) == 2
-            return ((cls.FIELDS_MAP[tokens[0]], tokens[1]), ())
-        
-        #case 3: string has a []
-        if ("[" in s) and ("]" in s):
-            assert s.startswith('[') and s.endswith(']')
-            s = s[1:-1]
-            tokens = re.split(r"[ ,]", s)
-            return cls._resolve_field(tokens)
-        
-        #final case, its just in the field map
-        return cls.FIELDS_MAP[s]
-
-    @staticmethod
-    def _smart_split(s:str) -> list[str]:
-        #split based on whitespace
-        tokens = re.split(r'[ ,]+', s)
-        #need to merge function calls, list comprehensions and seperate not: "!"
-        final_tokens = []
-        tokenLen = len(tokens)
-        i = 0
-        while i < tokenLen:
-            cur = tokens[i]
-
-            #seperate not
-            if cur[0] == '!' and cur[1] != "=":
-                final_tokens.append(cur[0])
-                cur = cur[1:]
-
-            #check if I need to merge function
-            if cur.count("(") != cur.count(")"):
-                cur, new_i = SelectorParser._complete_token(cur, tokens[(i+1):], ["(",")"])
-                i += new_i
-                
-            #check if I need to merge list
-            elif cur.count("[") != cur.count("]"):
-                cur, new_i = SelectorParser._complete_token(tokens[(i+1):], ["[","]"])
-                i += new_i
-
-            final_tokens.append(cur)
-            i += 1
-
-        return final_tokens
-
-    @staticmethod
-    def _complete_token(cur:str, tokens:list[str], checkval:Tuple[str, str]) -> Tuple[str, int]:
-        #MERGES TOKENS BACK TO ENSURE () or [] ARE KEPT TOGETHER
-        #MERGES USING ' ', whitespace
-        for i in range(len(tokens)):
-            cur += f" {tokens[i]}"
-            if cur.count(checkval[0]) == cur.count(checkval[1]):
-                return cur.strip(), (i+1)
-
-        raise IndexError("couldn't complete sequence")
-
-    @classmethod
-    def _check_syntax(cls, token:str):
-        """ CAN CHECK FOR SYNTAX; ENSURE THAT TOKENS HAVE EQUAL NUMBERS OF ( to ), or [ to ] etc.., IF A STRING HAS 'before and After' """
-        return    
-def tester():
-    return
+        pass
 
 if __name__ == "__main__":
-    tester()
+    pass
 
 """
 OPERATOR_FUNCS = {
@@ -394,3 +330,4 @@ OPERATOR_FUNCS = {
 """
 
 
+True and False or False and True

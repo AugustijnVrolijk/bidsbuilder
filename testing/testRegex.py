@@ -6,11 +6,7 @@ from typing import Tuple, Union
 from collections.abc import Callable
 from functools import wraps
 
-
-_smart_split = SelectorParser._smart_split
-_complete_token = SelectorParser._complete_token
-
-tester = SelectorParser._parse_tokens
+tester = SelectorParser.from_raw
 
 def feedListToStr(func):
     """
@@ -30,51 +26,9 @@ def feedListToStr(func):
             return func(*args)
     return wrapper
 
-@feedListToStr
-def _resolve_field(s:str) -> Union[Tuple[Callable, str], Callable,str]:
-    #case 1: string is a unknown string, defined by ""
-    s = s.strip()
-    
-    if s.startswith(('"', "'")) and s.endswith(('"', "'")):
-        return s[1:-1]
-
-    #case 2: string has a .
-    if "." in s:
-        tokens = s.split(".")
-        assert len(tokens) == 2
-        return (tokens[0].strip(), tokens[1].strip())
-    
-    #case 3: string has a []
-    if ("[" in s) and ("]" in s):
-        assert s.startswith('[') and s.endswith(']')
-        s = s[1:-1]
-        tokens = re.split(r"[ ,]", s)
-        return _resolve_field(tokens)
-    
-    #final case, its just in the field map
-    return "hehehe"
-
-def _resolve_function(s:str) -> Tuple[str, list[str]]:
-    assert s.endswith(")")
-    s = s[:-1]
-
-    function:str
-    raw_arguments:str
-    for i in range(len(s)):
-        if s[i] == "(":
-            function = s[:i]
-            raw_arguments = s[(i+1):]
-            break
-    
-    token_arguments = _smart_split(raw_arguments, ",")
-    final_arguments:list = []
-    for token in token_arguments:
-        final_arguments.append(_resolve_field(token))
-
-    return (function, final_arguments)
 
 strings = {
-    'exists(sidecar.IntendedFor, "subject")':['exists(sidecar.IntendedFor "subject")'],
+    'exists(sidecar.IntendedFor", "subject")':['exists(sidecar.IntendedFor "subject")'],
     'count(columns.type, "EEG")':['count(columns.type "EEG")'],
     'intersects(dataset.modalities, ["pet", "mri"])':['intersects(dataset.modalities ["pet" "mri"])'],
     'length(columns.onset) > 0':['length(columns.onset)', '>', '0'],
@@ -106,7 +60,7 @@ if __name__ == "__main__":
     
     for key, val in strings.items():
         temp = tester(key)
-        print(temp)
+        print(temp.tokens)
         #assert tester == val
     """
     for val in funcs:
