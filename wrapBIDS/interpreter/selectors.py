@@ -191,8 +191,9 @@ class SelectorParser():
         return syntax_tree
     
     LOGIC_OPS = {
-        "&&":op.and_,
-        "||":op.or_,
+        "&&":lambda a, b: a and b, #possibly look at defining a small function, as currently 
+        "||":lambda a, b: a or b,  #calling .__name__ on the handle returns <lambda>
+
     }
 
     def logic_term(self):
@@ -202,12 +203,11 @@ class SelectorParser():
         #THIS ENFORCES DETERMINISTIC BEHAVIOUR AND FORCES USER TO DEFINE COMBINATIONS
         #OF AND & OR USING (parentheses)
         if self.cur_token.kind == "LOGIC_OP":
+            val = self.LOGIC_OPS[self.cur_token.val]
             if self.cur_token.val == "&&":
-                val = op.and_
                 cur_type = "&&"
                 other = "||"
             elif self.cur_token.val == "||":
-                val = op.or_
                 cur_type = "||"
                 other = "&&"
             else:
@@ -304,7 +304,6 @@ class SelectorParser():
                                 n_required_args=2)
         
         return node
-
 
     OPERATOR_FUNCS = {
         "!":op.not_,
