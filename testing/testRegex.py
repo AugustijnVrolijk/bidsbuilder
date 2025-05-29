@@ -31,7 +31,7 @@ strings2= {
     'index(["i", "j", "k"], axis)':['index(["i", "j", "k"], axis)'],
 }
 
-funcs = ["1 + 5 +3"]
+funcs = ["1 + 5 +3", "3*6 && False"]
 
 if __name__ == "__main__":
     for exp in funcs:

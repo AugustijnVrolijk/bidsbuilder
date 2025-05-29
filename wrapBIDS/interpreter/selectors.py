@@ -104,67 +104,6 @@ class SelectorParser():
     It includes a from_raw() method enabling tokenisation and parsing from the raw string expression
     """
 
-    FIELDS_MAP = {
-    "schema": notImplemented,
-    "dataset": notImplemented,
-    "subject": notImplemented,
-    "path": notImplemented,
-    "entities": notImplemented,
-    "datatype": notImplemented,
-    "suffix": notImplemented,
-    "extension": notImplemented,
-    "modality": notImplemented,
-    "sidecar": notImplemented,
-    "associations": notImplemented,
-    "columns": notImplemented,
-    "json": notImplemented,
-    "gzip": notImplemented,
-    "nifti_header": notImplemented,
-    "ome": notImplemented,
-    "tiff": notImplemented,
-    }
-
-    EVAL_FUNCS = {
-    "count":notImplemented,
-    "exists":notImplemented,
-    "index":notImplemented,
-    "intersects":notImplemented,
-    "allequal":notImplemented,
-    "length":notImplemented, #consider using default len
-    "match":notImplemented,
-    "max":notImplemented,
-    "min":notImplemented,
-    "sorted":notImplemented,
-    "substr":notImplemented,
-    "type":notImplemented,
-    }
-
-    OPERATOR_FUNCS = {
-        # function, how many arguments from LHS, how many arguments from RHS, enforce all RHS and LHS args equal the set limit
-        "==":notImplemented,
-        "!=":notImplemented,
-        "<":notImplemented,
-        ">":notImplemented,
-        "<=":notImplemented,
-        ">=":notImplemented,
-        "in":notImplemented, #look at __contains__() in datasetCore then don't need to interpret function differently
-        "!":notImplemented,
-        """
-        && and || as the grammar used in bids schema seems to show that they are conjoiners of seperate expressions
-        i.e. '"SliceTiming" == sidecar.Unit || "AcquisitionDuration" in sidecar' refers to:
-                   ("SliceTiming" in sidecar) OR ("AcquisitionDuration" in sidecar)
-                                         rather than:
-                   ("SliceTiming") in (sidecar OR ("AcquisitionDuration" in sidecar))             
-        """
-        "&&":notImplemented,
-        "||":notImplemented,
-        #".":notImplemented, special case where we will directly have logic to check for this in _resolve_field
-        #"[]":notImplemented, special case where we will directly have logic to check for this in _resolve_field
-        "-":notImplemented,
-        "*":notImplemented,
-        "/":notImplemented,
-        }
-    
     token_specification = [
                 ('NUMBER',   r'\d+'),                               # Integer
                 ('STRING',   r'"[^"]*"|\'[^\']*\''),                # String literals
@@ -212,53 +151,6 @@ class SelectorParser():
         self.position:int = 0
         self.total:int = len(tokens)
 
-    @classmethod
-    def _build_syntax_tree(cls, selector):
-        selector_tokens = cls._parse_tokens(selector)
-
-        """
-        RECURSIVELY CALL FUNCTIONS IN REVERSE ORDER OF THEIR PRECEDENCE
-
-        TEMPLATE:
-
-        Func level1():
-            node = level2()
-            while next_token and next_token.type is in level1.accepted_tokens:
-                do some logic, in the case of and/or it would look like:
-                if self.match("AND"):
-                    op = operator.logical_and
-                elif self.match("OR"):
-                    op = operator.logical_or
-
-                right_hand_side = level2()
-                node = op(node, right_hand_side)
-            return node
-
-        where self.match looks a bit like
-
-            match(*types):
-                if self.next_token().type in types:
-                    token = self.next_token.value
-                    self.advance()
-                    return token
-                return None
-
-            advance():
-                self.position += 1
-            
-            next_token():
-                return self.tokens[self.position]
-
-        and self has attributes
-            tokens : list of tokens (each token has a type and value)
-            position : where along the list we are
-
-        
-        """
-
-
-        return
-    
     @property
     def cur_token(self) -> token:
         if self.position < self.total:
@@ -298,6 +190,11 @@ class SelectorParser():
 
         return syntax_tree
     
+    LOGIC_OPS = {
+        "&&":op.and_,
+        "||":op.or_,
+    }
+
     def logic_term(self):
         node = self.additive_term()
 
@@ -333,18 +230,23 @@ class SelectorParser():
 
         return node
     
+    EQ_OPS = {
+        "==":op.eq,
+        "!=":op.ne,
+        "<":op.lt,
+        ">":op.gt,
+        "<=":op.le,
+        ">=":op.ge,
+        "in":notImplemented, #look at __contains__() in datasetCore then don't need to interpret function differently
+    }
+
     def equality_term(self):
         node = self.additive_term()
 
         #if instead of while as only a single comparator in a row is accepted: A == B <= C will not be interpreted and result in an error
         if self.cur_token.kind == "EQ_OP":
-            if self.cur_token.val == "+":
-                val = op.eq
-            elif self.cur_token.val == "-":
-                val = op.sub
-            else:
-                raise RuntimeError(f"Unable to match token {self.cur_token} to additive_term()")
-            
+            val = self.EQ_OPS[self.cur_token.val]
+
             self.match("EQ_OP")
             right = self.additive_term()
             node = selectorFunc(val=val, 
@@ -353,22 +255,24 @@ class SelectorParser():
                                 is_callable=True,
                                 n_required_args=2)
         
+        #If second chained comparator is found, throws an error
         if self.cur_token.kind == "EQ_OP":
             raise ValueError(f"Error parsing {self.cur_token} - Comparisons cannot be chained")
 
         return node
 
+    ADD_OPS = {
+        "-":op.sub,
+        "+":op.add,
+    }
+
     def additive_term(self):
         node = self.mult_term()
 
+        #chained according to pemdas from left to right (used for -)
         while self.cur_token.kind == "ADD_OP":
-            if self.cur_token.val == "+":
-                val = op.add
-            elif self.cur_token.val == "-":
-                val = op.sub
-            else:
-                raise RuntimeError(f"Unable to match token {self.cur_token} to additive_term()")
-            
+            val = self.ADD_OPS[self.cur_token.val]
+
             self.match("ADD_OP")
             right = self.mult_term()
             node = selectorFunc(val=val, 
@@ -379,18 +283,18 @@ class SelectorParser():
                 
         return node
 
+    MULT_OPS = {
+        "*":op.mul,
+        "/":op.truediv,
+    }
+
     def mult_term(self):
         node = self.primary()
 
         #chained according to PEMDAS from left to right
         while self.cur_token.kind == "MULT_OP":
-            if self.cur_token.val == "*":
-                val = op.mul
-            elif self.cur_token.val == "/":
-                val = op.truediv
-            else:
-                raise RuntimeError(f"Unable to match token {self.cur_token} to additive_term()")
-            
+            val = self.MULT_OPS[self.cur_token.val]
+
             self.match("MULT_OP")
             right = self.primary()
             node = selectorFunc(val=val, 
@@ -399,8 +303,50 @@ class SelectorParser():
                                 is_callable=True,
                                 n_required_args=2)
         
-        
         return node
+
+
+    OPERATOR_FUNCS = {
+        "!":op.not_,
+        "-":op.neg,
+        ".":notImplemented,
+        "[":notImplemented,
+        }
+    
+    FIELDS_MAP = {
+    "schema": notImplemented,
+    "dataset": notImplemented,
+    "subject": notImplemented,
+    "path": notImplemented,
+    "entities": notImplemented,
+    "datatype": notImplemented,
+    "suffix": notImplemented,
+    "extension": notImplemented,
+    "modality": notImplemented,
+    "sidecar": notImplemented,
+    "associations": notImplemented,
+    "columns": notImplemented,
+    "json": notImplemented,
+    "gzip": notImplemented,
+    "nifti_header": notImplemented,
+    "ome": notImplemented,
+    "tiff": notImplemented,
+    }
+
+    EVAL_FUNCS = {
+    "count":notImplemented,
+    "exists":notImplemented,
+    "index":notImplemented,
+    "intersects":notImplemented,
+    "allequal":notImplemented,
+    "length":notImplemented, #consider using default len
+    "match":notImplemented,
+    "max":notImplemented,
+    "min":notImplemented,
+    "sorted":notImplemented,
+    "substr":notImplemented,
+    "type":notImplemented,
+    }
 
     def primary(self):
         
@@ -419,12 +365,7 @@ if __name__ == "__main__":
 
 """
 OPERATOR_FUNCS = {
-    '==': operator.eq,
-    '!=': operator.ne,
-    '>': operator.gt,
-    '<': operator.lt,
-    '>=': operator.ge,
-    '<=': operator.le,
+    
     'in':"",
     "!":"",
     "&&":"",
