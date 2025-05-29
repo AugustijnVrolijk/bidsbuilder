@@ -98,6 +98,12 @@ class token():
     kind: str
 
 class SelectorParser():
+    """
+    Selector Parser is a recursive descent parser to interpret BIDS schema logic into executable python functions
+
+    It includes a from_raw() method enabling tokenisation and parsing from the raw string expression
+    """
+
     FIELDS_MAP = {
     "schema": notImplemented,
     "dataset": notImplemented,
@@ -162,7 +168,9 @@ class SelectorParser():
     token_specification = [
                 ('NUMBER',   r'\d+'),                               # Integer
                 ('STRING',   r'"[^"]*"|\'[^\']*\''),                # String literals
-                ('OP',       r'==|!=|<=|>=|\bin\b|[+\-*/\.<>]'),    # Operators
+                ('EQ_OP',    r'==|!=|<=|>=|\bin\b|[\.<>]'),         # Equality operators
+                ('ADD_OP',   r'[+\-]'),                             # Additive operators
+                ('MULT_OP',  r'[*/]'),                              # Multiplicative operators
                 ('LOGIC_OP', r'&&|\|\|'),                           # logic Operators
                 ('ID',       r'[A-Za-z_]\w*'),                      # Identifiers
                 ('LPAREN',   r'\('),                                # Left paren
@@ -261,10 +269,17 @@ class SelectorParser():
     def prev_token(self) -> token:
         return self.tokens[self.position - 1]
 
-    def match(self, *types) -> token:
-        if self.cur_token.val and (self.cur_token.kind in types):
+    @property
+    def next_token(self) -> token:
+        if (self.position + 1) < self.total:
+            return self.tokens[(self.position+1)]
+        return SelectorParser.nanToken
+
+    def match(self, *types) -> Any:
+        cur = self.cur_token
+        if cur.val and (cur.kind in types):
             self.advance()
-            return self.cur_token
+            return cur.val
         raise SyntaxError(f"Expected {types} but got {self.cur_token.kind}")
 
     def advance(self):
@@ -276,34 +291,128 @@ class SelectorParser():
         if self.position != 0:
             assert self.position == self.total, "SelectorParser did not fully parse selector"
             raise BufferError("Can only parse tokens once")
-        return self.logic_term()
+        
+        syntax_tree = self.logic_term()
+        if self.position != self.total:
+            raise IndexError("Wasn't able to fully parse input expression")
+
+        return syntax_tree
     
     def logic_term(self):
         node = self.additive_term()
-        while self.cur_token.kind == "LOGIC_OP":
+
+        #USE IF HERE AND WHILE AFTER
+        #THIS ENFORCES DETERMINISTIC BEHAVIOUR AND FORCES USER TO DEFINE COMBINATIONS
+        #OF AND & OR USING (parentheses)
+        if self.cur_token.kind == "LOGIC_OP":
             if self.cur_token.val == "&&":
                 val = op.and_
+                cur_type = "&&"
+                other = "||"
             elif self.cur_token.val == "||":
                 val = op.or_
+                cur_type = "||"
+                other = "&&"
             else:
                 raise RuntimeError(f"Unable to match token {self.cur_token} to logic_term()")
-            
-            self.match("LOGIC_OP")
 
+            #CAN MATCH MULTIPLE OF THE SAME TYPE DETERMINISTICALLY, A AND B AND C, is always the same
+            #similarly, A OR B OR C IS ALWAYS THE SAME; BUT A AND B OR C IS DIFFERENT IF 
+            # INTERPRETED (A AND B) OR C - or - A AND (B OR C)            
+            while self.cur_token.val == cur_type:
+                self.match("LOGIC_OP")
+                right = self.additive_term()
+                node = selectorFunc(val=val, 
+                                    args=[node, right],
+                                    requires_input=False,
+                                    is_callable=True,
+                                    n_required_args=2)
+        
+            if self.cur_token.val == other:
+                raise ValueError(f"Error parsing {self.cur_token} - To chain multiple logical operators use parentheses to define the order")
+
+        return node
+    
+    def equality_term(self):
+        node = self.additive_term()
+
+        #if instead of while as only a single comparator in a row is accepted: A == B <= C will not be interpreted and result in an error
+        if self.cur_token.kind == "EQ_OP":
+            if self.cur_token.val == "+":
+                val = op.eq
+            elif self.cur_token.val == "-":
+                val = op.sub
+            else:
+                raise RuntimeError(f"Unable to match token {self.cur_token} to additive_term()")
+            
+            self.match("EQ_OP")
             right = self.additive_term()
             node = selectorFunc(val=val, 
                                 args=[node, right],
                                 requires_input=False,
                                 is_callable=True,
                                 n_required_args=2)
+        
+        if self.cur_token.kind == "EQ_OP":
+            raise ValueError(f"Error parsing {self.cur_token} - Comparisons cannot be chained")
+
         return node
 
     def additive_term(self):
-        pass
+        node = self.mult_term()
 
-    def factor(self):
+        while self.cur_token.kind == "ADD_OP":
+            if self.cur_token.val == "+":
+                val = op.add
+            elif self.cur_token.val == "-":
+                val = op.sub
+            else:
+                raise RuntimeError(f"Unable to match token {self.cur_token} to additive_term()")
+            
+            self.match("ADD_OP")
+            right = self.mult_term()
+            node = selectorFunc(val=val, 
+                                args=[node, right],
+                                requires_input=False,
+                                is_callable=True,
+                                n_required_args=2)
+                
+        return node
+
+    def mult_term(self):
+        node = self.primary()
+
+        #chained according to PEMDAS from left to right
+        while self.cur_token.kind == "MULT_OP":
+            if self.cur_token.val == "*":
+                val = op.mul
+            elif self.cur_token.val == "/":
+                val = op.truediv
+            else:
+                raise RuntimeError(f"Unable to match token {self.cur_token} to additive_term()")
+            
+            self.match("MULT_OP")
+            right = self.primary()
+            node = selectorFunc(val=val, 
+                                args=[node, right],
+                                requires_input=False,
+                                is_callable=True,
+                                n_required_args=2)
         
-        pass
+        
+        return node
+
+    def primary(self):
+        
+        if self.cur_token.kind == "NUMBER":
+            val = self.match("NUMBER")
+            return int(val)
+        
+        if self.cur_token.kind == "STRING":
+            val = self.match("STRING")
+            return val
+        
+
 
 if __name__ == "__main__":
     pass
