@@ -2,52 +2,57 @@ from typing import Any
 
 
 def count(arg:list, val:Any) -> int:
-    return
+    return notImplemented()
 
 def exists(arg:str|list, rule:str) -> int:
     val_rules = ["dataset", "subject", "stimuli", "file", "bids-uri"]
     if rule not in val_rules:
         raise ValueError(f"{rule} not a valid rules, please see https://bidsschematools.readthedocs.io/en/latest/description.html#the-exists-function")
-    return
+    
+    return notImplemented()
 
 def index():
 
-    return
+    return notImplemented()
 
 def intersects():
 
-    return
+    return notImplemented()
 
 def allequal():
 
-    return
+    return notImplemented()
 
 def length():
 
-    return
+    return notImplemented()
 
 def match():
 
-    return
+    return notImplemented()
 
 def max():
 
-    return
+    return notImplemented()
 
 def min():
 
-    return
+    return notImplemented()
 
 def sorted():
 
-    return
+    return notImplemented()
 
 def substr():
 
-    return
+    return notImplemented()
 
 def nType():
 
-    return
+    return notImplemented()
+
+def notImplemented(*args, **kwargs):
+    raise NotImplementedError()
 
 __all__ = ["count", "exists", "index", "intersects", "allequal", "length", "match", "max", "min", "sorted", "substr", "nType"]
+

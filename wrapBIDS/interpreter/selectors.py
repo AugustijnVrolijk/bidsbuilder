@@ -68,7 +68,7 @@ class selectorFunc:
             return True
         return False
 
-    def __call__(self, *args:DatasetCore) -> Any:
+    def __call__(self, *args:'DatasetCore') -> Any:
         if not self.is_callable:
             return self.val
         
@@ -184,8 +184,8 @@ class SelectorParser():
         return syntax_tree
     
     LOGIC_OPS = {
-        "&&":lambda a, b: a and b, #possibly look at defining a small function, as currently 
-        "||":lambda a, b: a or b,  #calling .__name__ on the handle returns <lambda>
+        "&&":op_and, #possibly look at defining a small function, as currently 
+        "||":op_or,  #calling .__name__ on the handle returns <lambda>
     }
 
     def logic_term(self):
@@ -228,7 +228,7 @@ class SelectorParser():
         ">":op.gt,
         "<=":op.le,
         ">=":op.ge,
-        "in":notImplemented, #look at __contains__() in datasetCore then don't need to interpret function differently
+        "in":contains, #look at __contains__() in datasetCore then don't need to interpret function differently
     }
 
     def equality_term(self):
@@ -314,8 +314,8 @@ class SelectorParser():
             return self.postfix_term()
         
     POSTFIX_OPS = {
-        ".":notImplemented,
-        "[":notImplemented,     
+        ".":get_property,
+        "[":get_list_index,     
     }
 
     def postfix_term(self):
@@ -347,38 +347,38 @@ class SelectorParser():
         return node
 
     FIELDS_MAP = {
-    "schema": notImplemented,
-    "dataset": notImplemented,
-    "subject": notImplemented,
-    "path": notImplemented,
-    "entities": notImplemented,
-    "datatype": notImplemented,
-    "suffix": notImplemented,
-    "extension": notImplemented,
-    "modality": notImplemented,
-    "sidecar": notImplemented,
-    "associations": notImplemented,
-    "columns": notImplemented,
-    "json": notImplemented,
-    "gzip": notImplemented,
-    "nifti_header": notImplemented,
-    "ome": notImplemented,
-    "tiff": notImplemented,
+    "schema": schema,
+    "dataset": dataset,
+    "subject": subject,
+    "path": path,
+    "entities": entities,
+    "datatype": datatype,
+    "suffix": suffix,
+    "extension": extension,
+    "modality": modality,
+    "sidecar": sidecar,
+    "associations": associations,
+    "columns": columns,
+    "json": json,
+    "gzip": gzip,
+    "nifti_header": nifti_header,
+    "ome": ome,
+    "tiff": tiff,
     }
 
     EVAL_FUNCS = {
-    "count":notImplemented,
-    "exists":notImplemented,
-    "index":notImplemented,
-    "intersects":notImplemented,
-    "allequal":notImplemented,
-    "length":notImplemented, #consider using default len
-    "match":notImplemented,
-    "max":notImplemented,
-    "min":notImplemented,
-    "sorted":notImplemented,
-    "substr":notImplemented,
-    "type":notImplemented,
+    "count":count,
+    "exists":exists,
+    "index":index,
+    "intersects":intersects,
+    "allequal":allequal,
+    "length":length, #consider using default len
+    "match":match,
+    "max":max,
+    "min":min,
+    "sorted":sorted,
+    "substr":substr,
+    "type":nType,
     }
 
     def primary(self):
@@ -406,7 +406,7 @@ class SelectorParser():
             while self.cur_token.val and (self.cur_token.kind != "RBRACK"):
                 args.append(self.additive_term())
             self.match("RBRACK")
-            return selectorFunc(val=list, # list is wrong, this will break as the arguments will be passed in as list(arg1, arg2, ...)
+            return selectorFunc(val=wrap_list, # list is wrong, this will break as the arguments will be passed in as list(arg1, arg2, ...)
                                 #need to change it to a custom function which builds a list from a series of inputs
                                 #can't wrap the args in another [] as need to recurse through the arguments to see if they need to be executed
                                 args=args,  

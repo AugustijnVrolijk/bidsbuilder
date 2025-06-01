@@ -34,6 +34,7 @@ strings2= {
 funcs = ["1 + 5 +3-4*6-7+6", "3*6 && 1"]
 
 if __name__ == "__main__":
+    """
     for key in funcs:
         print(key)
         temp = tester(key)
@@ -48,11 +49,11 @@ if __name__ == "__main__":
     for key,val in strings.items():
         print(key)
         temp = tester(key)
-        print(temp.tokens)
+        #print(temp.tokens)
         final = temp.parse()
         print(final)
         #print(final())
-    
+    """
     for key, val in strings.items():
         temp = tester(key)
         print(temp.tokens)
@@ -62,4 +63,3 @@ if __name__ == "__main__":
         tester = _resolve_function(val)
         print(tester)
     """
-print("hello")
