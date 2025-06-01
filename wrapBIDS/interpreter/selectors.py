@@ -34,33 +34,14 @@ class selectorHook():
     def __call__(self, *args, **kwargs):
         return all(func(*args, **kwargs) for func in self.funcs)
 
-def feedListOfStr(func):
-    """
-    expands list to feed them as single values to function
-    """
-    @wraps(func)
-    def wrapper(*args):
-        if isinstance(args[0], list) and len(args) == 1:
-            final = []
-            for sub_str in args[0]:
-                assert isinstance(sub_str, str)
-                if not sub_str:
-                    continue
-                final.append(func(sub_str.strip()))
-            return tuple(final)
-        else:
-            return func(*args)
-    return wrapper
-
 @define(slots=True, repr=False)
 class selectorFunc:
     val: Any = field(repr=True)                                 #Can be a Callable, str, int, list, etc..
-    args: list[Any] = field(repr=True, default=None)            #in the case it is a callable, defines the arguments to give it
+    args: list[Any] = field(repr=True, default=[])            #in the case it is a callable, defines the arguments to give it
     requires_input: bool = field(repr=False, default=False)     #Whether it needs the input datasetCore instance in the callable function
-    n_required_args: int = field(repr=False, default=0) 
     is_callable: bool = field(repr=False, default=False) 
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.is_callable:
             msg = ""
             if self.requires_input:
@@ -72,10 +53,22 @@ class selectorFunc:
         else:
             return str(self.val)
 
-    def evaluate_static_nodes(self):
-        return
+    def evaluate_static_nodes(self) -> bool:
+        args_static = True
+        for i,func in enumerate(self.args):
+            if isinstance(func, selectorFunc):
+                if func.evaluate_static_nodes():
+                    self.args[i] = func()
+                else:
+                    args_static = False
 
-    def __call__(self, *args):
+        if args_static and (not self.requires_input):
+            self.val = self.__call__()
+            self.is_callable = False
+            return True
+        return False
+
+    def __call__(self, *args:DatasetCore) -> Any:
         if not self.is_callable:
             return self.val
         
@@ -103,11 +96,10 @@ class SelectorParser():
 
     It includes a from_raw() method enabling tokenisation and parsing from the raw string expression
     """
-
     token_specification = [
                 ('NUMBER',   r'\d+'),                               # Integer
                 ('STRING',   r'"[^"]*"|\'[^\']*\''),                # String literals
-                ('EQ_OP',    r'==|!=|<=|>=|\bin\b|[\.<>]'),         # Equality operators
+                ('EQ_OP',    r'==|!=|<=|>=|\bin\b|[<>]'),           # Equality operators
                 ('ADD_OP',   r'[+\-]'),                             # Additive operators
                 ('MULT_OP',  r'[*/]'),                              # Multiplicative operators
                 ('LOGIC_OP', r'&&|\|\|'),                           # logic Operators
@@ -117,7 +109,8 @@ class SelectorParser():
                 ('LBRACK',   r'\['),                                # Left bracket
                 ('RBRACK',   r'\]'),                                # Right bracket
                 ('SEP',      r'[, \t]+'),                           # Seperator - need to keep it so I can seperate brackets from indexing lists, to list definitions
-                ('NOT',      r'!'),                                 # Not Operator - placed below OP so that != can be matched first
+                ('UNARY',    r'!'),                                 # Unary ops - placed below OP so that != can be matched first
+                ('DOT',      r'\.'),                                # Subscription operator
                 ('MISMATCH', r'.'),                                 # Any other character
             ]
     tok_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_specification)
@@ -193,11 +186,10 @@ class SelectorParser():
     LOGIC_OPS = {
         "&&":lambda a, b: a and b, #possibly look at defining a small function, as currently 
         "||":lambda a, b: a or b,  #calling .__name__ on the handle returns <lambda>
-
     }
 
     def logic_term(self):
-        node = self.additive_term()
+        node = self.equality_term()
 
         #USE IF HERE AND WHILE AFTER
         #THIS ENFORCES DETERMINISTIC BEHAVIOUR AND FORCES USER TO DEFINE COMBINATIONS
@@ -218,12 +210,11 @@ class SelectorParser():
             # INTERPRETED (A AND B) OR C - or - A AND (B OR C)            
             while self.cur_token.val == cur_type:
                 self.match("LOGIC_OP")
-                right = self.additive_term()
+                right = self.equality_term()
                 node = selectorFunc(val=val, 
                                     args=[node, right],
                                     requires_input=False,
-                                    is_callable=True,
-                                    n_required_args=2)
+                                    is_callable=True)
         
             if self.cur_token.val == other:
                 raise ValueError(f"Error parsing {self.cur_token} - To chain multiple logical operators use parentheses to define the order")
@@ -252,8 +243,7 @@ class SelectorParser():
             node = selectorFunc(val=val, 
                                 args=[node, right],
                                 requires_input=False,
-                                is_callable=True,
-                                n_required_args=2)
+                                is_callable=True)
         
         #If second chained comparator is found, throws an error
         if self.cur_token.kind == "EQ_OP":
@@ -278,8 +268,7 @@ class SelectorParser():
             node = selectorFunc(val=val, 
                                 args=[node, right],
                                 requires_input=False,
-                                is_callable=True,
-                                n_required_args=2)
+                                is_callable=True)
                 
         return node
 
@@ -289,29 +278,74 @@ class SelectorParser():
     }
 
     def mult_term(self):
-        node = self.primary()
+        node = self.unary_term()
 
         #chained according to PEMDAS from left to right
         while self.cur_token.kind == "MULT_OP":
             val = self.MULT_OPS[self.cur_token.val]
 
             self.match("MULT_OP")
-            right = self.primary()
+            right = self.unary_term()
             node = selectorFunc(val=val, 
                                 args=[node, right],
                                 requires_input=False,
-                                is_callable=True,
-                                n_required_args=2)
+                                is_callable=True)
         
         return node
 
-    OPERATOR_FUNCS = {
+    UNARY_OPS = {
         "!":op.not_,
         "-":op.neg,
-        ".":notImplemented,
-        "[":notImplemented,
+        "+":op.pos,
         }
     
+    def unary_term(self):
+
+        if self.cur_token.kind in ["UNARY","ADD_OP"]:
+            val = self.UNARY_OPS[self.cur_token.val]
+
+            self.match("UNARY", "ADD_OP")
+            right = self.unary_term() #right associative
+            return selectorFunc(val=val, 
+                                args=[right],
+                                requires_input=False,
+                                is_callable=True)
+        else:
+            return self.postfix_term()
+        
+    POSTFIX_OPS = {
+        ".":notImplemented,
+        "[":notImplemented,     
+    }
+
+    def postfix_term(self):
+        node = self.primary()
+
+        #chained according to PEMDAS from left to right
+        while self.cur_token.val in self.POSTFIX_OPS.keys() and self.prev_token.kind == "ID":
+            cur = self.cur_token
+            if cur.val == ".":
+                self.match("DOT")
+                #INITIALLY TRIED right = self.primary() BUT:
+                #Some subfields have the same name as the functions, i.e.
+                #columns.type, where type refers to a parameter of the columns object,
+                #Not the type() function
+                right = self.match("ID")
+
+            else:
+                self.match("LBRACK")
+                right = self.primary()
+                self.match("RBRACK")
+
+            val = self.POSTFIX_OPS[cur.val]
+
+            node = selectorFunc(val=val, 
+                                args=[node, right],
+                                requires_input=False,
+                                is_callable=True)
+        
+        return node
+
     FIELDS_MAP = {
     "schema": notImplemented,
     "dataset": notImplemented,
@@ -348,35 +382,61 @@ class SelectorParser():
     }
 
     def primary(self):
-        
-        if self.cur_token.kind == "NUMBER":
+        cur = self.cur_token
+
+        if cur.kind == "NUMBER":
             val = self.match("NUMBER")
             return int(val)
         
-        if self.cur_token.kind == "STRING":
+        elif cur.kind == "STRING":
             val = self.match("STRING")
             return val
         
-
+        elif cur.kind == "LPAREN":
+            self.match("LPAREN")
+            node = self.logic_term()
+            self.match("RPAREN")
+            return node
+        
+        elif cur.kind == "LBRACK":
+            assert self.prev_token.kind != "ID", f"parsing logic thinks {cur} is a list, but context suggests it's an index"
+            args = []
+            self.match("LBRACK")
+            #can have multiple items
+            while self.cur_token.val and (self.cur_token.kind != "RBRACK"):
+                args.append(self.additive_term())
+            self.match("RBRACK")
+            return selectorFunc(val=list, # list is wrong, this will break as the arguments will be passed in as list(arg1, arg2, ...)
+                                #need to change it to a custom function which builds a list from a series of inputs
+                                #can't wrap the args in another [] as need to recurse through the arguments to see if they need to be executed
+                                args=args,  
+                                requires_input=False,
+                                is_callable=True)
+        
+        elif cur.kind == "ID":
+            self.match("ID")
+            if cur.val in self.FIELDS_MAP.keys():
+                return selectorFunc(val=self.FIELDS_MAP[cur.val],
+                                    requires_input=True,
+                                    is_callable=True)
+                 
+            elif cur.val in self.EVAL_FUNCS.keys():
+                self.match("LPAREN")
+                args = []
+                #can have multiple arguments
+                while self.cur_token.val and (self.cur_token.kind != "RPAREN"):
+                    args.append(self.additive_term())
+                self.match("RPAREN")
+                return selectorFunc(val=self.EVAL_FUNCS[cur.val],
+                                    args=args,
+                                    requires_input=False,
+                                    is_callable=True)
+            
+            else:
+                return cur.val
+        
+        else:
+            raise TypeError(f"Unable to match token {cur}")
 
 if __name__ == "__main__":
     pass
-
-"""
-OPERATOR_FUNCS = {
-    
-    'in':"",
-    "!":"",
-    "&&":"",
-    "||":"",
-    ".":"",
-    "[]":"",
-    "+":operator.add,
-    "-":operator.sub,
-    "*":operator.mul,
-    "/":operator.truediv,
-    }
-"""
-
-
-True and False or False and True

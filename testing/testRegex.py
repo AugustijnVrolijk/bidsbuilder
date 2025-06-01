@@ -34,12 +34,25 @@ strings2= {
 funcs = ["1 + 5 +3-4*6-7+6", "3*6 && 1"]
 
 if __name__ == "__main__":
-    for exp in funcs:
-        temp = tester(exp)
+    for key in funcs:
+        print(key)
+        temp = tester(key)
+        print(temp.tokens)
         final = temp.parse()
         print(final)
         print(final())
+        eval_final = final.evaluate_static_nodes()
+        print(final)
+        print(final())
     """
+    for key,val in strings.items():
+        print(key)
+        temp = tester(key)
+        print(temp.tokens)
+        final = temp.parse()
+        print(final)
+        #print(final())
+    
     for key, val in strings.items():
         temp = tester(key)
         print(temp.tokens)
