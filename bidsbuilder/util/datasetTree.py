@@ -11,10 +11,10 @@ from attrs import define, field
 from typing import Union, TYPE_CHECKING
 from pathlib import Path
 from typing_extensions import Self
-from wrapBIDS.modules.coreModule import DatasetCore
+from bidsbuilder.modules.coreModule import DatasetCore
 
 if TYPE_CHECKING:
-    from wrapBIDS.bidsDataset import BidsDataset
+    from bidsbuilder.bidsDataset import BidsDataset
 
 @define(slots=True)
 class UserFileEntry:

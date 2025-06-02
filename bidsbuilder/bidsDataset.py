@@ -2,10 +2,10 @@ import bidsschematools, bidsschematools.schema
 
 from pathlib import Path
 
-from wrapBIDS.modules import *
-from wrapBIDS.util.util import checkPath, isDir, clearSchema
-from wrapBIDS.util.datasetTree import FileTree
-from wrapBIDS.modules.commonFiles import resolveCoreClassType
+from bidsbuilder.modules import *
+from bidsbuilder.util.util import checkPath, isDir, clearSchema
+from bidsbuilder.util.datasetTree import FileTree
+from bidsbuilder.modules.commonFiles import resolveCoreClassType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

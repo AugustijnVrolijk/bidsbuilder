@@ -1,5 +1,5 @@
-from wrapBIDS.Modules import *
-from wrapBIDS.Modules.agnosticClasses import *
+from bidsbuilder.Modules import *
+from bidsbuilder.Modules.agnosticClasses import *
 """
 21/03/2025 Augustijn Vrolijk
 

@@ -1,27 +1,25 @@
 import re
 import operator as op
-from functools import wraps
-from collections.abc import Callable
-from typing import Any, Tuple, Union, TYPE_CHECKING, Optional
+from typing import Any, TYPE_CHECKING
 
-from wrapBIDS.interpreter.evaluation_funcs import *
-from wrapBIDS.interpreter.fields_funcs import *
-from wrapBIDS.interpreter.operator_funcs import *
+from bidsbuilder.interpreter.evaluation_funcs import *
+from bidsbuilder.interpreter.fields_funcs import *
+from bidsbuilder.interpreter.operator_funcs import *
 from dataclasses import dataclass
 from attrs import define, field
 
 if TYPE_CHECKING:
-    from wrapBIDS.modules.coreModule import DatasetCore
+    from bidsbuilder.modules.coreModule import DatasetCore
 
 class selectorHook():
+
     @classmethod
     def from_raw(cls, r_selector:list[str]) -> 'selectorHook':
-
         funcs = []
         for selector in r_selector:
             parser = SelectorParser.from_raw(selector)
-            abstrct_syntax_tree = parser.parse()
-            func = selectorFunc(abstrct_syntax_tree)
+            abstract_syntax_tree = parser.parse()
+            func = selectorFunc(abstract_syntax_tree)
             func.evaluate_static_nodes()
             funcs.append(func)
 

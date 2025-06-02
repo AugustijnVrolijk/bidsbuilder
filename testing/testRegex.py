@@ -1,7 +1,7 @@
 
 import re
 
-from wrapBIDS.interpreter import SelectorParser
+from bidsbuilder.interpreter import SelectorParser
 
 tester = SelectorParser.from_raw
 

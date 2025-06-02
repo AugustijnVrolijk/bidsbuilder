@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING, Union
-from wrapBIDS.util.categoryDict import catDict
+from bidsbuilder.util.categoryDict import catDict
 
 import attrs
 
 if TYPE_CHECKING:
-    from wrapBIDS.bidsDataset import BidsDataset
-    from wrapBIDS.util.datasetTree import UserFileEntry
+    from bidsbuilder.bidsDataset import BidsDataset
+    from bidsbuilder.util.datasetTree import UserFileEntry
     #from wrapBIDS.util.datasetTree import UserFileEntry
 
 class DatasetCore():
