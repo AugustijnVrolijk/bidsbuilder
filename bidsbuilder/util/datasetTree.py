@@ -198,7 +198,7 @@ class FileTree(UserFileEntry):
         Directories include trailing slashes for simpler matching.
         """
         if self.parent is None:
-            return ''
+            return '/'
 
         return posixpath.join(self.parent.relative_path,f'{self.name}/')
     

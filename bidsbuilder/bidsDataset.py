@@ -1,11 +1,11 @@
-import bidsschematools, bidsschematools.schema
-
 from pathlib import Path
 
 from bidsbuilder.modules import *
 from bidsbuilder.util.util import checkPath, isDir, clearSchema
 from bidsbuilder.util.datasetTree import FileTree
+from bidsbuilder.util.schema import no_cache_load_schema
 from bidsbuilder.modules.commonFiles import resolveCoreClassType
+from bidsbuilder.interpreter.selectors import selectorHook
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 
 class BidsDataset():
     initialised = False
-    schema = bidsschematools.schema.load_schema()
-    schema.pop("meta")
+
+    schema = no_cache_load_schema()
 
     def __init__(self, root:str = Path.cwd()):
         self.root = root
@@ -48,13 +48,18 @@ class BidsDataset():
 
         _pop_from_schema(self.schema.rules.files.common.tables)
         clearSchema(self.schema.rules.files.common, "tables")
-
-        print(self._tree_reference.children)
-            
         return
 
     def _interpret_skeletonBIDS(self):
+        f1 = self.tree.fetch("README")
+        f2 = self.tree.fetch("dataset_description.json")
+        #recursive_interpret(1, self.schema.rules.files.common)
+        print(self.schema.rules.dataset_metadata.dataset_description.selectors.funcs[0])
         
+        print(self.schema.rules.dataset_metadata.dataset_description.selectors(f1))
+        print(self.schema.rules.dataset_metadata.dataset_description.selectors(f2))
+        
+        print("hello")
         return
 
     @property

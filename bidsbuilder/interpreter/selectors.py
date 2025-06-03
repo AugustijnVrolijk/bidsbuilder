@@ -55,10 +55,9 @@ class selectorHook():
         funcs = []
         for selector in r_selector:
             parser = SelectorParser.from_raw(selector)
-            abstract_syntax_tree = parser.parse()
-            func = selectorFunc(abstract_syntax_tree)
-            func.evaluate_static_nodes()
-            funcs.append(func)
+            sel_function = parser.parse()
+            sel_function.evaluate_static_nodes()
+            funcs.append(sel_function)
 
         return cls(funcs)
 
@@ -67,7 +66,7 @@ class selectorHook():
         return
 
     def __call__(self, *args, **kwargs):
-            
+
         #all(func(*args, **kwargs) for func in self.funcs) can be slower
         for func in self.funcs:
             if not func(*args, **kwargs):
@@ -430,7 +429,8 @@ class SelectorParser():
         
         elif cur.kind == "STRING":
             val = self.match("STRING")
-            return val
+            #need to trim outer " " or ' '
+            return val[1:-1]
         
         elif cur.kind == "LPAREN":
             self.match("LPAREN")

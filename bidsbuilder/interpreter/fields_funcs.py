@@ -1,11 +1,10 @@
 import re
 
 from typing import Any, Union, TYPE_CHECKING
-from functools import wraps
 from bidsbuilder.util.datasetTree import FileTree
+from bidsbuilder.modules.coreModule import DatasetCore
 
 if TYPE_CHECKING:
-    from bidsbuilder.modules.coreModule import DatasetCore
     from bidsbuilder.bidsDataset import BidsDataset
 
 def schema():
@@ -17,7 +16,8 @@ def dataset(core:'DatasetCore') -> 'BidsDataset':
 def subject():
     return notImplemented()
 
-def path(core:'DatasetCore') -> str:
+def path(core:DatasetCore) -> str:
+    assert isinstance(core, DatasetCore)
     return core._tree_reference.relative_path
 
 def entities():
