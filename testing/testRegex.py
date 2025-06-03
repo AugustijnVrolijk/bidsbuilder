@@ -1,6 +1,4 @@
 
-import re
-
 from bidsbuilder.interpreter import SelectorParser
 
 tester = SelectorParser.from_raw

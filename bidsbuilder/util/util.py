@@ -1,7 +1,6 @@
 import os
 from typing import Any, Tuple
 from pathlib import Path
-from bidsbuilder.util.bidsSchema import bidsSchema
 
 from collections.abc import MutableMapping 
 

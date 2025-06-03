@@ -1,19 +1,35 @@
+from typing import Any, TYPE_CHECKING
+from bidsbuilder.interpreter.evaluation_funcs import checkNone
 
-def get_property():
+if TYPE_CHECKING:
+    from bidsbuilder.modules.coreModule import DatasetCore
+
+@checkNone
+def get_property(core:'DatasetCore', prop:str):
+
     return notImplemented()
 
-def get_list_index():
-    return notImplemented()
+@checkNone
+def get_list_index(arr:list, idx:int) -> Any:
+    assert isinstance(arr, list), "arr needs to be of type list for get_list_index"
+    assert isinstance(idx, int), "idx needs to be of type int for get_list_index"
+    assert idx <= len(arr), "index out of bounds"
+
+    return arr[idx]
 
 def wrap_list(*args):
-    return notImplemented()
+    return [*args]
 
-def contains():
-    return notImplemented()
+@checkNone
+def contains(val:str, ref:'DatasetCore') -> bool:
+    #can use the __contains__ 
+    return val in ref
 
+@checkNone
 def op_and(a, b):
     return a and b
 
+@checkNone
 def op_or(a, b):
     return a or b
 

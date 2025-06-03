@@ -11,6 +11,43 @@ from attrs import define, field
 if TYPE_CHECKING:
     from bidsbuilder.modules.coreModule import DatasetCore
 
+"""
+FIELDS_MAP = {
+    "schema": schema,
+    "dataset": dataset,
+    "subject": subject,
+    "path": path,
+    "entities": entities,
+    "datatype": datatype,
+    "suffix": suffix,
+    "extension": extension,
+    "modality": modality,
+    "sidecar": sidecar,
+    "associations": associations,
+    "columns": columns,
+    "json": json,
+    "gzip": gzip,
+    "nifti_header": nifti_header,
+    "ome": ome,
+    "tiff": tiff,
+    }
+
+    EVAL_FUNCS = {
+    "count":count,
+    "exists":exists,
+    "index":index,
+    "intersects":intersects,
+    "allequal":allequal,
+    "length":length, #consider using default len
+    "match":match,
+    "max":max,
+    "min":min,
+    "sorted":sorted,
+    "substr":substr,
+    "type":nType,
+    }
+"""
+
 class selectorHook():
 
     @classmethod
@@ -30,7 +67,12 @@ class selectorHook():
         return
 
     def __call__(self, *args, **kwargs):
-        return all(func(*args, **kwargs) for func in self.funcs)
+            
+        #all(func(*args, **kwargs) for func in self.funcs) can be slower
+        for func in self.funcs:
+            if not func(*args, **kwargs):
+                return False
+        return True
 
 @define(slots=True, repr=False)
 class selectorFunc:
@@ -425,11 +467,19 @@ class SelectorParser():
                 while self.cur_token.val and (self.cur_token.kind != "RPAREN"):
                     args.append(self.additive_term())
                 self.match("RPAREN")
+                if cur.val == "exists":
+                    return selectorFunc(val=self.EVAL_FUNCS[cur.val],
+                                    args=args,
+                                    requires_input=True,
+                                    is_callable=True)
+                
                 return selectorFunc(val=self.EVAL_FUNCS[cur.val],
                                     args=args,
                                     requires_input=False,
                                     is_callable=True)
             
+            elif cur.val == "null":
+                return None
             else:
                 return cur.val
         

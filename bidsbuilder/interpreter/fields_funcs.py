@@ -1,16 +1,24 @@
+import re
+
+from typing import Any, Union, TYPE_CHECKING
+from functools import wraps
+from bidsbuilder.util.datasetTree import FileTree
+
+if TYPE_CHECKING:
+    from bidsbuilder.modules.coreModule import DatasetCore
+    from bidsbuilder.bidsDataset import BidsDataset
 
 def schema():
     return notImplemented()
 
-def dataset():
-    return notImplemented()
+def dataset(core:'DatasetCore') -> 'BidsDataset':
+    return core.dataset
 
 def subject():
     return notImplemented()
 
-def path():
-    #use posixpath(), has the same format that BIDS needs
-    return notImplemented()
+def path(core:'DatasetCore') -> str:
+    return core._tree_reference.relative_path
 
 def entities():
     return notImplemented()

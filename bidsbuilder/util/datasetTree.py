@@ -160,19 +160,22 @@ class FileTree(UserFileEntry):
             }
         return self
 
-    def fetch(self, relpath: os.PathLike, reference:bool=True) -> 'DatasetCore':
+    def fetch(self, relpath: os.PathLike, reference:bool=True) -> Union[None, 'DatasetCore', UserFileEntry]:
         #reference tells whether to return the UserFileEntry|FileTree instance or its linked DatasetCore instance 
 
         relpath = Path(relpath)
         parts = relpath.parts
         if len(parts) == 0:
-            raise ValueError(f"relpath misisng value: {relpath}")
+            raise ValueError(f"relpath missing value: {relpath}")
         
+        #remove the "\\" or "/" from path parts
         if relpath.root:
             parts = parts[1:]
         
         child = self.children.get(parts[0])
-
+        if child is None:
+            return None
+        
         if len(parts) == 1:
             if reference:
                 return child.link

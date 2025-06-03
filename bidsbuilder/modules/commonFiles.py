@@ -1,6 +1,8 @@
 from functools import wraps
 from pathlib import Path
 from bidsbuilder.modules.coreModule import DatasetCore
+from bidsbuilder.modules.metadata import metadataFields
+
 from typing import TYPE_CHECKING
 
 
@@ -28,9 +30,7 @@ def convertPath(cls):
         return cls(*args, **kwargs)
     return wrapper
 
-
-class coreFileWrapper(DatasetCore):
-    
+class corePath(DatasetCore):
     @convertPath
     def __init__(self, level, name = None):
         super().__init__(name, level=level)
@@ -71,7 +71,7 @@ class coreFileWrapper(DatasetCore):
                 Warning(f"no value for recommended field:{key}")
         pass
 
-class coreJSON(coreFileWrapper):
+class coreJSON(corePath):
     def __init__(self, level:str, stem:str, extensions:list):
         #extensions is a list
         self.extension = extensions[0]
@@ -79,7 +79,7 @@ class coreJSON(coreFileWrapper):
         name = stem + self.extension
         super().__init__(level=level, name=name)
     
-class coreTSV(coreFileWrapper):
+class coreTSV(corePath):
     def __init__(self, level:str, stem:str, extensions:list):
         self.extensions = extensions
         self.stem = stem
@@ -87,7 +87,7 @@ class coreTSV(coreFileWrapper):
         name = stem + ".tsv"
         super().__init__(level=level, name=name)
 
-class coreUnknown(coreFileWrapper):
+class coreUnknown(corePath):
     def __init__(self, level:str, stem:str, extensions:list=[]):
         self.extensions = extensions
         self.stem = stem
@@ -97,13 +97,13 @@ class coreUnknown(coreFileWrapper):
             name = stem
         super().__init__(level=level, name=name)
 
-class coreFolder(coreFileWrapper):
+class coreFolder(corePath):
     def __init__(self, level:str, stem:str):
         super().__init__(level=level, name=stem)
 
 
 @convertPath
-def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> coreFileWrapper:
+def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> corePath:
     """Resolve by looking at extensions
     
     Should look into something more robust

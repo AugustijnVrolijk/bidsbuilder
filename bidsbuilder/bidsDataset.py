@@ -17,9 +17,8 @@ class BidsDataset():
     schema.pop("meta")
 
     def __init__(self, root:str = Path.cwd()):
-        self.children = {}
         self.root = root
-        self.tree = FileTree(_name=root, link=self, parent=None)
+        self._tree_reference = FileTree(_name=root, link=self, parent=None)
         DatasetCore.dataset = self
         
         self._make_skeletonBIDS()
@@ -38,7 +37,7 @@ class BidsDataset():
                 is_dir = isDir(self.schema.rules.directories.raw, file)
                 tObj = resolveCoreClassType(**schema[file]._properties, is_dir=is_dir)
                 #NEED TO UPDATE IT TO GIVE THE NAME RATHER THAN THE STEM
-                self.tree.addPath(tObj.name, tObj, is_dir)
+                self._tree_reference.addPath(tObj.name, tObj, is_dir)
                 toPop.append(file)
 
             for key in toPop:
@@ -50,13 +49,17 @@ class BidsDataset():
         _pop_from_schema(self.schema.rules.files.common.tables)
         clearSchema(self.schema.rules.files.common, "tables")
 
-        print(self.tree.children)
+        print(self._tree_reference.children)
             
         return
 
     def _interpret_skeletonBIDS(self):
         
         return
+
+    @property
+    def tree(self):
+        return self._tree_reference
 
     def make(self, force=False):
         self._removeRedundant()
@@ -107,3 +110,5 @@ class BidsDataset():
 
 if __name__ == "__main__":
     test = BidsDataset()
+    test.tree.fetch("/stimuli")
+    print("hello")

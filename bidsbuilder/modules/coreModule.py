@@ -1,7 +1,4 @@
 from typing import TYPE_CHECKING, Union
-from bidsbuilder.util.categoryDict import catDict
-
-import attrs
 
 if TYPE_CHECKING:
     from bidsbuilder.bidsDataset import BidsDataset
