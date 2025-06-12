@@ -1,11 +1,8 @@
-import wrapBIDS
-from wrapBIDS import *
+from bidsbuilder import *
 
 def main():
-    rootStr = r"C:\Users\augus\BCI_Stuff\Aspen\toShare"
-    test1 = BidsDataset(root=rootStr)    
-    test1.make()
-    print("hi")
+    test1 = BidsDataset()    
+
 
 if __name__ == "__main__":
     main()

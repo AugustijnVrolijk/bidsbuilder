@@ -2,11 +2,32 @@ import bidsschematools
 
 from functools import lru_cache
 from bidsschematools.types import Namespace
-from bidsschematools.schema import dereference, flatten_enums, _get_bids_version, _get_schema_version
+from bidsschematools.schema import dereference, flatten_enums, _get_bids_version, _get_schema_version, _find
 from bidsschematools.utils import get_bundled_schema_path
 
 from bidsbuilder.interpreter.selectors import selectorHook
 
+def filter_schema(schema:Namespace):
+    del schema["meta"]
+    del schema.rules["checks"]
+    del schema.rules.files["deriv"]
+    del schema.rules.sidecars["derivatives"]
+    del schema.rules.tabular_data["derivatives"]
+
+def interpret_schema(schema:Namespace):
+    
+    #IMPORTANT, CAN ONLY SET BY DOING schema["KEY"] = , setting by doing schema.key = DOES NOT WORK
+
+    for struct in _find(schema, lambda obj: ("selectors" in obj) or ("checks" in obj)):
+    #for struct in _find(schema, lambda obj: "selectors" in obj):
+        if "selectors" in struct:
+            t_selector = selectorHook.from_raw(struct["selectors"])
+            struct.update({"selectors": t_selector})
+
+        if "checks" in struct:
+            t_selector = selectorHook.from_raw(struct["checks"])
+            struct.update({"checks": t_selector})
+            
 def recursive_interpret(rec_n, schema):
         #recurse into a file, i.e.
         #rec_n = 0 means we have a file, so then loops for each selector block, and then chooses selectors
@@ -60,15 +81,10 @@ def parse_load_schema(schema_path=None):
 
     dereference(schema)
     flatten_enums(schema)
-
+    
     schema["bids_version"] = _get_bids_version(schema_path)
     schema["schema_version"] = _get_schema_version(schema_path)
-    schema.pop("meta")
-    schema.rules["dataset_metadata"] = recursive_interpret(0, schema.rules.dataset_metadata)
-    #IMPORTANT, CAN ONLY SET BY DOING schema["KEY"] = , setting by doing schema.key = DOES NOT WORK
-    #maybe look at making a wrapper class of namespace which fixes the __setitem__
-    #recursive_interpret(1, self.schema.rules.files.common)
 
-    #look at iterating over the whole schema and interpreting all "selectors" 
-
+    filter_schema(schema)
+    interpret_schema(schema)
     return schema

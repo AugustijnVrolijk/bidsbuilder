@@ -1,6 +1,6 @@
 import re
 import operator as op
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Callable
 
 from .evaluation_funcs import *
 from .fields_funcs import *
@@ -11,7 +11,10 @@ from attrs import define, field
 if TYPE_CHECKING:
     from bidsbuilder.modules.coreModule import DatasetCore
 
+@define(slots=True, repr=False)
 class selectorHook():
+    funcs: list[Callable] = field(repr=True)
+    _original: list[str] = field(repr=False)
 
     @classmethod
     def from_raw(cls, r_selector:list[str]) -> 'selectorHook':
@@ -22,12 +25,8 @@ class selectorHook():
             sel_function.evaluate_static_nodes()
             funcs.append(sel_function)
 
-        return cls(funcs)
-
-    def __init__(self, funcs):
-        self.funcs = funcs
-        return
-
+        return cls(funcs, r_selector)
+    
     def __call__(self, *args, **kwargs):
 
         #all(func(*args, **kwargs) for func in self.funcs) can be slower
@@ -354,6 +353,7 @@ class SelectorParser():
     "subject": subject,
     "path": path,
     "entities": entities,
+    "entity": entities, #there are some inconsistencies in the schema, using entity. instead of entities.
     "datatype": datatype,
     "suffix": suffix,
     "extension": extension,
