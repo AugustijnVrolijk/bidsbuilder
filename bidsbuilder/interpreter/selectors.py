@@ -2,51 +2,14 @@ import re
 import operator as op
 from typing import Any, TYPE_CHECKING
 
-from bidsbuilder.interpreter.evaluation_funcs import *
-from bidsbuilder.interpreter.fields_funcs import *
-from bidsbuilder.interpreter.operator_funcs import *
+from .evaluation_funcs import *
+from .fields_funcs import *
+from .operator_funcs import *
 from dataclasses import dataclass
 from attrs import define, field
 
 if TYPE_CHECKING:
     from bidsbuilder.modules.coreModule import DatasetCore
-
-"""
-FIELDS_MAP = {
-    "schema": schema,
-    "dataset": dataset,
-    "subject": subject,
-    "path": path,
-    "entities": entities,
-    "datatype": datatype,
-    "suffix": suffix,
-    "extension": extension,
-    "modality": modality,
-    "sidecar": sidecar,
-    "associations": associations,
-    "columns": columns,
-    "json": json,
-    "gzip": gzip,
-    "nifti_header": nifti_header,
-    "ome": ome,
-    "tiff": tiff,
-    }
-
-    EVAL_FUNCS = {
-    "count":count,
-    "exists":exists,
-    "index":index,
-    "intersects":intersects,
-    "allequal":allequal,
-    "length":length, #consider using default len
-    "match":match,
-    "max":max,
-    "min":min,
-    "sorted":sorted,
-    "substr":substr,
-    "type":nType,
-    }
-"""
 
 class selectorHook():
 
@@ -485,6 +448,3 @@ class SelectorParser():
         
         else:
             raise TypeError(f"Unable to match token {cur}")
-
-if __name__ == "__main__":
-    pass

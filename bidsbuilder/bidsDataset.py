@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from bidsbuilder.modules import *
-from bidsbuilder.util.util import checkPath, isDir, clearSchema
-from bidsbuilder.util.datasetTree import FileTree
-from bidsbuilder.util.schema import no_cache_load_schema
-from bidsbuilder.modules.commonFiles import resolveCoreClassType
-from bidsbuilder.interpreter.selectors import selectorHook
+from .modules import *
+from .util.util import checkPath, isDir, clearSchema
+from .util.datasetTree import FileTree
+from .util.schema import parse_load_schema
+from .modules.commonFiles import resolveCoreClassType
+from .interpreter.selectors import selectorHook
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class BidsDataset():
     initialised = False
 
-    schema = no_cache_load_schema()
+    schema = parse_load_schema()
 
     def __init__(self, root:str = Path.cwd()):
         self.root = root
@@ -54,11 +54,15 @@ class BidsDataset():
         f1 = self.tree.fetch("README")
         f2 = self.tree.fetch("dataset_description.json")
         #recursive_interpret(1, self.schema.rules.files.common)
+        print(f1._tree_reference)
+        print(f2._tree_reference)
         print(self.schema.rules.dataset_metadata.dataset_description.selectors.funcs[0])
-        
+        print(self.schema.rules.dataset_metadata.dataset_authors.selectors.funcs[0])
+        print(self.schema.rules.dataset_metadata.dataset_authors.selectors.funcs[1])
+
         print(self.schema.rules.dataset_metadata.dataset_description.selectors(f1))
         print(self.schema.rules.dataset_metadata.dataset_description.selectors(f2))
-        
+        print(self.schema.rules.files.raw.motion)
         print("hello")
         return
 
