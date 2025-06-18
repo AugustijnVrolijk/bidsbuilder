@@ -20,7 +20,8 @@ class BidsDataset():
         self.root = root
         self._tree_reference = FileTree(_name=root, link=self, parent=None)
         DatasetCore.dataset = self
-        
+        DatasetSubject.dataset = self
+
         self._make_skeletonBIDS()
         self._interpret_skeletonBIDS()
 

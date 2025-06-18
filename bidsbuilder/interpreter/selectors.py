@@ -11,13 +11,23 @@ from attrs import define, field
 if TYPE_CHECKING:
     from bidsbuilder.modules.coreModule import DatasetCore
 
-@define(slots=True, repr=False)
+@define(slots=True, repr=True)
 class selectorHook():
-    funcs: list[Callable] = field(repr=True)
-    _original: list[str] = field(repr=False)
+    funcs: list[Callable] = field(repr=False)
+    _original: list[str] = field(repr=True, alias="_original")
 
+    def __str__(self) -> str:
+        msg = ""
+        for i, val in enumerate(self._original):
+            msg += f"orig: '{val}'\nfunc: {str(self.funcs[i])}"
+
+        return msg
+  
     @classmethod
     def from_raw(cls, r_selector:list[str]) -> 'selectorHook':
+        if not isinstance(r_selector, list):
+            r_selector = [r_selector]
+
         funcs = []
         for selector in r_selector:
             parser = SelectorParser.from_raw(selector)
@@ -37,8 +47,8 @@ class selectorHook():
 
 @define(slots=True, repr=False)
 class selectorFunc:
-    val: Any = field(repr=True)                                 #Can be a Callable, str, int, list, etc..
-    args: list[Any] = field(repr=True, default=[])            #in the case it is a callable, defines the arguments to give it
+    val: Any = field(repr=False)                                 #Can be a Callable, str, int, list, etc..
+    args: list[Any] = field(repr=False, default=[])            #in the case it is a callable, defines the arguments to give it
     requires_input: bool = field(repr=False, default=False)     #Whether it needs the input datasetCore instance in the callable function
     is_callable: bool = field(repr=False, default=False) 
 

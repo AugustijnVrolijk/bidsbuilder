@@ -1,4 +1,5 @@
-from bidsbuilder.modules.coreModule import DatasetCore
-from bidsbuilder.modules.commonFiles import coreJSON, coreTSV, coreUnknown, coreFolder
+from .commonFiles import coreJSON, coreTSV, coreUnknown, coreFolder
+from .coreModule import DatasetCore
+from .subject import DatasetSubject, DatasetSession
 
-__all__ = ["DatasetCore", "coreJSON", "coreTSV", "coreUnknown", "coreFolder"]
+__all__ = ["DatasetCore", "coreJSON", "coreTSV", "coreUnknown", "coreFolder", "DatasetSubject", "DatasetSession"]

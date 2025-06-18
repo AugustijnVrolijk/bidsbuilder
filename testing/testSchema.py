@@ -1,25 +1,25 @@
-import bidsschematools as bst
-import bidsschematools.schema
-import bidsschematools.types
-import re
+from bidsbuilder.util.schema import parse_load_schema
+from bidsbuilder.interpreter.selectors import selectorHook
+schema = parse_load_schema(debug=True)
 
-bidsschematools.schema.filter_schema
+tests = schema.meta.expression_tests
 
-schema = bidsschematools.schema.load_schema()
-keys = schema.keys()
-for key in keys:
-    print(key)
+#print(tests)
+for i, pair in enumerate(tests):
+    expression = pair["expression"]
+    result = pair["result"]
+    print(type(result))
+    print(f"pair: {pair}")
+    #print(f"expresson: {expression}")
+    #print(f"result: {result}")
 
-def printKeys(schema):
-    if not isinstance(schema, bidsschematools.types.namespace.Namespace):
-        print(schema)
-        raw_keys = schema
-    else:
-        keys = schema.keys()
-        raw_keys = []
-        for key in keys:
-            print(key)
-            raw_keys.append(key)
-    return raw_keys
-
+    test = selectorHook.from_raw(expression)
+    #tRes = selectorHook.from_raw(result)
+    print(f"\n{test}")
+    try:
+        res = test()
+        print(res)
+    except Exception as e:
+        print(e)
+    breakpoint()
 

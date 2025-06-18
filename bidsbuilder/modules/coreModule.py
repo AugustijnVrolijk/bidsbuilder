@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Union
+from attrs import define, field
 
 if TYPE_CHECKING:
     from bidsbuilder.bidsDataset import BidsDataset
