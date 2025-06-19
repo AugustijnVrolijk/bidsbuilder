@@ -1,11 +1,9 @@
-import bidsschematools
-
 from functools import lru_cache
 from bidsschematools.types import Namespace
 from bidsschematools.schema import dereference, flatten_enums, _get_bids_version, _get_schema_version, _find
 from bidsschematools.utils import get_bundled_schema_path
 
-from bidsbuilder.interpreter.selectors import selectorHook
+from ..interpreter.selectors import selectorHook
 
 def filter_schema(schema:Namespace):
     del schema["meta"]
@@ -78,7 +76,7 @@ def parse_load_schema(schema_path=None, debug=False):
         raise ValueError(f"objects subdirectory path not found in {schema_path}")
     if not schema.rules:
         raise ValueError(f"rules subdirectory path not found in {schema_path}")
-
+    
     dereference(schema)
     flatten_enums(schema)
     

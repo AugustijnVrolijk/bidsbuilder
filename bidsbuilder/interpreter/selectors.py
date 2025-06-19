@@ -129,11 +129,17 @@ class SelectorParser():
     nanToken = token(None, 'NONE')
     
     @classmethod
-    def from_raw(cls, selector:str) -> 'SelectorParser':
+    def from_raw(cls, selector:str|None) -> 'SelectorParser':
         """
         used to instantiate a selectorParser from a raw string,
         so tokenises the input before returning an instance with the correct tokens
         """
+        #bidsschematools already parses some statements? i think...
+        #using the provided load_schema returns expressions where "null" is already None...
+        #convert this back to ensure no errors in this parser.
+        if selector is None:
+            selector = "null"
+
         assert isinstance(selector, str), "from_raw needs a string as input"
 
         pos = 0

@@ -1,7 +1,5 @@
-import re
 
-from typing import Any, Union, TYPE_CHECKING
-from bidsbuilder.util.datasetTree import FileTree
+from typing import TYPE_CHECKING
 from bidsbuilder.modules.coreModule import DatasetCore
 
 if TYPE_CHECKING:

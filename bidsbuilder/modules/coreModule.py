@@ -2,9 +2,8 @@ from typing import TYPE_CHECKING, Union
 from attrs import define, field
 
 if TYPE_CHECKING:
-    from bidsbuilder.bidsDataset import BidsDataset
-    from bidsbuilder.util.datasetTree import UserFileEntry
-    #from wrapBIDS.util.datasetTree import UserFileEntry
+    from ..bidsDataset import BidsDataset
+    from ..util.datasetTree import UserFileEntry
 
 class DatasetCore():
     dataset:"BidsDataset" = None

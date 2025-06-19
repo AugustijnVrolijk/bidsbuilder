@@ -5,7 +5,6 @@ from .util.util import checkPath, isDir, clearSchema
 from .util.datasetTree import FileTree
 from .util.schema import parse_load_schema
 from .modules.commonFiles import resolveCoreClassType
-from .interpreter.selectors import selectorHook
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
