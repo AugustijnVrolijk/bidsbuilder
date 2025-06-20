@@ -114,6 +114,7 @@ class SelectorParser():
                 ('ADD_OP',   r'[+\-]'),                             # Additive operators
                 ('MULT_OP',  r'[*/]'),                              # Multiplicative operators
                 ('LOGIC_OP', r'&&|\|\|'),                           # logic Operators
+                ('BOOL',     r'false|true'),                               # Bool values
                 ('ID',       r'[A-Za-z_]\w*'),                      # Identifiers
                 ('LPAREN',   r'\('),                                # Left paren
                 ('RPAREN',   r'\)'),                                # Right paren
@@ -404,12 +405,12 @@ class SelectorParser():
 
         if cur.kind == "NUMBER":
             val = self.match("NUMBER")
-            return int(val)
+            return selectorFunc(val=int(val))
         
         elif cur.kind == "STRING":
             val = self.match("STRING")
             #need to trim outer " " or ' '
-            return val[1:-1]
+            return selectorFunc(val=val[1:-1])
         
         elif cur.kind == "LPAREN":
             self.match("LPAREN")
@@ -432,6 +433,13 @@ class SelectorParser():
                                 requires_input=False,
                                 is_callable=True)
         
+        elif cur.kind == "BOOL":
+            self.match("BOOL")
+            if cur.val == "true":
+                return selectorFunc(val=True)
+            elif cur.val == "false":
+                return selectorFunc(val=False)
+            
         elif cur.kind == "ID":
             self.match("ID")
             if cur.val in self.FIELDS_MAP.keys():
@@ -457,9 +465,10 @@ class SelectorParser():
                                     requires_input=False,
                                     is_callable=True)
             
-            elif cur.val == "null":
-                return None
+            elif cur.val == "null":           
+                return selectorFunc(val=None)
             else:
+                raise ValueError(f"unrecognised identifier for {cur.val}")
                 return cur.val
         
         else:
