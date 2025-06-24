@@ -1,0 +1,62 @@
+NEED ACTION
+
+    objects.formats
+        specifies regex to enforce the correct "format", this is useful as it can check for
+        stuff like specific files etc...
+
+        implement a lightweight function or class like selectorParser, but format_checker or something
+        to check it. Can be called from columns, suffixes, metadata, entities etc.. and returns a boolean
+        to see if val respects the given format
+
+    objects.suffixes
+        similar to entities, need to check for unit, max min, anyOf etc..
+
+    object.columns
+        similar to entities need to enforce format, unit, enum, max, min etc..
+
+    objects.metadata
+        similar to entities need to enforce format, enum, max min etc... 
+
+    objects.entities
+        need to fetch format and enum
+        enforce if it is a "label" or "index", and if its enum enforce the possible types...
+
+
+
+POSSIBLE FUTURE:
+
+    add help(<term>) function to return the info
+
+    more integrated help function for modalities, datatypes, 
+
+
+
+SOME ACTION
+
+    objects.enums
+        similar to below.
+
+    objects.files
+        similar to below, maybe look at file_type? integrate it to making files to double check that
+        it is respected
+
+    objects.extensions
+        similar to below.
+
+    objects.datatypes
+        possibly useful to add function to fetch description? overkill to create function wrapper
+        as no checks are needed
+
+    objects.modalities
+        - possibly useful: maybe look at a function which gives the descriptions when asked, 
+        in case someone doesn't quite know the correct modality
+        - NO need to have expensive entity objects which store the description, display name etc...
+
+
+
+NO ACTION
+
+    objects.common_principles:
+        - general terms, could add functionality like a .help(term) to return the definition?
+        no real need to interpret this at all, if people want to find info on what a session is
+        the website will be more informative

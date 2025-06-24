@@ -165,4 +165,3 @@ Inate tree structure to allow for backwards and forwards parsing for inheritance
 When a "dataset" is created, all the required directories / files are created, from rules/files/common/core etc.. 
 with options for their metadata.  
 Options are added to add raw data. Then this is parsed through its specific file type modality/entity etc... updating relevant core files.
-

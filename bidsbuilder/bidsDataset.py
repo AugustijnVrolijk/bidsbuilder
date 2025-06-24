@@ -8,18 +8,31 @@ from .modules.commonFiles import resolveCoreClassType
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import MutableMapping 
+    from bidsschematools.types.namespace import Namespace
 
 class BidsDataset():
+    """
+    At the time of writing: 24/06/2025
+    Dataset needs the following context: 
+
+    required:
+      - dataset_description
+      - tree
+      - ignored
+      - datatypes
+      - modalities
+      - subjects
+    """
     initialised = False
 
-    schema = parse_load_schema()
+    schema:'Namespace' = parse_load_schema()
 
     def __init__(self, root:str = Path.cwd()):
         self.root = root
         self._tree_reference = FileTree(_name=root, link=self, parent=None)
         DatasetCore.dataset = self
         DatasetSubject.dataset = self
+        Entity.schema = BidsDataset.schema.objects.entities
 
         self._make_skeletonBIDS()
         self._interpret_skeletonBIDS()
@@ -29,7 +42,7 @@ class BidsDataset():
         #Exceptions for scans, sessions and phenotype
         exceptions = ["scans", "sessions", "phenotype"]
 
-        def _pop_from_schema(schema:'MutableMapping'):
+        def _pop_from_schema(schema:'Namespace'):
             toPop = []
             for file in schema.keys():
                 if file in exceptions:

@@ -30,3 +30,11 @@ for i, pair in enumerate(tests):
 print(f"passed: {passed}")
 print(f"failed: {failed}")
 print(f"errors: {exception}")
+
+
+"""
+ADD TESTS:
+using schema.meta.context i can assert that the fields have all the required values.
+    Make all possible combos ()
+
+"""

@@ -6,7 +6,13 @@ if TYPE_CHECKING:
 
 @define(slots=True)
 class DatasetSubject():
-    
+    """
+    At the time of writing: 24/06/2025
+    Subject needs the following context: 
+
+    required:
+      - sessions
+    """
     dataset: ClassVar['BidsDataset'] = None
     _n_subjects: ClassVar[int] = 0
     _all_names: ClassVar[set[str]] = set()
@@ -47,4 +53,11 @@ class DatasetSubject():
 
 @define(slots=True)
 class DatasetSession():
+    """
+    At the time of writing: 24/06/2025
+    Session needs the following context: 
+
+    required:
+        - ses_dirs
+    """
     pass

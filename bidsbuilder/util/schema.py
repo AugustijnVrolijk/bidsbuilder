@@ -44,7 +44,7 @@ def recursive_interpret(rec_n, schema):
     return schema
 
 @lru_cache
-def parse_load_schema(schema_path=None, debug=False):
+def parse_load_schema(schema_path=None, debug=False) -> Namespace:
     """Load and Parse the schema into a dictionary.
 
     This function allows the schema, like BIDS itself, to be specified in
