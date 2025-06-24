@@ -30,9 +30,7 @@ class selectorHook():
 
         funcs = []
         for selector in r_selector:
-            parser = SelectorParser.from_raw(selector)
-            sel_function = parser.parse()
-            sel_function.evaluate_static_nodes()
+            sel_function = SelectorParser.from_raw(selector)
             funcs.append(sel_function)
 
         return cls(funcs, r_selector)
@@ -130,16 +128,20 @@ class SelectorParser():
     nanToken = token(None, 'NONE')
     
     @classmethod
-    def from_raw(cls, selector:str|None) -> 'SelectorParser':
+    def from_raw(cls, selector:str|None) -> 'selectorFunc':
         """
         used to instantiate a selectorParser from a raw string,
         so tokenises the input before returning an instance with the correct tokens
         """
         #bidsschematools already parses some statements? i think...
-        #using the provided load_schema returns expressions where "null" is already None...
-        #convert this back to ensure no errors in this parser.
-        if selector is None:
-            selector = "null"
+        #makes this more annoying as you can't just parse everything, you have to check it all...
+        if not isinstance(selector, str):
+            #do more error checking here idk
+            if isinstance(selector, selectorFunc):
+                selector.evaluate_static_nodes()
+                return selector
+            else:
+                return selectorFunc(val=selector)
 
         assert isinstance(selector, str), "from_raw needs a string as input"
 
@@ -155,7 +157,12 @@ class SelectorParser():
                 tokens.append(token(val=value, kind=kind))
             pos = mo.end()
             mo = cls.tokenizer(selector, pos)
-        return cls(tokens)
+        
+        ret_func = cls(tokens).parse()
+        ret_func.evaluate_static_nodes()
+        # need to do this on seperate lines, eval_static_nodes returns a boolean of whether it is reduced
+        # or not, so it can recursively reduce. We want the object not the boolean
+        return ret_func
  
     def __init__(self, tokens:list):
         self.tokens:list = tokens
@@ -191,6 +198,7 @@ class SelectorParser():
             self.advance()
 
     def parse(self) -> selectorFunc:
+
         if self.position != 0:
             assert self.position == self.total, "SelectorParser did not fully parse selector"
             raise BufferError("Can only parse tokens once")
@@ -392,7 +400,7 @@ class SelectorParser():
     "intersects":intersects,
     "allequal":allequal,
     "length":length, #consider using default len
-    "match":match,
+    "match":nMatch,
     "max":max,
     "min":min,
     "sorted":sorted,

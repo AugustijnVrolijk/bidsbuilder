@@ -149,7 +149,7 @@ def length(arg:list) -> int:
     return len(arg)
 
 @checkNone
-def match(arg:str, pattern:str) -> bool:
+def nMatch(arg:str, pattern:str) -> bool:
     """
     true if arg matches the regular expression pattern (anywhere in string)
 
@@ -257,5 +257,5 @@ def nType(arg:Any) -> str:
 def notImplemented(*args, **kwargs):
     raise NotImplementedError()
 
-__all__ = ["count", "exists", "index", "intersects", "allequal", "length", "match", "max", "min", "sorted", "substr", "nType"]
+__all__ = ["count", "exists", "index", "intersects", "allequal", "length", "nMatch", "max", "min", "sorted", "substr", "nType"]
 

@@ -13,10 +13,8 @@ for i, pair in enumerate(tests):
     result = pair["result"]
     print(f"pair {i}: {pair}")
 
-    func = SelectorParser.from_raw(expression).parse()
-    func.evaluate_static_nodes()
-    t_result = SelectorParser.from_raw(result).parse()
-    t_result.evaluate_static_nodes()
+    func = SelectorParser.from_raw(expression)
+    t_result = SelectorParser.from_raw(result)
     try:
         if func() == t_result():
             print("test pass")
