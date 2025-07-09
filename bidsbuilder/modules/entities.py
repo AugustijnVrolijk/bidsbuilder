@@ -1,3 +1,5 @@
+import re
+
 from attrs import define, field
 from typing import Union, ClassVar, TYPE_CHECKING
 
@@ -5,12 +7,11 @@ if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
 @define(slots=True)
-class Entity():
+class universalNameBase():
     """Entity wrapper
 
     Attributes:
         name (str): The entity of the animal
-        val (str): The value of the entity
 
     Notes:
         - `schema` is a class-level variable used internally to fetch metadata, pointing to schema.objects.entities
@@ -20,8 +21,13 @@ class Entity():
 
     # ---- instance fields ----
     name:str = field(repr=True)
-    _val:str = field(repr=True, alias="_val")
 
+    def __attrs_post_init__(self):
+        try:
+            self.fetch_object(self.name)
+        except KeyError as e:
+            raise KeyError(f"Entity {self.name} not found in schema") from e
+    
     @property
     def display_name(self):
         """Human-readable display name from schema."""
@@ -32,12 +38,58 @@ class Entity():
         """Description of the entity from schema."""
         return self.fetch_object(self.name).description
     
+    @classmethod
+    def fetch_object(cls, name) -> 'Namespace':
+        """Fetch entity information from schema.objects
+
+        Args:
+            name (str): The entity name to use (as seen in entities, i.e. 'ses' not 'session')
+
+        Returns:
+            Namespace object with object metadata for given entity
+
+        Raises:
+            ValueError: If no matching entity is found.
+        """
+        for pos_obj in cls.schema.keys():
+            if pos_obj.name == name:
+                return pos_obj
+        raise ValueError(f"no entitiy found for '{name}'")
+
+@define(slots=True)
+class nameValueBase(universalNameBase):
+    """Entity wrapper
+
+    Attributes:
+        val (str): The value of the entity
+
+    """
+    # ---- instance fields ----
+    _val:str = field(repr=True, alias="_val")
+
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
+
+        try:
+            self.val = self._val  # Validate and set the initial value
+        except:
+            raise NotImplementedError("Not yet finished error handling for nameBase __attrs_post_init__")
+        
     @property
     def val(self):
         """Public getter for the entity value."""
         return self._val
     
-    @val.setter
+    @property
+    def type(self):
+        """Type of the entity from schema."""
+        return self.fetch_object(self.name).type
+    
+    
+@define(slots=True)
+class Entity(nameValueBase):
+
+    @val.setter # type: ignore
     def val(self, new_val:str):
         """Validate and set a new entity value
 
@@ -67,21 +119,69 @@ class Entity():
             assert new_val in enums, f"val for {self} must be one of {enums} not {new_val}"
 
         self._val = new_val
+
+@define(slots=True)
+class columns(nameBase):
     
-    @staticmethod
-    def fetch_object(name) -> 'Namespace':
-        """Fetch entity information from schema.objects
+    @val.setter
+    def val():
+        pass
+
+@define(slots=True)
+class metadata(nameBase):
+    pass
+
+@define(slots=True)
+class suffixes(nameBase):
+    pass
+
+class formats():
+    schema:ClassVar['Namespace']
+
+    @classmethod
+    def fetch_object(cls, name) -> 'Namespace':
+        """Fetch format information from schema.objects.formats
 
         Args:
-            name (str): The entity name to use (as seen in entities, i.e. 'ses' not 'session')
+            name (str): The format name to use (as seen in formats, i.e. 'json' not 'JSON')
 
         Returns:
-            Namespace object with object metadata for given entity
+            Namespace object with object metadata for given format
 
         Raises:
-            ValueError: If no matching entity is found.
+            ValueError: If no matching format is found.
         """
-        for entitity in Entity.schema.keys():
-            if entitity.name == name:
-                return entitity
-        raise ValueError(f"no entitiy found for '{name}'")
+        for pos_obj in cls.schema.keys():
+            if pos_obj == name:
+                return pos_obj
+        raise ValueError(f"no format found for '{name}'")
+
+    @classmethod
+    def format_checker(cls, inp_type:str, val:str) -> bool:
+        format = cls.fetch_object(inp_type)  # Ensure the format exists
+
+
+
+"""
+ objects.formats
+        specifies regex to enforce the correct "format", this is useful as it can check for
+        stuff like specific files etc...
+
+        implement a lightweight function or class like selectorParser, but format_checker or something
+        to check it. Can be called from columns, suffixes, metadata, entities etc.. and returns a boolean
+        to see if val respects the given format
+
+    objects.suffixes
+        similar to entities, need to check for unit, max min, anyOf etc..
+
+    object.columns
+        similar to entities need to enforce format, unit, enum, max, min etc..
+
+    objects.metadata
+        similar to entities need to enforce format, enum, max min etc... 
+
+    objects.entities
+        need to fetch format and enum
+        enforce if it is a "label" or "index", and if its enum enforce the possible types...
+
+"""
