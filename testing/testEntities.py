@@ -68,3 +68,16 @@ print(t2.val)  # Should print 5120 (512 + 10) * 10
 print(t.val)
 t.val = 100
 print(t.val)  # Should print 165.0 (100 + 10) * 1.5
+
+
+t = set()
+t2 = set()
+
+t.add(1)
+t.add(2)
+t.add(3)    
+t2.add(5)
+t2.add(6)
+t2.add(8)
+
+print(t.union(t2))  # Should print {1, 2, 3, 5, 6, 8}

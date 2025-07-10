@@ -89,7 +89,7 @@ class nameValueBase(universalNameBase):
 @define(slots=True)
 class Entity(nameValueBase):
 
-    @val.setter # type: ignore
+    @nameValueBase.val.setter
     def val(self, new_val:str):
         """Validate and set a new entity value
 
@@ -121,18 +121,18 @@ class Entity(nameValueBase):
         self._val = new_val
 
 @define(slots=True)
-class columns(nameBase):
+class columns(nameValueBase):
     
-    @val.setter
+    @nameValueBase.val.setter
     def val():
         pass
 
 @define(slots=True)
-class metadata(nameBase):
+class metadata(nameValueBase):
     pass
 
 @define(slots=True)
-class suffixes(nameBase):
+class suffixes(nameValueBase):
     pass
 
 class formats():
@@ -186,8 +186,37 @@ class formats():
 
 """
 
+@define(slots=True)
+class filenameBase:
+    """Base class for filename generation
 
+    Attributes:
+        parent (Union[filenameBase, None]): Parent filename object to inherit from
+        name (str): Name of the current filename component
+    """
+    parent: Union['filenameBase', None] = field(default=None, repr=False)
+    _entities: dict = field(default=dict(),repr=True)
+    _suffix: suffixes = field(default=None, repr=True)
 
+    def __attrs_post_init__(self):
+        if self.parent is not None and not isinstance(self.parent, filenameBase):
+            raise TypeError("Parent must be an instance of filenameBase or None")
+
+    @property
+    def entities(self) -> dict:
+        return 
+
+    @property
+    def suffix(self) -> Union[suffixes, None]:
+        """Get the suffix for the filename."""
+        return self._suffix
+
+    @property
+    def full_name(self) -> str:
+        """Construct the full filename by combining parent names and current name."""
+        if self.parent:
+            return f"{self.parent.full_name}_{'_'.join(self.name)}"
+        return '_'.join(self.name)
 
 """
 Create filename class which composits from the above classes and dynamically creates filename from parent chain.
