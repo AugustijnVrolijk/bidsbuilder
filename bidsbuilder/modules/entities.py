@@ -185,3 +185,20 @@ class formats():
         enforce if it is a "label" or "index", and if its enum enforce the possible types...
 
 """
+
+
+
+
+"""
+Create filename class which composits from the above classes and dynamically creates filename from parent chain.
+
+this can be imported into main file classes.
+
+
+
+
+
+
+
+
+"""
