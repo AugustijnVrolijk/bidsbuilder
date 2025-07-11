@@ -1,0 +1,14 @@
+Need to think about the Inhertiance Principle (IP)
+
+Make the system robust to this:
+
+    IP in the sense of inheriting metadata, and files. according to the IP rules listed via BIDS:
+        https://bids-specification.readthedocs.io/en/stable/common-principles.html#the-inheritance-principle
+
+    IP in the sense of filenames and minimising memory by enabling dynamic filename creation by inheriting entities of parent folders etc..
+
+    This second point it may be worth making a distinction between physical file groupings via subject, session and datatype folders, i.e. 
+    where we are allowed to inherit from
+
+Is there a way to seperate the inheritance of stuff from the main object classes in order to adapt to future IP changes?
+

@@ -2,16 +2,17 @@ import re
 
 from attrs import define, field
 from typing import Union, ClassVar, TYPE_CHECKING
+from functools import lru_cache
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
 @define(slots=True)
-class universalNameBase():
+class ValueBase():
     """Entity wrapper
 
     Attributes:
-        name (str): The entity of the animal
+        name (str): The name of the value, used to fetch metadata from schema
 
     Notes:
         - `schema` is a class-level variable used internally to fetch metadata, pointing to schema.objects.entities
@@ -20,14 +21,18 @@ class universalNameBase():
     schema: ClassVar['Namespace']
 
     # ---- instance fields ----
-    name:str = field(repr=True)
+    _name:str = field(repr=True, alias="_name")
 
     def __attrs_post_init__(self):
         try:
             self.fetch_object(self.name)
         except KeyError as e:
-            raise KeyError(f"Entity {self.name} not found in schema") from e
+            raise e
     
+    @property
+    def name(self):
+        return self._name
+
     @property
     def display_name(self):
         """Human-readable display name from schema."""
@@ -39,7 +44,7 @@ class universalNameBase():
         return self.fetch_object(self.name).description
     
     @classmethod
-    def fetch_object(cls, name) -> 'Namespace':
+    def fetch_object(cls, name:str) -> 'Namespace':
         """Fetch entity information from schema.objects
 
         Args:
@@ -51,13 +56,21 @@ class universalNameBase():
         Raises:
             ValueError: If no matching entity is found.
         """
-        for pos_obj in cls.schema.keys():
-            if pos_obj.name == name:
-                return pos_obj
-        raise ValueError(f"no entitiy found for '{name}'")
+        obj = cls.schema.get(name)
+        if obj is None:
 
-@define(slots=True)
-class nameValueBase(universalNameBase):
+            #try look if user provided display name or other name
+            name = name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
+            for key,val in cls.schema.items():
+                if name == val.display_name.lower():
+                    return cls.schema.get(key)
+            
+            raise KeyError(f"no object found for key {name} in {cls.__name__}")
+        
+        return obj
+
+@define(slots=True)#eq and hash false so we can compare if entities are the same by name only
+class nameValueBase(ValueBase): #must beware of the hash = false, as "different" instances will hash to the same in sets and dictionaries
     """Entity wrapper
 
     Attributes:
@@ -65,15 +78,15 @@ class nameValueBase(universalNameBase):
 
     """
     # ---- instance fields ----
-    _val:str = field(repr=True, alias="_val")
+    _val:str = field(repr=True, alias="_val") 
 
     def __attrs_post_init__(self):
         super().__attrs_post_init__()
 
         try:
             self.val = self._val  # Validate and set the initial value
-        except:
-            raise NotImplementedError("Not yet finished error handling for nameBase __attrs_post_init__")
+        except Exception as e:
+            raise e
         
     @property
     def val(self):
@@ -85,7 +98,25 @@ class nameValueBase(universalNameBase):
         """Type of the entity from schema."""
         return self.fetch_object(self.name).type
     
+    @property
+    def format(self):
+        """Format of the entity from schema."""
+        return self.fetch_object(self.name).format
     
+    @classmethod
+    def fetch_object(self, name):
+        try:
+            return super().fetch_object(name)
+        except Exception as e:
+
+            name = name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
+            for key,val in self.schema.items():
+                if name == val.name.lower():
+                    self.name = key
+                    return self.schema.get(key)
+
+            raise e
+
 @define(slots=True)
 class Entity(nameValueBase):
 
@@ -121,40 +152,48 @@ class Entity(nameValueBase):
         self._val = new_val
 
 @define(slots=True)
-class columns(nameValueBase):
+class Column(nameValueBase):
     
     @nameValueBase.val.setter
     def val():
         pass
 
 @define(slots=True)
-class metadata(nameValueBase):
+class Metadata(nameValueBase):
     pass
 
 @define(slots=True)
-class suffixes(nameValueBase):
+class Suffix(ValueBase):
     pass
 
 class formats():
     schema:ClassVar['Namespace']
 
     @classmethod
-    def fetch_object(cls, name) -> 'Namespace':
+    @lru_cache
+    def get_pattern(cls, key) -> str:
         """Fetch format information from schema.objects.formats
 
         Args:
-            name (str): The format name to use (as seen in formats, i.e. 'json' not 'JSON')
+            key (str): The format name to use (as seen in formats, i.e. 'json' not 'JSON')
 
         Returns:
-            Namespace object with object metadata for given format
+            regex pattern to verify given format
 
         Raises:
             ValueError: If no matching format is found.
         """
+        try:
+            pattern_info = cls.schema.get(key)
+            re.compile()
+        except KeyError as e:
+            raise e
+
         for pos_obj in cls.schema.keys():
-            if pos_obj == name:
-                return pos_obj
-        raise ValueError(f"no format found for '{name}'")
+            if pos_obj == key:
+                return cls.schema[pos_obj].pattern
+            
+        raise ValueError(f"no format found for '{key}'")
 
     @classmethod
     def format_checker(cls, inp_type:str, val:str) -> bool:
@@ -187,36 +226,45 @@ class formats():
 """
 
 @define(slots=True)
-class filenameBase:
+class CompositeFilename:
     """Base class for filename generation
 
     Attributes:
         parent (Union[filenameBase, None]): Parent filename object to inherit from
         name (str): Name of the current filename component
     """
-    parent: Union['filenameBase', None] = field(default=None, repr=False)
-    _entities: dict = field(default=dict(),repr=True)
-    _suffix: suffixes = field(default=None, repr=True)
+    schema: ClassVar['Namespace'] #should point to schema.rules.entities
 
-    def __attrs_post_init__(self):
-        if self.parent is not None and not isinstance(self.parent, filenameBase):
-            raise TypeError("Parent must be an instance of filenameBase or None")
+    parent: Union['CompositeFilename', None] = field(default=None, repr=False)
+    _entities: dict[Entity] = field(default=dict(),repr=True)
+    suffix: Union['Suffix', None] = field(default=None, repr=True)
 
     @property
     def entities(self) -> dict:
-        return 
-
+        if self.parent is None:
+            cur_entities = dict()
+        else:
+            cur_entities = self.parent.entities
+        
+        cur_entities.update(self._entities) #overwrite parent values with cur values
+        return cur_entities
+    
     @property
-    def suffix(self) -> Union[suffixes, None]:
-        """Get the suffix for the filename."""
-        return self._suffix
-
-    @property
-    def full_name(self) -> str:
+    def name(self) -> str:
         """Construct the full filename by combining parent names and current name."""
-        if self.parent:
-            return f"{self.parent.full_name}_{'_'.join(self.name)}"
-        return '_'.join(self.name)
+        cur_entities:dict[Entity] = self.entities
+        
+        ret_pairs = []
+        for pos_entity in self.schema.keys():
+            t_entity:Entity = cur_entities.get(pos_entity, False)
+            if t_entity:
+                ret_pairs.append(f"{t_entity.name}-{t_entity.val}")
+        
+        entity_string = '_'.join(ret_pairs)
+        if self.suffix:
+            entity_string += f"_{self.suffix.name}"
+
+        return entity_string
 
 """
 Create filename class which composits from the above classes and dynamically creates filename from parent chain.
@@ -224,10 +272,6 @@ Create filename class which composits from the above classes and dynamically cre
 this can be imported into main file classes.
 
 
-
-
-
-
-
-
 """
+
+__all__ = ["CompositeFilename","Entity", "Column", "Metadata", "Suffix"]
