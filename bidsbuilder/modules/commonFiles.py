@@ -1,7 +1,6 @@
 from functools import wraps
 from pathlib import Path
 from bidsbuilder.modules.coreModule import DatasetCore
-from bidsbuilder.modules.metadata import metadataFields
 
 from typing import TYPE_CHECKING
 

@@ -2,7 +2,7 @@ from bidsbuilder.util.schema import parse_load_schema
 
 schema = parse_load_schema(debug=True)
 
-from bidsbuilder.modules.entities import *
+from bidsbuilder.modules.schema_objects import *
 
 _set_object_schemas(schema)
 
@@ -20,9 +20,12 @@ print(b)
 c = Entity("task", "reading")
 
 
-d = CompositeFilename(None, {a.name:a, c.name:c}, b)
+d = CompositeFilename(None, {a.name:a}, b)
 print(d)
 print(d.name)
 
 a.val="numberOne"
 print(d.name)
+
+e = CompositeFilename(d, {c.name:c}, None)
+print(e.name)

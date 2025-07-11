@@ -1,4 +1,4 @@
-from bidsbuilder.modules.subject import DatasetSubject
+from bidsbuilder.modules.data_folders import DatasetSubject
 
 hello = DatasetSubject()
 print(hello)

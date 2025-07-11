@@ -170,7 +170,6 @@ class formats():
         pattern = cls.get_pattern(inp_type)  # Ensure the format exists
         return bool(pattern.fullmatch(val))
 
-
 @define(slots=True)
 class Entity(nameValueBase):
 
@@ -229,7 +228,6 @@ class Suffix(ValueBase):
     def str_name(self):
         return self.fetch_object().value
     pass
-
 
     def fetch_object(self):
         try:
