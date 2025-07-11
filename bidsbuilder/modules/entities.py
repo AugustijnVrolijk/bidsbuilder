@@ -25,7 +25,7 @@ class ValueBase():
 
     def __attrs_post_init__(self):
         try:
-            self.fetch_object(self.name)
+            self.fetch_object()
         except KeyError as e:
             raise e
     
@@ -36,19 +36,45 @@ class ValueBase():
     @property
     def display_name(self):
         """Human-readable display name from schema."""
-        return self.fetch_object(self.name).display_name
+        return self.fetch_object().display_name
 
     @property
     def description(self):
         """Description of the entity from schema."""
-        return self.fetch_object(self.name).description
+        return self.fetch_object().description
     
-    @classmethod
-    def fetch_object(cls, name:str) -> 'Namespace':
+    def fetch_object(self) -> 'Namespace':
         """Fetch entity information from schema.objects
 
         Args:
-            name (str): The entity name to use (as seen in entities, i.e. 'ses' not 'session')
+            name (str): The entity name to use
+
+        Returns:
+            Namespace object with object metadata for given entity
+
+        Raises:
+            ValueError: If no matching entity is found.
+        """
+        try:
+            return self._cached_fetch_object(self._name)
+        except KeyError as e:
+
+            #try look if user provided display name or other name
+            name = self._name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
+            for key,val in self.schema.items():
+                if name == val.display_name.lower():
+                    self._name = key
+                    return self.schema.get(key)
+            
+            raise e
+    
+    @classmethod
+    @lru_cache(maxsize=32)
+    def _cached_fetch_object(cls, name:str) -> 'Namespace':
+        """Fetch entity information from schema.objects
+
+        Args:
+            name (str): The entity name to use
 
         Returns:
             Namespace object with object metadata for given entity
@@ -58,13 +84,6 @@ class ValueBase():
         """
         obj = cls.schema.get(name)
         if obj is None:
-
-            #try look if user provided display name or other name
-            name = name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
-            for key,val in cls.schema.items():
-                if name == val.display_name.lower():
-                    return cls.schema.get(key)
-            
             raise KeyError(f"no object found for key {name} in {cls.__name__}")
         
         return obj
@@ -89,6 +108,10 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
             raise e
         
     @property
+    def str_name(self):
+        return self.fetch_object().name
+
+    @property
     def val(self):
         """Public getter for the entity value."""
         return self._val
@@ -96,26 +119,57 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
     @property
     def type(self):
         """Type of the entity from schema."""
-        return self.fetch_object(self.name).type
+        return self.fetch_object().type
     
     @property
     def format(self):
         """Format of the entity from schema."""
-        return self.fetch_object(self.name).format
+        return self.fetch_object().format
     
-    @classmethod
-    def fetch_object(self, name):
+    def fetch_object(self):
         try:
-            return super().fetch_object(name)
-        except Exception as e:
+            return super().fetch_object()
+        except KeyError as e:
 
-            name = name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
+            name = self._name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
             for key,val in self.schema.items():
                 if name == val.name.lower():
-                    self.name = key
+                    self._name = key
                     return self.schema.get(key)
 
             raise e
+
+@define(slots=True)
+class formats():
+    schema:ClassVar['Namespace']
+
+    @classmethod
+    @lru_cache(maxsize=32)
+    def get_pattern(cls, key):
+        """Fetch format information from schema.objects.formats
+
+        Args:
+            key (str): The format name to use (as seen in formats, i.e. 'json' not 'JSON')
+
+        Returns:
+            regex pattern to verify given format
+
+        Raises:
+            ValueError: If no matching format is found.
+        """
+        try:
+            pattern_info = cls.schema.get(key)
+            pattern = re.compile(pattern_info.pattern)
+        except KeyError as e:
+            raise e
+
+        return pattern
+
+    @classmethod
+    def check_pattern(cls, inp_type:str, val:str) -> bool:
+        pattern = cls.get_pattern(inp_type)  # Ensure the format exists
+        return bool(pattern.fullmatch(val))
+
 
 @define(slots=True)
 class Entity(nameValueBase):
@@ -132,19 +186,14 @@ class Entity(nameValueBase):
             AssertionError: If the value is not among allowed enum values
             RuntimeError: If the entity format is not index or label
         """
-        info = self.fetch_object(self.name)
+        info = self.fetch_object()
         # is only of type string, so ignore this for now
         # in the future can link it to objects.format and regex to assert the type
 
         #formats are index or label
-        if info.format == "index":
-            try:
-                int(new_val)
-            except:
-                raise ValueError(f"Expected value convertable to an int for entity {self} not {new_val}")
-        elif info.format != "label":
-            raise RuntimeError(f"Schema gave an unexpected format {info.format} for entity: {self}")
-
+        if not formats.check_pattern(info.format, new_val):
+            raise ValueError(f"val: {new_val} is not of required format: {info.format}")
+       
         enums = info.get("enum", None)
         if enums:
             assert new_val in enums, f"val for {self} must be one of {enums} not {new_val}"
@@ -158,47 +207,42 @@ class Column(nameValueBase):
     def val():
         pass
 
+    @classmethod
+    @lru_cache(maxsize=128) #many different values so allow for larger cache for this
+    def _cached_fetch_object(cls, name: str):
+        # Optionally delegate back to Base method if logic identical
+        return super()._cached_fetch_object.__wrapped__(cls, name)
+
 @define(slots=True)
 class Metadata(nameValueBase):
-    pass
+
+    @classmethod
+    @lru_cache(maxsize=256) #many different values so allow for larger cache for this
+    def _cached_fetch_object(cls, name: str):
+        # Optionally delegate back to Base method if logic identical
+        return super()._cached_fetch_object.__wrapped__(cls, name)
 
 @define(slots=True)
 class Suffix(ValueBase):
+
+    @property
+    def str_name(self):
+        return self.fetch_object().value
     pass
 
-class formats():
-    schema:ClassVar['Namespace']
 
-    @classmethod
-    @lru_cache
-    def get_pattern(cls, key) -> str:
-        """Fetch format information from schema.objects.formats
-
-        Args:
-            key (str): The format name to use (as seen in formats, i.e. 'json' not 'JSON')
-
-        Returns:
-            regex pattern to verify given format
-
-        Raises:
-            ValueError: If no matching format is found.
-        """
+    def fetch_object(self):
         try:
-            pattern_info = cls.schema.get(key)
-            re.compile()
+            return super().fetch_object()
         except KeyError as e:
+
+            name = self._name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
+            for key, val in self.schema.items():
+                if name == val.value.lower().strip():
+                    self._name = key
+                    return self.schema.get(key)
+
             raise e
-
-        for pos_obj in cls.schema.keys():
-            if pos_obj == key:
-                return cls.schema[pos_obj].pattern
-            
-        raise ValueError(f"no format found for '{key}'")
-
-    @classmethod
-    def format_checker(cls, inp_type:str, val:str) -> bool:
-        format = cls.fetch_object(inp_type)  # Ensure the format exists
-
 
 
 """
@@ -233,7 +277,7 @@ class CompositeFilename:
         parent (Union[filenameBase, None]): Parent filename object to inherit from
         name (str): Name of the current filename component
     """
-    schema: ClassVar['Namespace'] #should point to schema.rules.entities
+    schema: ClassVar['list'] #should point to schema.rules.entities which is an ordered list
 
     parent: Union['CompositeFilename', None] = field(default=None, repr=False)
     _entities: dict[Entity] = field(default=dict(),repr=True)
@@ -255,16 +299,25 @@ class CompositeFilename:
         cur_entities:dict[Entity] = self.entities
         
         ret_pairs = []
-        for pos_entity in self.schema.keys():
+        for pos_entity in self.schema:
             t_entity:Entity = cur_entities.get(pos_entity, False)
             if t_entity:
-                ret_pairs.append(f"{t_entity.name}-{t_entity.val}")
+                ret_pairs.append(f"{t_entity.str_name}-{t_entity.val}") #str name is the correct display name for bids filenames
         
         entity_string = '_'.join(ret_pairs)
         if self.suffix:
             entity_string += f"_{self.suffix.name}"
 
         return entity_string
+
+def _set_object_schemas(schema:'Namespace'):
+    Entity.schema = schema.objects.entities
+    Column.schema = schema.objects.columns
+    Suffix.schema = schema.objects.suffixes
+    Metadata.schema = schema.objects.metadata
+    formats.schema = schema.objects.formats
+    CompositeFilename.schema = schema.rules.entities
+    return
 
 """
 Create filename class which composits from the above classes and dynamically creates filename from parent chain.
@@ -274,4 +327,4 @@ this can be imported into main file classes.
 
 """
 
-__all__ = ["CompositeFilename","Entity", "Column", "Metadata", "Suffix"]
+__all__ = ["CompositeFilename","Entity", "Column", "Metadata", "Suffix", "_set_object_schemas"]

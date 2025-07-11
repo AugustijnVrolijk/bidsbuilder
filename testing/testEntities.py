@@ -3,15 +3,26 @@ from bidsbuilder.util.schema import parse_load_schema
 schema = parse_load_schema(debug=True)
 
 from bidsbuilder.modules.entities import *
-Entity.schema = schema.objects.entities
-Column.schema = schema.objects.columns
-Suffix.schema = schema.objects.suffixes
-Metadata.schema = schema.objects.metadata
-CompositeFilename.schema = schema.rules.entities
 
-a = Entity("Subject", "1")
+_set_object_schemas(schema)
+
+a = Entity("SUB", "1")
 print(a)
 print(a.display_name)
 print(a.description)
-a.val = "subject<1>"
+a.val = "123"
 print(a)
+print(a.str_name)
+
+
+b = Suffix("tb1SrgE")
+print(b)
+c = Entity("task", "reading")
+
+
+d = CompositeFilename(None, {a.name:a, c.name:c}, b)
+print(d)
+print(d.name)
+
+a.val="numberOne"
+print(d.name)
