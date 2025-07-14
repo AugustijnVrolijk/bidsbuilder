@@ -1,0 +1,40 @@
+Looking at schema/rules/files/raw in terms of making our data objects.
+
+Data object: 
+    group linked data in python object. This would contain raw data, associated jsons and tsvs, etc...
+
+How this would look like in practice:
+    User submits a request to create a "data object" needs to input stuff like:
+        entities - maybe not
+        suffix
+        datatype
+        modality
+
+it seems what is really necessary is defining datatype and suffix
+
+it appears, if no suffix is given, then suffix == datatype
+
+At the moment my dilemas is mainly centered on knowing the associated files for some data.
+    this includes files like the:
+        _coordsystem
+        _channels
+        _electrodes
+        _optodes
+        _events
+        _stim
+        _physio
+
+Possibly thinking of using schema.meta.associations to find associated extra files, but this only includes:
+        _events
+        _aslcontext
+        _m0scan
+        _magnitude
+        _magnitude1
+        _channels
+        _coordsystem
+        _electrodes
+
+
+possible hardcoded solution:
+    have an option when adding data or subject etc... to create addititonal, i.e. nData = data(events=True, physio=True)
+    this will additionally add in those blocks with the correct suffix..

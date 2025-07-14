@@ -199,6 +199,8 @@ class Entity(nameValueBase):
 
         self._val = new_val
 
+#need to be able to overwrite certain values, like the format, enum etc... i.e. in meg.yaml, the acq entity can only be "crosstalk"
+
 @define(slots=True)
 class Column(nameValueBase):
     
@@ -227,7 +229,14 @@ class Suffix(ValueBase):
     @property
     def str_name(self):
         return self.fetch_object().value
-    pass
+
+    @ValueBase.name.setter
+    def name(self, new_name):
+        self._name = new_name
+        try:
+            self.fetch_object()
+        except KeyError:
+            raise ValueError(f"new suffix value: {new_name} is not valid")
 
     def fetch_object(self):
         try:
@@ -242,30 +251,14 @@ class Suffix(ValueBase):
 
             raise e
 
+@define(slots=True)
+class Modalitiy():
+    pass
+    
+@define(slots=True)
+class raw_Datatype():
+    pass
 
-"""
- objects.formats
-        specifies regex to enforce the correct "format", this is useful as it can check for
-        stuff like specific files etc...
-
-        implement a lightweight function or class like selectorParser, but format_checker or something
-        to check it. Can be called from columns, suffixes, metadata, entities etc.. and returns a boolean
-        to see if val respects the given format
-
-    objects.suffixes
-        similar to entities, need to check for unit, max min, anyOf etc..
-
-    object.columns
-        similar to entities need to enforce format, unit, enum, max, min etc..
-
-    objects.metadata
-        similar to entities need to enforce format, enum, max min etc... 
-
-    objects.entities
-        need to fetch format and enum
-        enforce if it is a "label" or "index", and if its enum enforce the possible types...
-
-"""
 
 @define(slots=True)
 class CompositeFilename:
@@ -278,8 +271,9 @@ class CompositeFilename:
     schema: ClassVar['list'] #should point to schema.rules.entities which is an ordered list
 
     parent: Union['CompositeFilename', None] = field(default=None, repr=False)
-    _entities: dict[Entity] = field(default=dict(),repr=True)
-    suffix: Union['Suffix', None] = field(default=None, repr=True)
+    _entities: dict[Entity] = field(default=dict(), repr=False, alias="_entities")
+    _suffix: Union['Suffix', None] = field(default=None, repr=False, alias="_suffix")
+    _datatype: Union['raw_Datatype', None] = field(default=None, repr=False, alias="_datatype")
 
     @property
     def entities(self) -> dict:
@@ -292,6 +286,25 @@ class CompositeFilename:
         return cur_entities
     
     @property
+    def suffix(self) -> Union[Suffix, None]:
+        
+        if self._suffix is not None:
+            return self._suffix
+        elif self.parent is not None:
+            return self.parent.suffix
+        else:
+            return None
+
+    @property
+    def datatype(self) -> Union[raw_Datatype, None]:
+        if self._datatype is not None:
+            return self._datatype
+        elif self.parent is not None:
+            return self.parent._datatype
+        else:
+            return None
+
+    @property
     def name(self) -> str:
         """Construct the full filename by combining parent names and current name."""
         cur_entities:dict[Entity] = self.entities
@@ -303,10 +316,21 @@ class CompositeFilename:
                 ret_pairs.append(f"{t_entity.str_name}-{t_entity.val}") #str name is the correct display name for bids filenames
         
         entity_string = '_'.join(ret_pairs)
-        if self.suffix:
+        if self.suffix is not None:
             entity_string += f"_{self.suffix.name}"
 
         return entity_string
+    
+    def update(self, key:str, val:str):
+        #local entities only
+        
+        cor_ent:Entity = self._entities.pop(key, None)
+        if cor_ent is not None:
+            cor_ent.val = val
+        elif key.lower().strip() == "suffix":
+            self.suffix.name = val
+        else:
+            raise KeyError(f"key: {key} was not found for {self}")
 
 def _set_object_schemas(schema:'Namespace'):
     Entity.schema = schema.objects.entities
@@ -316,13 +340,5 @@ def _set_object_schemas(schema:'Namespace'):
     formats.schema = schema.objects.formats
     CompositeFilename.schema = schema.rules.entities
     return
-
-"""
-Create filename class which composits from the above classes and dynamically creates filename from parent chain.
-
-this can be imported into main file classes.
-
-
-"""
 
 __all__ = ["CompositeFilename","Entity", "Column", "Metadata", "Suffix", "_set_object_schemas"]
