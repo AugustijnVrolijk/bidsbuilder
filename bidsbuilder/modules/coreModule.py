@@ -51,3 +51,5 @@ class DatasetCore():
     def __contains__(self, key): #used for selector parsing "in", need it to point it to whatever is needed
         return
 
+def _set_dataset_core(dataset:'BidsDataset'):
+    DatasetCore.dataset = dataset

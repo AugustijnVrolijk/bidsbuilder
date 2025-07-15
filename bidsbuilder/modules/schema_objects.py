@@ -7,6 +7,20 @@ from functools import lru_cache
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
+
+"""
+need to be able to overwrite certain values, like the format, enum etc... 
+i.e. in meg.yaml, the acq entity can only be "crosstalk"
+
+can either add an override dictionary to valueBase, nameValueBase etc... where when fetching schema values, it first
+tries the override dict
+
+small cost of a dictionary being instantiated, if I make it none then each time I am also comparing to check if it is a dict
+
+Look at weakref.weakrefdictionary, as a class variable? Still need to check each time
+but now I don't have another var per instance..
+"""
+
 @define(slots=True)
 class ValueBase():
     """Entity wrapper
@@ -202,8 +216,6 @@ class Entity(nameValueBase):
 
         self._val = new_val
 
-#need to be able to overwrite certain values, like the format, enum etc... i.e. in meg.yaml, the acq entity can only be "crosstalk"
-
 @define(slots=True)
 class Column(nameValueBase):
     
@@ -250,9 +262,9 @@ class CompositeFilename:
     schema: ClassVar['list'] #should point to schema.rules.entities which is an ordered list
 
     parent: Union['CompositeFilename', None] = field(default=None, repr=False)
-    _entities: dict[Entity] = field(default=dict(), repr=False, alias="_entities")
-    _suffix: Union['Suffix', None] = field(default=None, repr=False, alias="_suffix")
-    _datatype: Union['raw_Datatype', None] = field(default=None, repr=False, alias="_datatype")
+    _entities: dict[Entity] = field(default=dict(), repr=True, alias="_entities")
+    _suffix: Union['Suffix', None] = field(default=None, repr=True, alias="_suffix")
+    _datatype: Union['raw_Datatype', None] = field(default=None, repr=True, alias="_datatype")
 
     @property
     def entities(self) -> dict:

@@ -1,6 +1,4 @@
 from pathlib import Path
-
-from .modules import *
 from .util.util import checkPath, isDir, clearSchema
 from .util.datasetTree import FileTree
 from .util.schema import parse_load_schema
@@ -25,15 +23,13 @@ class BidsDataset():
     """
     initialised = False
 
-    schema:'Namespace' = parse_load_schema()
 
     def __init__(self, root:str = Path.cwd()):
         self.root = root
+        self.schema:'Namespace' = parse_load_schema()
         self._tree_reference = FileTree(_name=root, link=self, parent=None)
-        DatasetCore.dataset = self
-        DatasetSubject.dataset = self
-        Entity.schema = BidsDataset.schema.objects.entities
-
+        from .modules import set_all_schema_
+        set_all_schema_(self, self.schema)
         self._make_skeletonBIDS()
         self._interpret_skeletonBIDS()
 

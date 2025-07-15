@@ -27,5 +27,8 @@ print(d.name)
 a.val="numberOne"
 print(d.name)
 
-e = CompositeFilename(d, {c.name:c}, None)
+e = CompositeFilename(d, {c.name:c})
 print(e.name)
+
+print(e)
+print(e.suffix)
