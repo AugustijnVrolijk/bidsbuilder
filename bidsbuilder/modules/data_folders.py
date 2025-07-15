@@ -100,24 +100,11 @@ class Datatype(folderBase):
             self.foldername = CompositeFilename(parent=None, datatype=final_type, entities={}, suffix=is_suffix)
         except KeyError as e:
             self.foldername = CompositeFilename(parent=None, datatype=final_type, entities={}, suffix=None)
-
-
-    @property
-    def val(self):
-        return self._val
-
-    @folderBase.val.setter
-    def val(self, new_val:str|None):
-
-        self._val = self._check_name(new_val)
-        self.foldername.update(self._cur_entity, self._val)
     
-    def _check_name(self, new_val:str|None) -> str:
-        if new_val == None:
-            new_val = str(self.n)
-
+    def _check_name(self, new_val:str) -> str:
+        #datatype cannot be an int, so don't have check for None type from folderBase which converts to n
         assert isinstance(new_val, str), f"Name {new_val} is of type {type(new_val)}, expected str"
-
+        
         return new_val
     pass
     

@@ -24,50 +24,50 @@ class ValueBase():
     _name:str = field(repr=True, alias="_name")
 
     def __attrs_post_init__(self):
-        try:
-            self.fetch_object()
-        except KeyError as e:
-            raise e
+        self.name = self._name
     
     @property
     def name(self):
         return self._name
+    
+    @name.setter
+    def name(self, new_name):
+        name = self.validate_object(new_name)
+        self._name = name
+
+    @property
+    def str_name(self):
+        return self._cached_fetch_object(self._name).value
 
     @property
     def display_name(self):
         """Human-readable display name from schema."""
-        return self.fetch_object().display_name
+        return self._cached_fetch_object(self._name).display_name
 
     @property
     def description(self):
         """Description of the entity from schema."""
-        return self.fetch_object().description
+        return self._cached_fetch_object(self._name).description
     
-    def fetch_object(self) -> 'Namespace':
-        """Fetch entity information from schema.objects
+    @classmethod
+    def validate_object(cls, to_validate:str) -> str:
 
-        Args:
-            name (str): The entity name to use
-
-        Returns:
-            Namespace object with object metadata for given entity
-
-        Raises:
-            ValueError: If no matching entity is found.
-        """
+        to_validate = str(to_validate)
         try:
-            return self._cached_fetch_object(self._name)
-        except KeyError as e:
-
-            #try look if user provided display name or other name
-            name = self._name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
-            for key,val in self.schema.items():
+            cls._cached_fetch_object(to_validate)
+            return to_validate
+        
+        except KeyError:
+            name = to_validate.lower().strip() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
+            for key,val in cls.schema.items():
                 if name == val.display_name.lower():
-                    self._name = key
-                    return self.schema.get(key)
+                    return key
             
-            raise e
-    
+            for key, val in cls.schema.items():
+                if name == val.value.lower():
+                    return key
+            raise ValueError(f"Val: {val} is not a valid value for {cls.__name__}")
+
     @classmethod
     @lru_cache(maxsize=32)
     def _cached_fetch_object(cls, name:str) -> 'Namespace':
@@ -101,15 +101,11 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
 
     def __attrs_post_init__(self):
         super().__attrs_post_init__()
-
-        try:
-            self.val = self._val  # Validate and set the initial value
-        except Exception as e:
-            raise e
+        self.val = self._val # Validate and set the initial value
         
     @property
     def str_name(self):
-        return self.fetch_object().name
+        return self._cached_fetch_object(self._name).name
 
     @property
     def val(self):
@@ -119,25 +115,32 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
     @property
     def type(self):
         """Type of the entity from schema."""
-        return self.fetch_object().type
+        return self._cached_fetch_object(self._name).type
     
     @property
     def format(self):
         """Format of the entity from schema."""
-        return self.fetch_object().format
+        return self._cached_fetch_object(self._name).format
     
-    def fetch_object(self):
+    @classmethod
+    def validate_object(cls, to_validate:str) -> str:
+        
+        to_validate = str(to_validate)
         try:
-            return super().fetch_object()
-        except KeyError as e:
-
-            name = self._name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
-            for key,val in self.schema.items():
+            cls._cached_fetch_object(to_validate)
+            return to_validate
+        
+        except KeyError:
+            name = to_validate.lower().strip() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
+            for key,val in cls.schema.items():
+                if name == val.display_name.lower():
+                    return key
+            
+            for key, val in cls.schema.items():
                 if name == val.name.lower():
-                    self._name = key
-                    return self.schema.get(key)
-
-            raise e
+                    return key
+                
+            raise ValueError(f"Val: {val} is not a valid value for {cls.__name__}")
 
 @define(slots=True)
 class formats():
@@ -185,7 +188,7 @@ class Entity(nameValueBase):
             AssertionError: If the value is not among allowed enum values
             RuntimeError: If the entity format is not index or label
         """
-        info = self.fetch_object()
+        info = self._cached_fetch_object(self._name)
         # is only of type string, so ignore this for now
         # in the future can link it to objects.format and regex to assert the type
 
@@ -225,38 +228,14 @@ class Metadata(nameValueBase):
 
 @define(slots=True)
 class Suffix(ValueBase):
-
-    @property
-    def str_name(self):
-        return self.fetch_object().value
-
-    @ValueBase.name.setter
-    def name(self, new_name):
-        self._name = new_name
-        try:
-            self.fetch_object()
-        except KeyError:
-            raise ValueError(f"new suffix value: {new_name} is not valid")
-
-    def fetch_object(self):
-        try:
-            return super().fetch_object()
-        except KeyError as e:
-
-            name = self._name.lower() # this may give issues for metadata or other areas if certain fields have the same name but with different capitalisation
-            for key, val in self.schema.items():
-                if name == val.value.lower().strip():
-                    self._name = key
-                    return self.schema.get(key)
-
-            raise e
+    pass
 
 @define(slots=True)
 class Modalitiy():
     pass
     
 @define(slots=True)
-class raw_Datatype():
+class raw_Datatype(ValueBase):
     pass
 
 
@@ -329,6 +308,8 @@ class CompositeFilename:
             cor_ent.val = val
         elif key.lower().strip() == "suffix":
             self.suffix.name = val
+        elif key.lower().strip() == "datatype":
+            self.datatype.name = val
         else:
             raise KeyError(f"key: {key} was not found for {self}")
 
