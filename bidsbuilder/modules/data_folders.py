@@ -22,6 +22,11 @@ class folderBase():
     def val(self):
         return self._val
 
+    """
+    Keeping val.setter in base class may present problems - duplication of names for sessions and datatypes
+    for the subject we can use a classmethod to check all names, but at the moment session and datatype have 
+    no variable for their "parent" so can't easily check for duplicate names.
+
     @val.setter
     def val(self, new_val:str|None):
 
@@ -29,12 +34,31 @@ class folderBase():
         self.foldername.update(self._cur_entity, self._val)
     
     def _check_name(self, new_val:str|None) -> str:
+    
+        # another thing to consider is whether to allow None Values
+        # Specifically without a key to instantiate how would a user later know which numbered folder actually
+        # links to their data, defeating the point...
+        # possibly if this feature is wanted have a factory method which returns a (instance, ID) tuple to allow 
+        # for automation without needing to know foldernames, but keep track of the links between data folders and
+        # input data
+
         if new_val == None:
             new_val = str(self.n)
 
         assert isinstance(new_val, str), f"Name {new_val} is of type {type(new_val)}, expected str"
 
         return new_val
+    """
+
+    def _make_folder(self, make_children:bool=True, parent_path:str=""):
+        pass
+
+    def _get_folder_path(self):
+        pass
+
+    def __del__(self):
+        del self.foldername # remove reference explicitly, as its referenced as a parent so may be kept
+        # if user moves child objects somewhere else
 
 @define(slots=True)
 class Subject(folderBase):
@@ -53,23 +77,27 @@ class Subject(folderBase):
 
     def __attrs_post_init__(self):
         # --- checking valid val ---
+        temp_val = self._check_name(self._val) # check duplicates
+        final_entity = Entity(self._cur_entity, temp_val) # entity format check
+        self._val = temp_val # assign once passes both checks
+
         Subject._n_subjects += 1
         self.n = Subject._n_subjects
-        self._val = self._check_name(self._val)
         Subject._all_names.add(self._val)
 
         # --- create subject entity
-        final_entity = Entity(self._cur_entity, self._val)
         self.foldername = CompositeFilename(parent=None, entities={self._cur_entity:final_entity}, suffix=None)
 
     @folderBase.val.setter
-    def val(self, new_val:str|None):
+    def val(self, new_val:str):
 
+        temp_val = self._check_name(new_val) # check for duplicates
+        self.foldername.update(self._cur_entity, temp_val) # entity itself checks for format
+        
         Subject._all_names.remove(self._val)
-        super().val = new_val
-        Subject._all_names.add(self._val)
+        Subject._all_names.add(temp_val) 
 
-    def addSession(self, ses:str=None):
+    def add_session(self, ses:str=None):
         if ses == None:
             ses = str(len(self.children))
 
@@ -83,9 +111,10 @@ class Subject(folderBase):
             if len(self.children) > 0:
                 self._migrate_to_ses(to_add)
         else:
-            self._pair_session_count += 1 #don't count 1 single session, needs to be 1 or more
+            Subject._pair_session_count += 1 #don't count 1 single session, needs to be 1 or more
 
         self._n_sessions += 1
+        self.children.append(to_add)
 
     def _migrate_to_ses(self, ses_parent:'Session'):
 
@@ -101,9 +130,16 @@ class Subject(folderBase):
     def _validate_child_name(self, new_name):
         for child in self.children:
             assert child.val != new_name, f"Cannot add folder {new_name} with duplicate names/type for {self}"
-            
-    def addDatatype(self, d_type:str):
-        pass
+        
+    def add_datatype(self, d_type:str):
+        self._validate_child_name(d_type)
+        #subject has either got only sessions, or only datatype folders
+        if self._n_sessions > 0:
+            raise RuntimeError(f"Can't add datatype folder to a subject already containing sessions, please assign it to one of its sessions")
+        
+        to_add = Datatype(d_type)
+        to_add.foldername.parent = self.foldername
+        self.children.append(to_add)
 
     def _check_name(self, new_val:str|None) -> str:
 
@@ -114,7 +150,16 @@ class Subject(folderBase):
         return new_val
 
     def anonymise(self):
-        self.val = str(self.n)     
+        self.val = str(self.n)
+
+    def __del__(self):
+        Subject._n_subjects -= 1
+        Subject._all_names.remove(self._val)
+
+        to_inc = max(0, (self._n_sessions - 1)) # use max in case self._n_sessions is 0, in which case it would result in -1
+        Subject._pair_session_count -= to_inc
+        super().__del__()
+        
 
 @define(slots=True)
 class Session(folderBase):
@@ -126,15 +171,15 @@ class Session(folderBase):
         - ses_dirs
     """
     def __attrs_post_init__(self):
-        # --- create session entity
+        # --- create session entity --- Creating the entitiy will validate the the name as well
         final_entity = Entity(self._cur_entity, self._val)
         #if created from a subject, it will reassign the parent later
         self.foldername = CompositeFilename(parent=None, entities={self._cur_entity:final_entity}, suffix=None)
         
-    def add(self, val):
+    def add_datatype(self, val):
+        to_add = Datatype(val)
+        to_add.foldername.parent = self.foldername
         self.children.append(Datatype(val))
-
-        pass
     
 class Datatype(folderBase):
 
@@ -146,12 +191,8 @@ class Datatype(folderBase):
         except KeyError as e:
             self.foldername = CompositeFilename(parent=None, datatype=final_type, entities={}, suffix=None)
     
-    def _check_name(self, new_val:str) -> str:
-        #datatype cannot be an int, so don't have check for None type from folderBase which converts to n
-        assert isinstance(new_val, str), f"Name {new_val} is of type {type(new_val)}, expected str"
-        
-        return new_val
-    pass
+    def add_data(self):
+        pass
     
 def _set_folder_dataset_ref(dataset:'BidsDataset'):
     Subject.dataset = dataset
