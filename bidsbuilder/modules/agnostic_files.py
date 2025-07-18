@@ -4,6 +4,12 @@ from pathlib import Path
 from attrs import define, field
 from typing import TYPE_CHECKING
 
+from ..util.util import isDir, clearSchema
+
+if TYPE_CHECKING:
+    from .dataset_tree import Directory
+    from bidsschematools.types import Namespace
+
 def convertPath(cls):
     """
     ensures no clashes between path stem and entities, also converts path into stem and entities for easier downstream parsing
@@ -38,7 +44,7 @@ class corePath():
     @property   #no setter, name can't be changed
     def name(self):
         return self._name
-
+    """
     @DatasetCore.exists.setter
     def exists(self, value):
         if not isinstance(value, bool):
@@ -46,7 +52,7 @@ class corePath():
 
         if self.level != "required":
             self._exists = value
-
+    """
     def _getPaths(self):
         paths = []
         if self.extensions:
@@ -114,6 +120,39 @@ class coreFolder(corePath):
     def __init__(self, level:str, stem:str):
         super().__init__(level=level, name=stem)
 
+def _make_skeletonBIDS(schema:'Namespace', tree:'Directory'):
+    #Exceptions for scans, sessions and phenotype
+    exceptions = ["scans", "sessions", "phenotype"]
+
+    def _pop_from_schema(schema:'Namespace'):
+
+        for file in schema.keys():
+            if file in exceptions:
+                continue
+            is_dir = isDir(schema.rules.directories.raw, file)
+            tObj = resolveCoreClassType(**schema[file]._properties, is_dir=is_dir)
+
+            tree.addPath(tObj.name, tObj, is_dir)
+            
+    _pop_from_schema(schema.rules.files.common.core)
+    _pop_from_schema(schema.rules.files.common.tables)
+    return
+
+def _interpret_skeletonBIDS(self):
+    f1 = self.tree.fetch("README")
+    f2 = self.tree.fetch("dataset_description.json")
+    #recursive_interpret(1, self.schema.rules.files.common)
+    print(f1._tree_reference)
+    print(f2._tree_reference)
+    print(self.schema.rules.dataset_metadata.dataset_description.selectors.funcs[0])
+    print(self.schema.rules.dataset_metadata.dataset_authors.selectors.funcs[0])
+    print(self.schema.rules.dataset_metadata.dataset_authors.selectors.funcs[1])
+
+    print(self.schema.rules.dataset_metadata.dataset_description.selectors(f1))
+    print(self.schema.rules.dataset_metadata.dataset_description.selectors(f2))
+    print(self.schema.rules.files.raw.motion)
+    print("hello")
+    return
 
 @convertPath
 def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> corePath:
@@ -148,5 +187,30 @@ def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> corePath:
 
     return cls(*args, **kwargs)
 
-if __name__ == "__main__":
-    test = coreJSON()
+""" OLD VERSION:
+
+def _make_skeletonBIDS(schema:'Namespace', tree:'Directory'):
+    #Exceptions for scans, sessions and phenotype
+    exceptions = ["scans", "sessions", "phenotype"]
+
+    def _pop_from_schema(schema:'Namespace'):
+        toPop = []
+        for file in schema.keys():
+            if file in exceptions:
+                continue
+            is_dir = isDir(schema.rules.directories.raw, file)
+            tObj = resolveCoreClassType(**schema[file]._properties, is_dir=is_dir)
+
+            tree.addPath(tObj.name, tObj, is_dir)
+            toPop.append(file)
+            
+        for key in toPop:
+            schema.pop(key)
+            
+    _pop_from_schema(schema.rules.files.common.core)
+    clearSchema(schema.rules.files.common, "core")
+
+    _pop_from_schema(schema.rules.files.common.tables)
+    clearSchema(schema.rules.files.common, "tables")
+    return
+"""

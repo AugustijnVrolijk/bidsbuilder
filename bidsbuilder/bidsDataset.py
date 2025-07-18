@@ -1,9 +1,8 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
-from .util.util import checkPath, isDir, clearSchema
+from .util.util import checkPath
 from .modules.dataset_tree import Directory
 from .util.schema import parse_load_schema
-from .modules.agnostic_files import resolveCoreClassType
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -23,7 +22,6 @@ class BidsDataset():
     """
     initialised = False
     
-
     def __init__(self, root:str = Path.cwd()):
         
 
@@ -32,51 +30,9 @@ class BidsDataset():
         self._tree_reference:Directory = Directory(_name=root, link=self, parent=None)
         from .modules import set_all_schema_
         set_all_schema_(self, self.schema)
-        self._make_skeletonBIDS()
-        self._interpret_skeletonBIDS()
-
-    def _make_skeletonBIDS(self):
-
-        #Exceptions for scans, sessions and phenotype
-        exceptions = ["scans", "sessions", "phenotype"]
-
-        def _pop_from_schema(schema:'Namespace'):
-            toPop = []
-            for file in schema.keys():
-                if file in exceptions:
-                    continue
-                is_dir = isDir(self.schema.rules.directories.raw, file)
-                tObj = resolveCoreClassType(**schema[file]._properties, is_dir=is_dir)
-                #NEED TO UPDATE IT TO GIVE THE NAME RATHER THAN THE STEM
-                self._tree_reference.addPath(tObj.name, tObj, is_dir)
-                toPop.append(file)
-
-            for key in toPop:
-                schema.pop(key)
-                
-        _pop_from_schema(self.schema.rules.files.common.core)
-        clearSchema(self.schema.rules.files.common, "core")
-
-        _pop_from_schema(self.schema.rules.files.common.tables)
-        clearSchema(self.schema.rules.files.common, "tables")
-        return
-
-    def _interpret_skeletonBIDS(self):
-        f1 = self.tree.fetch("README")
-        f2 = self.tree.fetch("dataset_description.json")
-        #recursive_interpret(1, self.schema.rules.files.common)
-        print(f1._tree_reference)
-        print(f2._tree_reference)
-        print(self.schema.rules.dataset_metadata.dataset_description.selectors.funcs[0])
-        print(self.schema.rules.dataset_metadata.dataset_authors.selectors.funcs[0])
-        print(self.schema.rules.dataset_metadata.dataset_authors.selectors.funcs[1])
-
-        print(self.schema.rules.dataset_metadata.dataset_description.selectors(f1))
-        print(self.schema.rules.dataset_metadata.dataset_description.selectors(f2))
-        print(self.schema.rules.files.raw.motion)
-        print("hello")
-        return
-
+        from .modules.agnostic_files import _make_skeletonBIDS
+        _make_skeletonBIDS()
+        
     @property
     def tree(self):
         return self._tree_reference
@@ -109,11 +65,6 @@ class BidsDataset():
         exists, msg = checkPath(self.root)
         if not exists():
             raise FileExistsError(msg)
-        
-
-        """
-        do some stuff
-        """
 
         self.initialised = True
     

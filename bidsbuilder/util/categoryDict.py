@@ -21,41 +21,20 @@ class categoryDict():
         """
         if key not in self._dict:
             raise KeyError(f"key: {key} not found in category dict: {self}")
-        self._dict[key] = value
+        self._dict[key][self.VALUE] = value
 
     def __getitem__(self, key):
-        return self._dict[key]
+        return self._dict[key][self.VALUE]
 
     def _get_val_cat(self, key):
-        pass 
+        return self._dict[key]
     
     def pop(self, key):
-        pass
-    
-    def popitem(self):
-        pass
-    def populateSelf(self, rawDict:dict, **kwargs):
-        """
-        Populate category dict object based on a dictionary, as well as mapping of categories to keys
+        (_, val) = self._dict.pop(key)
+        return val
 
-            - rawDict: dictionary with key-value pairs
-            - **kwargs: category=keys, where category is the param name and keys is a list of keys belonging to that category
-        """
-        for cat, keys in kwargs.items():
-            if not cat in self.categories:
-                raise KeyError(f"category {cat} doesn't exist in {self}")
-            for key in keys:
-                val = rawDict.pop(key, None)  
-                self.__setitem__((key, cat),val)
-
-        if rawDict:
-            if not self.defaultCat:
-                raise KeyError(f"Unknown keys {rawDict} added to {self} with no default category")
-            #adding unknown keys as "optional" or whatever default category is chosen
-            logger.warning(f"Unknown keys {rawDict.items()}, adding as {self.defaultCat} values")
-            for key,value in rawDict.items():
-                self.__setitem__((key, self.defaultCat), value)
-
+    def _populate_dict(self, rawDict:dict, **kwargs):
+       pass
 """
 class catDict(dict):
     def __init__(self, categories:list=["required","recommended","optional"], defaultCatidx: None|int = -1):

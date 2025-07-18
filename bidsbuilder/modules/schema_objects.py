@@ -3,6 +3,7 @@ import re
 from attrs import define, field
 from typing import Union, ClassVar, TYPE_CHECKING
 from functools import lru_cache
+from weakref import WeakKeyDictionary
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -190,6 +191,8 @@ class formats():
 @define(slots=True)
 class Entity(nameValueBase):
 
+    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary
+
     @nameValueBase.val.setter
     def val(self, new_val:str):
         """Validate and set a new entity value
@@ -203,11 +206,10 @@ class Entity(nameValueBase):
             RuntimeError: If the entity format is not index or label
         """
         info = self._cached_fetch_object(self._name)
-        # is only of type string, so ignore this for now
-        # in the future can link it to objects.format and regex to assert the type
+        cur_overrides = self._override.get(self, {})
+        info.update(cur_overrides)
 
-        #formats are index or label
-        if not formats.check_pattern(info.format, new_val):
+        if not formats.check_pattern(info['format'], new_val):
             raise ValueError(f"val: {new_val} is not of required format: {info.format}")
        
         enums = info.get("enum", None)
@@ -236,8 +238,7 @@ class Metadata(nameValueBase):
     This basically allows for the value of one metadata field, to be an array, or dictionary of other metadata fields
 
     """
-
-
+    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary
     
     @nameValueBase.val.setter
     def val(self, new_val):

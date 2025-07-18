@@ -57,7 +57,8 @@ class filenameBase():
                 Warning(f"no value for recommended field:{key}")
         pass
 
-    @property
+
+    @property #could consider caching, but parent can change, so need to then reset the cache
     def parent(self):
         return self._tree_link.parent._name_link
 
