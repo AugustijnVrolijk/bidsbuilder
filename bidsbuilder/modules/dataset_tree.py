@@ -37,8 +37,8 @@ class FileEntry:
 
     """
     on_setattr (Callable | list[Callable] | None | Literal[attrs.setters.NO_OP]) –
-      Allows to overwrite the on_setattr setting from attr.s. If left None, the on_setattr value from attr.s is used. 
-      Set to attrs.setters.NO_OP to run no setattr hooks for this attribute – regardless of the setting in define().
+    Allows to overwrite the on_setattr setting from attr.s. If left None, the on_setattr value from attr.s is used. 
+    Set to attrs.setters.NO_OP to run no setattr hooks for this attribute – regardless of the setting in define().
     """
 
     def __attrs_post_init__(self) -> None:
@@ -64,10 +64,10 @@ class FileEntry:
         self._name = new_name
 
     def __fspath__(self) -> str:
-        return str(self.path)
+        return self.path
 
     def fetch_instance(self) -> 'DatasetCore':
-        return self.link
+        return self._file_link
 
     @property
     def relative_path(self) -> str:
@@ -85,8 +85,39 @@ class FileCollection(FileEntry):
 
         This enables grouping of similar metadata between them
     """
-    children: dict[str, Union['Directory', 'FileCollection', FileEntry]] = field(repr=False, factory=dict)
+    children: dict[str, Union['Directory', 'FileCollection', 'FileEntry']] = field(repr=False, factory=dict)
 
+    def addPath(self, name_ref: 'filenameBase', file_ref: 'DatasetCore'):
+        
+        relpath = name_ref.name
+        parts = relpath.parts
+       
+        assert len(parts) == 1, f"given file {name_ref} has no name"
+        #DEPENDS ON SCHEMA SYNTAX, IF A LEADING "/" ALWAYS MEANS ITS AT THE DATASET ROOT WE CAN CHECK THAT PARENT IS NONE
+        if relpath.root:
+            parts = parts[1:]
+
+        new_entry = FileEntry(_name=relpath, _file_link=file_ref, _name_link=name_ref, parent=self)
+        self.children[new_entry.name] = new_entry
+
+    def fetch(self, relpath: str, reference:bool=True) -> Union[None, 'DatasetCore', FileEntry]:
+        #reference tells whether to return the UserFileEntry|FileTree instance or its linked DatasetCore instance 
+
+        relpath = Path(relpath)
+        parts = relpath.parts
+        if len(parts) == 0:
+            raise ValueError(f"relpath missing value: {relpath}")
+        
+        child = self.children.get(parts[0])
+        if child is None:
+            return None
+        
+        if len(parts) == 1:
+            if reference:
+                return child.fetch_instance()
+            return child
+        
+        return child.fetch(posixpath.join(*parts[1:]), reference)
 
     @property
     def relative_path(self) -> str:

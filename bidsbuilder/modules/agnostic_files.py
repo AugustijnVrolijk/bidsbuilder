@@ -5,6 +5,7 @@ from attrs import define, field
 from typing import TYPE_CHECKING
 
 from ..util.util import isDir, clearSchema
+from .filenames import agnosticFilename
 
 if TYPE_CHECKING:
     from .dataset_tree import Directory
@@ -129,7 +130,7 @@ def _make_skeletonBIDS(schema:'Namespace', tree:'Directory'):
         for file in schema.keys():
             if file in exceptions:
                 continue
-            is_dir = isDir(schema.rules.directories.raw, file)
+            is_dir = isDir(schema.rules.directories.raw, file) #check if file is named in the directories schema
             tObj = resolveCoreClassType(**schema[file]._properties, is_dir=is_dir)
 
             tree.addPath(tObj.name, tObj, is_dir)
@@ -155,7 +156,7 @@ def _interpret_skeletonBIDS(self):
     return
 
 @convertPath
-def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> corePath:
+def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> agnosticFilename:
     """Resolve by looking at extensions
     
     Should look into something more robust

@@ -12,28 +12,9 @@ class filenameBase():
 
     _tree_link:'FileEntry' = field(init=False, repr=False)
 
-    """
-    def __attrs_post_init__(self, name = None):
-        self.level = level
-        self.name = name
-
-        if not name:
-            raise ValueError(f"stem {name} must be defined as a string representing the path with no extensions")
-    """
-    """
-    @DatasetCore.name.setter
-    def name(self, _:str):
-        #can't change names for core files
-        return 
-
-    @DatasetCore.exists.setter
-    def exists(self, value):
-        if not isinstance(value, bool):
-            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
-
-        if self.level != "required":
-            self._exists = value
-    """
+    @property
+    def name(self):
+        raise NotImplementedError(f"Base class {type(self)} has no name")
 
     def _getPaths(self):
         paths = []
@@ -65,11 +46,7 @@ class filenameBase():
 @define(slots=True)
 class agnosticFilename(filenameBase):
     level:str = field(repr=True)
-    _name:str = field(repr=True, alias="_name")
-
-    @property   #no setter, name can't be changed
-    def name(self):
-        return self._name
+    
 
     def _getPaths(self):
         paths = []
@@ -94,6 +71,17 @@ class agnosticFilename(filenameBase):
         pass
 
 
+    """
+    @DatasetCore.exists.setter
+    def exists(self, value):
+        if not isinstance(value, bool):
+            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
+
+        if self.level != "required":
+            self._exists = value
+    """
+
+
 @define(slots=True)
 class CompositeFilename(filenameBase):
     """Base class for filename generation for files with entities
@@ -107,6 +95,23 @@ class CompositeFilename(filenameBase):
     _entities: dict[Entity] = field(default=dict(), repr=True, alias="_entities")
     _suffix: Union['Suffix', None] = field(default=None, repr=True, alias="_suffix")
     _datatype: Union['raw_Datatype', None] = field(default=None, repr=True, alias="_datatype")
+
+    @property
+    def name(self) -> str:
+        """Construct the full filename by combining parent names and current name."""
+        cur_entities:dict[Entity] = self.entities
+        
+        ret_pairs = []
+        for pos_entity in self.schema:
+            t_entity:Entity = cur_entities.get(pos_entity, False)
+            if t_entity:
+                ret_pairs.append(f"{t_entity.str_name}-{t_entity.val}") #str name is the correct display name for bids filenames
+        
+        entity_string = '_'.join(ret_pairs)
+        if self.suffix is not None:
+            entity_string += f"_{self.suffix.name}"
+
+        return entity_string
 
     @property
     def entities(self) -> dict:
@@ -136,23 +141,6 @@ class CompositeFilename(filenameBase):
             return self.parent._datatype
         else:
             return None
-
-    @property
-    def name(self) -> str:
-        """Construct the full filename by combining parent names and current name."""
-        cur_entities:dict[Entity] = self.entities
-        
-        ret_pairs = []
-        for pos_entity in self.schema:
-            t_entity:Entity = cur_entities.get(pos_entity, False)
-            if t_entity:
-                ret_pairs.append(f"{t_entity.str_name}-{t_entity.val}") #str name is the correct display name for bids filenames
-        
-        entity_string = '_'.join(ret_pairs)
-        if self.suffix is not None:
-            entity_string += f"_{self.suffix.name}"
-
-        return entity_string
     
     def update(self, key:str, val:str):
         #local entities only

@@ -68,14 +68,21 @@ class JSONfile(DatasetCore):
                 processed[key] = (level, met_instance)
         return processed
 
+@define(slots=True)
 class sidecar_JSONfile(JSONfile):
     pass
 
+@define(slots=True)
 class extra_JSONfile(JSONfile):
     pass
 
+@define(slots=True)
 class agnostic_JSONfile(JSONfile):
     #allows to set the schema for a different area
+
+    @DatasetCore.exists.setter
+    def exists(self):
+        pass
     pass
 
 
