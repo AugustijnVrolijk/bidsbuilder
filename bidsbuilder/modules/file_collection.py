@@ -4,8 +4,9 @@ from typing import TYPE_CHECKING, Union, Any, ClassVar
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
-from ..modules.schema_objects import CompositeFilename, Modalitiy, Datatype, Entity, Suffix, Metadata
-from ..modules.data_folders import Subject, Session
+from .dataset_core import DatasetCore
+from ..modules.schema_objects import CompositeFilename, Entity, Suffix
+from .directories import Subject, Session
 
 """
 DATASET COLLECTION:
@@ -26,12 +27,9 @@ linked data, i.e:
 """
 
 @define(slots=True)
-class dataCollection():
+class dataCollection(DatasetCore):
     
-    dataset: ClassVar['Namespace'] = None
-
     parent: Union['Subject', 'Session'] = field(repr=False)
-    filename: 'CompositeFilename' = field(repr=True)
     containers: dict[Any] = field(init=False)
 
     #Metadata: dict[str] = field(init=False, repr=False)

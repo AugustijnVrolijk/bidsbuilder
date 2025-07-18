@@ -231,6 +231,17 @@ class Column(nameValueBase):
 
 @define(slots=True)
 class Metadata(nameValueBase):
+    """Metadata is quite unique, mainly due to the 'items' attribute
+    
+    This basically allows for the value of one metadata field, to be an array, or dictionary of other metadata fields
+
+    """
+
+
+    
+    @nameValueBase.val.setter
+    def val(self, new_val):
+        pass
 
     @classmethod
     @lru_cache(maxsize=256) #many different values so allow for larger cache for this
@@ -251,87 +262,12 @@ class raw_Datatype(ValueBase):
     pass
 
 
-@define(slots=True)
-class CompositeFilename:
-    """Base class for filename generation
-
-    Attributes:
-        parent (Union[filenameBase, None]): Parent filename object to inherit from
-        name (str): Name of the current filename component
-    """
-    schema: ClassVar['list'] #should point to schema.rules.entities which is an ordered list
-
-    parent: Union['CompositeFilename', None] = field(default=None, repr=False)
-    _entities: dict[Entity] = field(default=dict(), repr=True, alias="_entities")
-    _suffix: Union['Suffix', None] = field(default=None, repr=True, alias="_suffix")
-    _datatype: Union['raw_Datatype', None] = field(default=None, repr=True, alias="_datatype")
-
-    @property
-    def entities(self) -> dict:
-        if self.parent is None:
-            cur_entities = dict()
-        else:
-            cur_entities = self.parent.entities
-        
-        cur_entities.update(self._entities) #overwrite parent values with cur values
-        return cur_entities
-    
-    @property
-    def suffix(self) -> Union[Suffix, None]:
-        
-        if self._suffix is not None:
-            return self._suffix
-        elif self.parent is not None:
-            return self.parent.suffix
-        else:
-            return None
-
-    @property
-    def datatype(self) -> Union[raw_Datatype, None]:
-        if self._datatype is not None:
-            return self._datatype
-        elif self.parent is not None:
-            return self.parent._datatype
-        else:
-            return None
-
-    @property
-    def name(self) -> str:
-        """Construct the full filename by combining parent names and current name."""
-        cur_entities:dict[Entity] = self.entities
-        
-        ret_pairs = []
-        for pos_entity in self.schema:
-            t_entity:Entity = cur_entities.get(pos_entity, False)
-            if t_entity:
-                ret_pairs.append(f"{t_entity.str_name}-{t_entity.val}") #str name is the correct display name for bids filenames
-        
-        entity_string = '_'.join(ret_pairs)
-        if self.suffix is not None:
-            entity_string += f"_{self.suffix.name}"
-
-        return entity_string
-    
-    def update(self, key:str, val:str):
-        #local entities only
-        
-        cor_ent:Entity = self._entities.pop(key, None)
-        if cor_ent is not None:
-            cor_ent.val = val
-        elif key.lower().strip() == "suffix":
-            self.suffix.name = val
-        elif key.lower().strip() == "datatype":
-            self.datatype.name = val
-        else:
-            raise KeyError(f"key: {key} was not found for {self}")
-
 def _set_object_schemas(schema:'Namespace'):
     Entity.schema = schema.objects.entities
     Column.schema = schema.objects.columns
     Suffix.schema = schema.objects.suffixes
     Metadata.schema = schema.objects.metadata
     formats.schema = schema.objects.formats
-    CompositeFilename.schema = schema.rules.entities
     return
 
-__all__ = ["CompositeFilename","Entity", "Column", "Metadata", "Suffix", "_set_object_schemas"]
+__all__ = ["Entity", "Column", "Metadata", "Suffix", "_set_object_schemas", "raw_Datatype"]

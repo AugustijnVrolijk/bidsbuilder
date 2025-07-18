@@ -1,16 +1,16 @@
 from attrs import define, field
 from typing import ClassVar, TYPE_CHECKING
-
-from ..modules.schema_objects import CompositeFilename, Entity, Suffix
+from .dataset_core import DatasetCore
+from .schema_objects import Entity, Suffix
+from .filenames import CompositeFilename
 
 if TYPE_CHECKING:
     from ..bidsDataset import BidsDataset
     from bidsschematools.types.namespace import Namespace
 
 @define(slots=True)
-class folderBase():
+class folderBase(DatasetCore):
     _cur_entity: ClassVar[str] = None
-    dataset: ClassVar['BidsDataset'] = None
 
     _val:str = field(repr=True, default=None, alias="_val")
 
@@ -194,9 +194,6 @@ class Datatype(folderBase):
     def add_data(self):
         pass
     
-def _set_folder_dataset_ref(dataset:'BidsDataset'):
-    Subject.dataset = dataset
-
 def _set_folder_schemas():
     #schema:'Namespace'
     Session._cur_entity = "session"

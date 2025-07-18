@@ -1,6 +1,62 @@
 import re
 from mne.utils import logger
+from typing import Any
 
+class categoryDict():
+    """ was planning on making a modified dict with 
+    key: (category, value) pairs, modifying setattr and getattr to only return the value, apart from a special getter getting both
+    but this would only be used for json files and metadata, so will just implement this directly there...
+    """
+    CATEGORY = 0
+    VALUE = 1
+
+    def __init__(self):
+        self._categories:list = ["required","recommended","optional"]
+        self._default_cat:str = self._categories[-1]
+        self._dict:dict[str, tuple[str, Any]] = {}
+
+    def __setitem__(self, key, value):
+        """
+        Keys cannot be set using setitem. This ensures keys have been set via _populate_dict enforcing categories to be specified
+        """
+        if key not in self._dict:
+            raise KeyError(f"key: {key} not found in category dict: {self}")
+        self._dict[key] = value
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def _get_val_cat(self, key):
+        pass 
+    
+    def pop(self, key):
+        pass
+    
+    def popitem(self):
+        pass
+    def populateSelf(self, rawDict:dict, **kwargs):
+        """
+        Populate category dict object based on a dictionary, as well as mapping of categories to keys
+
+            - rawDict: dictionary with key-value pairs
+            - **kwargs: category=keys, where category is the param name and keys is a list of keys belonging to that category
+        """
+        for cat, keys in kwargs.items():
+            if not cat in self.categories:
+                raise KeyError(f"category {cat} doesn't exist in {self}")
+            for key in keys:
+                val = rawDict.pop(key, None)  
+                self.__setitem__((key, cat),val)
+
+        if rawDict:
+            if not self.defaultCat:
+                raise KeyError(f"Unknown keys {rawDict} added to {self} with no default category")
+            #adding unknown keys as "optional" or whatever default category is chosen
+            logger.warning(f"Unknown keys {rawDict.items()}, adding as {self.defaultCat} values")
+            for key,value in rawDict.items():
+                self.__setitem__((key, self.defaultCat), value)
+
+"""
 class catDict(dict):
     def __init__(self, categories:list=["required","recommended","optional"], defaultCatidx: None|int = -1):
         super().__init__()
@@ -78,18 +134,18 @@ class catDict(dict):
         return super().pop(tKey)
     
     def popitem(self):
-        (key, value) = super().popitem
+        (key, value) = super().popitem()
         tKey, category = self._resolve_key(key)
         getattr(self, category).pop(tKey)
         return (key, value)
     
     def populateSelf(self, rawDict:dict, **kwargs):
-        """
+        """"""
         Populate category dict object based on a dictionary, as well as mapping of categories to keys
 
             - rawDict: dictionary with key-value pairs
             - **kwargs: category=keys, where category is the param name and keys is a list of keys belonging to that category
-        """
+        """"""
         for cat, keys in kwargs.items():
             if not cat in self.categories:
                 raise KeyError(f"category {cat} doesn't exist in {self}")
@@ -104,6 +160,8 @@ class catDict(dict):
             logger.warning(f"Unknown keys {rawDict.items()}, adding as {self.defaultCat} values")
             for key,value in rawDict.items():
                 self.__setitem__((key, self.defaultCat), value)
+
+  """
 
 class WatchableDict:
     def __init__(self, initial=None):

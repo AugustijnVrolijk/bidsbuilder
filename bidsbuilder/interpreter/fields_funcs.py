@@ -1,6 +1,6 @@
 
 from typing import TYPE_CHECKING
-from bidsbuilder.modules.coreModule import DatasetCore
+from bidsbuilder.modules.dataset_core import DatasetCore
 
 if TYPE_CHECKING:
     from bidsbuilder.bidsDataset import BidsDataset

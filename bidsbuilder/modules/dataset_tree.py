@@ -10,14 +10,14 @@ import posixpath
 from attrs import define, field
 from typing import Union, TYPE_CHECKING
 from pathlib import Path
-from typing_extensions import Self
-from bidsbuilder.modules.coreModule import DatasetCore
 
 if TYPE_CHECKING:
-    from bidsbuilder.bidsDataset import BidsDataset
+    from ..bidsDataset import BidsDataset
+    from .dataset_core import DatasetCore
+    from .filenames import filenameBase
 
 @define(slots=True)
-class UserFileEntry:
+class FileEntry:
     """Partial reimplementation of :class:`os.DirEntry`.
 
     :class:`os.DirEntry` can't be instantiated from Python, but this can.
@@ -27,8 +27,9 @@ class UserFileEntry:
 
     #have to add alias otherwise it gets stripped of "_" and gets changed to "name"
     _name: str = field(repr=True, alias="_name")
-    link: Union['DatasetCore', 'BidsDataset'] = field(repr=False)
-    parent: Union['FileTree', None] = field(repr=False, default=None)
+    _file_link: Union['DatasetCore', 'BidsDataset'] = field(repr=False)
+    _name_link: 'filenameBase' = field(repr=False)
+    parent: Union['Directory', None] = field(repr=False, default=None)
 
     _stat: os.stat_result = field(init=False, repr=False, default=None)
     _lstat: os.stat_result = field(init=False, repr=False, default=None)
@@ -38,7 +39,6 @@ class UserFileEntry:
     on_setattr (Callable | list[Callable] | None | Literal[attrs.setters.NO_OP]) –
       Allows to overwrite the on_setattr setting from attr.s. If left None, the on_setattr value from attr.s is used. 
       Set to attrs.setters.NO_OP to run no setattr hooks for this attribute – regardless of the setting in define().
-
     """
 
     def __attrs_post_init__(self) -> None:
@@ -69,50 +69,50 @@ class UserFileEntry:
     def fetch_instance(self) -> 'DatasetCore':
         return self.link
 
-    def stat(self, *, follow_symlinks: bool = True) -> os.stat_result:
-        """Return stat_result object for the entry; cached per entry."""
-        if follow_symlinks:
-            if self._stat is None:
-                self._stat = os.stat(self.path, follow_symlinks=True)
-            return self._stat
-        else:
-            if self._lstat is None:
-                self._lstat = os.stat(self.path, follow_symlinks=False)
-            return self._lstat
-
-    def is_dir(self, *, follow_symlinks: bool = True) -> bool:
-        """Return True if the entry is a directory; cached per entry."""
-        _stat = self.stat(follow_symlinks=follow_symlinks)
-        return stat.S_ISDIR(_stat.st_mode)
-
-    def is_file(self, *, follow_symlinks: bool = True) -> bool:
-        """Return True if the entry is a file; cached per entry."""
-        _stat = self.stat(follow_symlinks=follow_symlinks)
-        return stat.S_ISREG(_stat.st_mode)
-
-    def is_symlink(self) -> bool:
-        """Return True if the entry is a symlink; cached per entry."""
-        _stat = self.stat(follow_symlinks=False)
-        return stat.S_ISLNK(_stat.st_mode)
-
-    #cannot be @cachedproperty as the name can change in which case the cached version is incorrect
     @property
     def relative_path(self) -> str:
-        #The path of the current FileTree, relative to the root.
-        return posixpath.join(self.parent.relative_path, self.name)
+        #this method and path may break if FileEntrys can be created without a link to a parent file
+        return self.parent.relative_path + self.name
     
-    #cannot be @cachedproperty as the name can change in which case the cached version is incorrect
     @property
-    def path(self):
-        return self.parent.path / self.name
+    def path(self) -> str:
+        return self.parent.path + self.name
 
 @define(slots=True)
-class FileTree(UserFileEntry):
-    """Represent a FileTree with cached metadata."""
-    #FileTree must be directory
-    #UserFileEntry has the required info for dirs and Files
+class FileCollection(FileEntry):
+    """File collections are stricly not a directory -> They are groups which contain related files
+        i.e. A raw data file and it's JSON sidecar file would form a collection, with both individual files being FileEntry's
 
-    children: dict[str, 'FileTree'] = field(repr=False, factory=dict)
+        This enables grouping of similar metadata between them
+    """
+    children: dict[str, Union['Directory', 'FileCollection', FileEntry]] = field(repr=False, factory=dict)
+
+
+    @property
+    def relative_path(self) -> str:
+        """The path of the current FileTree, relative to the root.
+
+        Follows parents up to the root and joins with POSIX separators (/).
+        Directories include trailing slashes for simpler matching.
+        """
+        if self.parent is None: #not root dir, relative path includes it
+            return self.name
+
+        return posixpath.join(self.parent.relative_path,f'{self.name}') 
+    
+    @property
+    def path(self) -> str:
+
+        if self.parent is None:
+            return self.name 
+
+        return posixpath.join(self.parent.relative_path,f'{self.name}')
+
+
+@define(slots=True)
+class Directory(FileCollection):
+    """Represent a directory with its associated files"""
+    #UserFileEntry has the required info for dirs and Files
 
     def addPath(self, raw_path: os.PathLike, obj_ref: 'DatasetCore', is_dir:bool=False):
         
@@ -127,9 +127,9 @@ class FileTree(UserFileEntry):
     
         if len(parts) == 1:
             if is_dir:
-                tClass = FileTree
+                tClass = Directory
             else:
-                tClass = UserFileEntry
+                tClass = FileEntry
             new_entry = tClass(_name=parts[0], link=obj_ref, parent=self)
             
             self.children[new_entry.name] = new_entry
@@ -139,28 +139,8 @@ class FileTree(UserFileEntry):
                 self.children[parts[0]].addPath(posixpath.join(*parts[1:]),obj_ref,is_dir)
             except:
                 raise KeyError(f"given path {relpath} refers to an intermediate folder which has not been created")
-        
-    """NEEDS TO BE REWORKED TO WORK WITH MY CHANGES"""
-    @classmethod
-    def read_from_filesystem(
-        cls,
-        direntry: os.PathLike,
-        parent: Union['FileTree', None] = None,
-    ) -> Self:
-        """Read a FileTree from the filesystem.
 
-        Uses :func:`os.scandir` to walk the directory tree.
-        """
-        self = cls(direntry, parent=parent)
-        if self.direntry.is_dir():
-            self.is_dir = True
-            self.children = {
-                entry.name: FileTree.read_from_filesystem(entry, parent=self)
-                for entry in os.scandir(self.direntry)
-            }
-        return self
-
-    def fetch(self, relpath: os.PathLike, reference:bool=True) -> Union[None, 'DatasetCore', UserFileEntry]:
+    def fetch(self, relpath: os.PathLike, reference:bool=True) -> Union[None, 'DatasetCore', FileEntry]:
         #reference tells whether to return the UserFileEntry|FileTree instance or its linked DatasetCore instance 
 
         relpath = Path(relpath)
@@ -189,22 +169,20 @@ class FileTree(UserFileEntry):
         child = self.children.get(parts[0], False)
         return child and (len(parts) == 1 or posixpath.join(*parts[1:]) in child)
 
-    #cannot be @cachedproperty as the name can change in which case the cached version is incorrect
     @property
     def relative_path(self) -> str:
-        """The path of the current FileTree, relative to the root.
+        """The path of the current Dir, relative to the root.
 
         Follows parents up to the root and joins with POSIX separators (/).
         Directories include trailing slashes for simpler matching.
         """
-        if self.parent is None:
+        if self.parent is None: #root dir
             return '/'
 
         return posixpath.join(self.parent.relative_path,f'{self.name}/')
     
-    #cannot be @cachedproperty as the name can change in which case the cached version is incorrect
     @property
-    def path(self) -> Path:
+    def path(self) -> str:
 
         if self.parent is None:
             return Path(self.name) 

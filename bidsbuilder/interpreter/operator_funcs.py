@@ -2,7 +2,7 @@ from typing import Any, TYPE_CHECKING
 from bidsbuilder.interpreter.evaluation_funcs import checkNone
 
 if TYPE_CHECKING:
-    from bidsbuilder.modules.coreModule import DatasetCore
+    from bidsbuilder.modules.dataset_core import DatasetCore
 
 @checkNone
 def get_property(core:'DatasetCore', prop:str):

@@ -15,7 +15,7 @@ def popDicts(*args, val:Any = None):
 
 def popDict(toPop:dict, Labels:list, val:Any = None):
     for label in Labels:
-        toPop[str(label)] = val 
+        toPop[str(label)] = val
     return toPop
 
 def _getPathStatus(path:str) -> Tuple[int, int, str, str]:

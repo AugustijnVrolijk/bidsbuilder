@@ -1,9 +1,8 @@
 from functools import wraps
 from pathlib import Path
-from bidsbuilder.modules.coreModule import DatasetCore
 
+from attrs import define, field
 from typing import TYPE_CHECKING
-
 
 def convertPath(cls):
     """
@@ -14,7 +13,7 @@ def convertPath(cls):
         path = kwargs.pop("path", None)
         stem = kwargs.get("stem", None)
         extensions = kwargs.get("extensions", [])
-        
+
         if path and stem:
             raise ValueError(f"path {path} and stem {stem} cannot both be defined")
 
@@ -27,26 +26,26 @@ def convertPath(cls):
             kwargs["stem"] = tPath.stem
 
         return cls(*args, **kwargs)
+    
     return wrapper
 
-class corePath(DatasetCore):
-    @convertPath
-    def __init__(self, level, name = None):
-        super().__init__(name, level=level)
-        self.level = level
-        self.name = name
+@define(slots=True)
+class corePath():
 
-        if not name:
-            raise ValueError(f"stem {name} must be defined as a string representing the path with no extensions")
+    level:str = field(repr=True)
+    _name:str = field(repr=True, alias="_name")
 
-    @property
-    def name(self) -> str:
+    @property   #no setter, name can't be changed
+    def name(self):
         return self._name
-    
-    @name.setter
-    def name(self, _:str):
-        #can't change names for core files
-        return 
+
+    @DatasetCore.exists.setter
+    def exists(self, value):
+        if not isinstance(value, bool):
+            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
+
+        if self.level != "required":
+            self._exists = value
 
     def _getPaths(self):
         paths = []
@@ -70,6 +69,17 @@ class corePath(DatasetCore):
                 Warning(f"no value for recommended field:{key}")
         pass
 
+"""
+@DatasetCore.exists.setter
+    def exists(self, value):
+        if not isinstance(value, bool):
+            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
+
+        if self.level != "required":
+            self._exists = value
+"""
+
+@define(slots=True)
 class coreJSON(corePath):
     def __init__(self, level:str, stem:str, extensions:list):
         #extensions is a list
@@ -78,6 +88,7 @@ class coreJSON(corePath):
         name = stem + self.extension
         super().__init__(level=level, name=name)
     
+@define(slots=True)
 class coreTSV(corePath):
     def __init__(self, level:str, stem:str, extensions:list):
         self.extensions = extensions
@@ -86,6 +97,7 @@ class coreTSV(corePath):
         name = stem + ".tsv"
         super().__init__(level=level, name=name)
 
+@define(slots=True)
 class coreUnknown(corePath):
     def __init__(self, level:str, stem:str, extensions:list=[]):
         self.extensions = extensions
@@ -96,7 +108,9 @@ class coreUnknown(corePath):
             name = stem
         super().__init__(level=level, name=name)
 
+@define(slots=True)
 class coreFolder(corePath):
+    
     def __init__(self, level:str, stem:str):
         super().__init__(level=level, name=stem)
 
@@ -107,8 +121,6 @@ def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> corePath:
     
     Should look into something more robust
     """
-
-
     extensions = kwargs.get("extensions", [])
     if is_dir:
         cls = coreFolder
@@ -119,6 +131,20 @@ def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> corePath:
         cls = coreTSV
     else:
         cls = coreUnknown
+
+    path = kwargs.pop("path", None)
+    stem = kwargs.get("stem", None)
+    
+    if path and stem:
+        raise ValueError(f"path {path} and stem {stem} cannot both be defined")
+
+    if path:
+        tPath = Path(path)
+        pathExt = ''.join(tPath.suffixes)
+        if pathExt:
+            extensions.append(pathExt)
+            kwargs["extensions"] = extensions
+        kwargs["stem"] = tPath.stem
 
     return cls(*args, **kwargs)
 

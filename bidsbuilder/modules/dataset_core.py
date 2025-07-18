@@ -1,29 +1,29 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, ClassVar
 from attrs import define, field
 
 if TYPE_CHECKING:
     from ..bidsDataset import BidsDataset
-    from ..util.datasetTree import UserFileEntry
+    from .dataset_tree import FileEntry
+    from .filenames import filenameBase
 
+@define(slots=True)
 class DatasetCore():
-    dataset:"BidsDataset" = None
+    _dataset:ClassVar["BidsDataset"] = None
+
+    _tree_link: Union['FileEntry', None] = field(repr=False, init=False, default=None)
+    _exists:bool = field(repr=False,init=False,default=True)
 
     def __init__(self, path:str, **kwargs):
         self._name:str = path
-        self._exists:bool = False
-        self.level:str = kwargs.pop("level", "optional")
-        if self.level == "required":
-            self._exists = True
-        self._tree_reference:Union['UserFileEntry'|None] = None
-
+        
     @property
     def name(self) -> str:
         return self._name
     
     @name.setter
     def name(self, val:str):
-        if not self._tree_reference is None:
-            self._tree_reference.name = val
+        if not self._tree_link is None:
+            self._tree_link.name = val
         self._name = val
         return 
     
@@ -33,11 +33,8 @@ class DatasetCore():
     
     @exists.setter
     def exists(self, value):
-        if not isinstance(value, bool):
-            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
-
-        if self.level != "required":
-            self._exists = value
+        assert isinstance(value, bool), f"property exists for {self} must be True or False"
+        self.exists = value
 
     def _write_BIDS(self):
         pass

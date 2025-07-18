@@ -1,9 +1,9 @@
 from pathlib import Path
-from .util.util import checkPath, isDir, clearSchema
-from .util.datasetTree import FileTree
-from .util.schema import parse_load_schema
-from .modules.commonFiles import resolveCoreClassType
 from typing import TYPE_CHECKING
+from .util.util import checkPath, isDir, clearSchema
+from .modules.dataset_tree import Directory
+from .util.schema import parse_load_schema
+from .modules.agnostic_files import resolveCoreClassType
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -22,12 +22,14 @@ class BidsDataset():
       - subjects
     """
     initialised = False
-
+    
 
     def __init__(self, root:str = Path.cwd()):
+        
+
         self.root = root
         self.schema:'Namespace' = parse_load_schema()
-        self._tree_reference = FileTree(_name=root, link=self, parent=None)
+        self._tree_reference:Directory = Directory(_name=root, link=self, parent=None)
         from .modules import set_all_schema_
         set_all_schema_(self, self.schema)
         self._make_skeletonBIDS()
@@ -100,8 +102,6 @@ class BidsDataset():
 
                 self.children.pop(child)
 
-
-
     def read(self, path:str = None):
         if path:
             self.root = path
@@ -116,7 +116,10 @@ class BidsDataset():
         """
 
         self.initialised = True
-        
+    
+    def addSubject():
+        pass
+
     """"
     reading files
         -tsv
@@ -125,8 +128,3 @@ class BidsDataset():
     data specific       -sql queries
         -mne.io.raw
     """
-
-if __name__ == "__main__":
-    test = BidsDataset()
-    test.tree.fetch("/stimuli")
-    print("hello")
