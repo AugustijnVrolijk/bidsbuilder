@@ -48,13 +48,13 @@ def exists(core:'DatasetCore', arg:Union[str|list], rule:str) -> int:
 
     #find the correct reference
     if rule == "dataset":
-        reference = core.dataset._tree_reference
+        reference = core._dataset.tree
     elif rule == "subject":
         return notImplemented()
     elif rule == "stimuli":
-        reference = core.dataset._tree_reference.fetch(r"/stimuli", False)
+        reference = core._dataset._tree_reference.fetch(r"/stimuli", False)
     elif rule == "file":
-        reference = core._tree_reference
+        reference = core._tree_link
         #fileTree objects are directories, UserFileEntry can be both (Filetree inherits it)
         if not isinstance(reference, FileEntry):
             reference = reference.parent

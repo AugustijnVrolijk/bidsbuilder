@@ -8,36 +8,43 @@ if TYPE_CHECKING:
 
 @define(slots=True)
 class DatasetCore():
-    _dataset:ClassVar["BidsDataset"] = None
+    _dataset:ClassVar["BidsDataset"]
 
-    _tree_link: Union['FileEntry', None] = field(repr=False, init=False, default=None)
-    _exists:bool = field(repr=False,init=False,default=True)
+    _tree_link: Union['FileEntry', None] = field(repr=True, init=False, default=None, alias="_tree_link")
+    _exists:bool = field(repr=True, init=False, default=True, alias="_exists")
+    _level:str = field(repr=True, default="optional", alias="_level")
 
-    def __init__(self, path:str, **kwargs):
-        self._name:str = path
-        
-    @property
-    def name(self) -> str:
-        return self._name
-    
-    @name.setter
-    def name(self, val:str):
-        if not self._tree_link is None:
-            self._tree_link.name = val
-        self._name = val
-        return 
-    
+    def __attrs_post_init__(self):
+        if self._level == "required":
+            self.exists = True
+
+    def __post_init__(self):
+        #not from attrs, but if an init needs to be run, once filename and the tree reference have been linked
+        pass
+
     @property 
     def exists(self):
         return self._exists
     
     @exists.setter
     def exists(self, value):
-        assert isinstance(value, bool), f"property exists for {self} must be True or False"
-        self.exists = value
+        if not isinstance(value, bool):
+            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
 
-    def _write_BIDS(self):
+        if self._level != "required":
+            self._exists = value
+
+    @property
+    def filename(self):
+        return self._tree_link._file_link
+
+    def _write_BIDS(self, force:bool):
+        if self._exists:
+            self._make_file(force)
+
+    def _make_file(self, force:bool):
         pass
+        #raise NotImplementedError(f"no _make_file defined for {self}")
 
     def _read_BIDS(self):
         pass
@@ -48,5 +55,6 @@ class DatasetCore():
     def __contains__(self, key): #used for selector parsing "in", need it to point it to whatever is needed
         return
 
+
 def _set_dataset_core(dataset:'BidsDataset'):
-    DatasetCore.dataset = dataset
+    DatasetCore._dataset = dataset

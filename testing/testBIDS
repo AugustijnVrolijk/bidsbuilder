@@ -1,8 +1,8 @@
 from bidsbuilder import *
 
 def main():
-    test1 = BidsDataset()    
-
+    test1 = BidsDataset(root=r"C:\Users\augus\BCI_Stuff\Aspen\test2")    
+    test1.build(True)
 
 if __name__ == "__main__":
     main()

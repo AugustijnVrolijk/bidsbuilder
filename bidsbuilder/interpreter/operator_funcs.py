@@ -6,8 +6,7 @@ if TYPE_CHECKING:
 
 @checkNone
 def get_property(core:'DatasetCore', prop:str):
-
-    return notImplemented()
+    return core[prop] #should have a __getItem__ defined
 
 @checkNone
 def get_list_index(arr:list, idx:int) -> Any:

@@ -9,14 +9,13 @@ def schema():
     return notImplemented()
 
 def dataset(core:'DatasetCore') -> 'BidsDataset':
-    return core.dataset
+    return core._dataset
 
 def subject():
     return notImplemented()
 
 def path(core:DatasetCore) -> str:
-    assert isinstance(core, DatasetCore)
-    return core._tree_reference.relative_path
+    return core._tree_link.relative_path
 
 def entities():
     return notImplemented()
@@ -42,8 +41,13 @@ def associations():
 def columns():
     return notImplemented()
 
-def json():
-    return notImplemented()
+def json(core:DatasetCore):
+    """   NOT YET COMPLETED NEED TO MAKE A MORE ROBUST METHOD
+    WHICH TAKES INTO ACCOUNT THE INHERITANCE PRINCIPLE IN ORDER TO COLLECT ALL METADATA
+    """
+    from ..modules.json_files import JSONfile
+    assert isinstance(core, JSONfile), f"given core: {core} was not a JSON\n update fields_funcs.json to use inheritance principle"
+    return core
 
 def gzip():
     return notImplemented()

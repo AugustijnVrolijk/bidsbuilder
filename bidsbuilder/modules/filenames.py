@@ -10,34 +10,11 @@ if TYPE_CHECKING:
 @define(slots=True)
 class filenameBase():
 
-    _tree_link:'FileEntry' = field(init=False, repr=False)
+    _tree_link:'FileEntry' = field(init=False, repr=False, alias="_tree_link")
 
     @property
     def name(self):
         raise NotImplementedError(f"Base class {type(self)} has no name")
-
-    def _getPaths(self):
-        paths = []
-        if self.extensions:
-            for ext in self.extensions:
-                paths.append(self.stem + ext)
-        else:
-            paths.append(self.stem)
-        return paths
-
-    def populateVals(self):
-        pass
-
-    def checkVals(self):
-        for key, val in self.required:
-            if isinstance(val, None):
-                KeyError(f"no value for required field:{key}")
-
-        for key, val in self.recommended:
-            if isinstance(val, None):
-                Warning(f"no value for recommended field:{key}")
-        pass
-
 
     @property #could consider caching, but parent can change, so need to then reset the cache
     def parent(self):
@@ -45,42 +22,18 @@ class filenameBase():
 
 @define(slots=True)
 class agnosticFilename(filenameBase):
-    level:str = field(repr=True)
     
+    _stem:str = field(repr=True, default='', alias="_stem")
+    _valid_extensions:list[str] = field(repr=False, default=[], alias="_valid_extensions")
+    _cur_ext:str = field(repr=True, default='', alias="_cur_ext")
 
-    def _getPaths(self):
-        paths = []
-        if self.extensions:
-            for ext in self.extensions:
-                paths.append(self.stem + ext)
-        else:
-            paths.append(self.stem)
-        return paths
-
-    def populateVals(self):
-        pass
-
-    def checkVals(self):
-        for key, val in self.required:
-            if isinstance(val, None):
-                KeyError(f"no value for required field:{key}")
-
-        for key, val in self.recommended:
-            if isinstance(val, None):
-                Warning(f"no value for recommended field:{key}")
-        pass
-
-
-    """
-    @DatasetCore.exists.setter
-    def exists(self, value):
-        if not isinstance(value, bool):
-            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
-
-        if self.level != "required":
-            self._exists = value
-    """
-
+    @property
+    def name(self):
+        return self._stem + self._cur_ext
+    
+    def _change_ext(self, val:str):
+        assert val in self._valid_extensions, f"extension {val} is not valid for {self}, choose on of {self._valid_extensions}"
+        self._cur_ext = val
 
 @define(slots=True)
 class CompositeFilename(filenameBase):

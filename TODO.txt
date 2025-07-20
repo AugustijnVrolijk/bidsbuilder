@@ -1,0 +1,4 @@
+finish dataset_tree - adding files, how that linking works, fixing fetch
+sort out agnostic file creation - how that process starts, containerisation of agnostic files, how to classify them, how schema is run
+test - populate the agnostic files, get saving dataset working
+adding raw data, containerisation for this.

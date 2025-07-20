@@ -1,217 +1,132 @@
-from functools import wraps
 from pathlib import Path
 
-from attrs import define, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generator, Any, Callable
 
-from ..util.util import isDir, clearSchema
+from ..util.util import isDir
 from .filenames import agnosticFilename
+from .dataset_tree import Directory, FileCollection, FileEntry
+from .json_files import agnostic_JSONfile
+from .tabular_files import tabularJSONFile, tabularFile
+from .dataset_core import DatasetCore
 
 if TYPE_CHECKING:
-    from .dataset_tree import Directory
     from bidsschematools.types import Namespace
 
-def convertPath(cls):
-    """
-    ensures no clashes between path stem and entities, also converts path into stem and entities for easier downstream parsing
-    """
-    @wraps(cls)
-    def wrapper(*args, **kwargs):
-        path = kwargs.pop("path", None)
-        stem = kwargs.get("stem", None)
-        extensions = kwargs.get("extensions", [])
-
-        if path and stem:
-            raise ValueError(f"path {path} and stem {stem} cannot both be defined")
-
-        if path:
-            tPath = Path(path)
-            pathExt = ''.join(tPath.suffixes)
-            if pathExt:
-                extensions.append(pathExt)
-                kwargs["extensions"] = extensions
-            kwargs["stem"] = tPath.stem
-
-        return cls(*args, **kwargs)
-    
-    return wrapper
-
-@define(slots=True)
-class corePath():
-
-    level:str = field(repr=True)
-    _name:str = field(repr=True, alias="_name")
-
-    @property   #no setter, name can't be changed
-    def name(self):
-        return self._name
-    """
-    @DatasetCore.exists.setter
-    def exists(self, value):
-        if not isinstance(value, bool):
-            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
-
-        if self.level != "required":
-            self._exists = value
-    """
-    def _getPaths(self):
-        paths = []
-        if self.extensions:
-            for ext in self.extensions:
-                paths.append(self.stem + ext)
-        else:
-            paths.append(self.stem)
-        return paths
-
-    def populateVals(self):
-        pass
-
-    def checkVals(self):
-        for key, val in self.required:
-            if isinstance(val, None):
-                KeyError(f"no value for required field:{key}")
-
-        for key, val in self.recommended:
-            if isinstance(val, None):
-                Warning(f"no value for recommended field:{key}")
-        pass
-
-"""
-@DatasetCore.exists.setter
-    def exists(self, value):
-        if not isinstance(value, bool):
-            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
-
-        if self.level != "required":
-            self._exists = value
-"""
-
-@define(slots=True)
-class coreJSON(corePath):
-    def __init__(self, level:str, stem:str, extensions:list):
-        #extensions is a list
-        self.extension = extensions[0]
-        assert self.extension == ".json"
-        name = stem + self.extension
-        super().__init__(level=level, name=name)
-    
-@define(slots=True)
-class coreTSV(corePath):
-    def __init__(self, level:str, stem:str, extensions:list):
-        self.extensions = extensions
-        self.stem = stem
-        assert ".tsv" in self.extensions
-        name = stem + ".tsv"
-        super().__init__(level=level, name=name)
-
-@define(slots=True)
-class coreUnknown(corePath):
-    def __init__(self, level:str, stem:str, extensions:list=[]):
-        self.extensions = extensions
-        self.stem = stem
-        if self.extensions:
-            name = stem + self.extensions[0]
-        else:
-            name = stem
-        super().__init__(level=level, name=name)
-
-@define(slots=True)
-class coreFolder(corePath):
-    
-    def __init__(self, level:str, stem:str):
-        super().__init__(level=level, name=stem)
-
 def _make_skeletonBIDS(schema:'Namespace', tree:'Directory'):
-    #Exceptions for scans, sessions and phenotype
+    """agnostic files are found in rules.files.common:
+    this is seperated in tabular files, and core
+    
+    I still need to process individual entries seperately in both of these as core has
+    got .jsons, folders and other randoms once (.cff for citation, readme etc...)
+    And tabular has some core tabular, and some "core" tabular which are actually present
+    every time for subjects or sessions... (scans.tsv, sessions.tsv etc..)
+    
+    If needed in the future can make resolve_class_type more robust by returning a is_table
+    from iter_agnostic_file if it is yielding from rules.files.common.table
+
+    Between is_table and is_dir (rules.directories.raw) that would mean only jsons and other random
+    files need to be resolved
+    """
+    
+    for file_info, is_dir in _iter_agnostic_files(schema):
+           
+        c_f_info = _clean_file_info(file_info)
+        class_builder = _resolve_class_type(c_f_info, is_dir)
+        class_builder(c_f_info, tree)
+        
+    return
+
+def _iter_agnostic_files(schema:'Namespace') -> Generator[tuple['Namespace', bool], None, None]:    
     exceptions = ["scans", "sessions", "phenotype"]
 
-    def _pop_from_schema(schema:'Namespace'):
+    def _iter_schema_file(to_iter:'Namespace'):
 
-        for file in schema.keys():
+        for file in to_iter.keys():
             if file in exceptions:
                 continue
             is_dir = isDir(schema.rules.directories.raw, file) #check if file is named in the directories schema
-            tObj = resolveCoreClassType(**schema[file]._properties, is_dir=is_dir)
-
-            tree.addPath(tObj.name, tObj, is_dir)
             
-    _pop_from_schema(schema.rules.files.common.core)
-    _pop_from_schema(schema.rules.files.common.tables)
-    return
+            yield (to_iter[file], is_dir)
 
-def _interpret_skeletonBIDS(self):
-    f1 = self.tree.fetch("README")
-    f2 = self.tree.fetch("dataset_description.json")
-    #recursive_interpret(1, self.schema.rules.files.common)
-    print(f1._tree_reference)
-    print(f2._tree_reference)
-    print(self.schema.rules.dataset_metadata.dataset_description.selectors.funcs[0])
-    print(self.schema.rules.dataset_metadata.dataset_authors.selectors.funcs[0])
-    print(self.schema.rules.dataset_metadata.dataset_authors.selectors.funcs[1])
+    yield from _iter_schema_file(schema.rules.files.common.core)
+    yield from _iter_schema_file(schema.rules.files.common.tables)
 
-    print(self.schema.rules.dataset_metadata.dataset_description.selectors(f1))
-    print(self.schema.rules.dataset_metadata.dataset_description.selectors(f2))
-    print(self.schema.rules.files.raw.motion)
-    print("hello")
-    return
+def _clean_file_info(file_info:'Namespace') -> dict:
 
-@convertPath
-def resolveCoreClassType(*args, is_dir:bool=False,**kwargs) -> agnosticFilename:
-    """Resolve by looking at extensions
-    
-    Should look into something more robust
-    """
-    extensions = kwargs.get("extensions", [])
-    if is_dir:
-        cls = coreFolder
-    elif ".json" in extensions and len(extensions) == 1:
-        cls = coreJSON
-    #this seems to be enough logic at the moment, but could look at only considering if .tsv is present
-    elif ".json" in extensions and ".tsv" in extensions:
-        cls = coreTSV
-    else:
-        cls = coreUnknown
+    properties = file_info._properties
 
-    path = kwargs.pop("path", None)
-    stem = kwargs.get("stem", None)
-    
+    extensions:list = properties.get("extensions", [])
+    stem = properties.get("stem", None)    
+    path = properties.pop("path", None)
+
     if path and stem:
         raise ValueError(f"path {path} and stem {stem} cannot both be defined")
 
     if path:
         tPath = Path(path)
-        pathExt = ''.join(tPath.suffixes)
+        stem = tPath.stem
+        pathExt = ''.join(tPath.suffixes) #merge for stuff like .tar.gz, instead of getting ['.tar', '.gz']
         if pathExt:
             extensions.append(pathExt)
-            kwargs["extensions"] = extensions
-        kwargs["stem"] = tPath.stem
 
-    return cls(*args, **kwargs)
+    properties["extensions"] = extensions
+    properties["stem"] = stem
 
-""" OLD VERSION:
+    return properties
 
-def _make_skeletonBIDS(schema:'Namespace', tree:'Directory'):
-    #Exceptions for scans, sessions and phenotype
-    exceptions = ["scans", "sessions", "phenotype"]
+def _resolve_class_type(file_info:dict[str, Any], is_dir:bool=False) -> Callable[[dict, 'Directory'], None]:
+    """
 
-    def _pop_from_schema(schema:'Namespace'):
-        toPop = []
-        for file in schema.keys():
-            if file in exceptions:
-                continue
-            is_dir = isDir(schema.rules.directories.raw, file)
-            tObj = resolveCoreClassType(**schema[file]._properties, is_dir=is_dir)
+    """
+    extensions = file_info["extensions"]
+    #stem = file_info["stem"]
 
-            tree.addPath(tObj.name, tObj, is_dir)
-            toPop.append(file)
-            
-        for key in toPop:
-            schema.pop(key)
-            
-    _pop_from_schema(schema.rules.files.common.core)
-    clearSchema(schema.rules.files.common, "core")
+    if is_dir:
+        return _process_folder
+    elif ".json" in extensions and len(extensions) == 1:
+        return _process_JSON
+    #this seems to be enough logic at the moment, but could look at only considering if .tsv is present
+    elif ".json" in extensions and ".tsv" in extensions:
+        return _process_TSV
+    else:
+        return _process_UNKNOWN
 
-    _pop_from_schema(schema.rules.files.common.tables)
-    clearSchema(schema.rules.files.common, "tables")
+def _process_folder(file_info:dict[str, Any], tree:'Directory') -> Directory:
+    assert file_info["extensions"] == []
+    filename = agnosticFilename(file_info["stem"])
+    file = DatasetCore(_level=file_info["level"])
+    tree.add_child(filename,file,type_flag="directory")
     return
-"""
+
+
+def _process_JSON(file_info:dict[str, Any], tree:'Directory') -> FileEntry:
+    assert file_info["extensions"] == [".json"]
+    filename = agnosticFilename(file_info["stem"], [".json"], ".json")
+    file = agnostic_JSONfile(_level=file_info["level"])
+    tree.add_child(filename, file, "file")
+    #no need to assign links, as creating a FileEntry does this
+    return
+
+def _process_TSV(file_info:dict[str, Any], tree:'Directory') -> FileCollection:
+    col_name = agnosticFilename(file_info["stem"])
+    ret_obj = tree.add_child(col_name, None, 'collection')
+    #tsv:
+    filename = agnosticFilename('', [".tsv"], ".tsv")
+    file = tabularFile(_level=file_info["level"])
+    ret_obj.add_child(filename, file)
+    #json:
+    filename = agnosticFilename('', [".json"], ".json")
+    file = tabularJSONFile(_level=file_info["level"])
+    ret_obj.add_child(filename, file)
+    return
+
+def _process_UNKNOWN(file_info:dict[str, Any], tree:'Directory') -> FileEntry:
+    if len(file_info["extensions"]) == 0:
+        cur_ext = ''
+    else:
+        cur_ext = file_info["extensions"][0]
+    filename = agnosticFilename(file_info["stem"], file_info["extensions"], cur_ext)
+    file = DatasetCore(_level=file_info["level"])
+    tree.add_child(filename, file, "file")
+    #no need to assign links, as creating a FileEntry does this
+    return

@@ -29,12 +29,24 @@ class categoryDict():
     def _get_val_cat(self, key):
         return self._dict[key]
     
+    def keys(self):
+        return self._dict.keys()
+
+    def items(self):
+        return self._dict.items()
+
+    def values(self):
+        return self._dict.values()
+
     def pop(self, key):
         (_, val) = self._dict.pop(key)
         return val
 
-    def _populate_dict(self, rawDict:dict, **kwargs):
-       pass
+    def _populate_dict(self, rawDict:dict):
+       for key, val in rawDict.items():
+           category, val = val #unpack to check there are 2
+           self._dict[key] = (category, val)
+       
 """
 class catDict(dict):
     def __init__(self, categories:list=["required","recommended","optional"], defaultCatidx: None|int = -1):

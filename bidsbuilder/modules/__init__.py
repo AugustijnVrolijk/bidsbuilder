@@ -13,4 +13,7 @@ def set_all_schema_(dataset:'BidsDataset',schema:'Namespace'):
     _set_filenames_schema(schema)
     from .directories import _set_folder_schemas
     _set_folder_schemas()
-
+    from .tabular_files import _set_tabular_schema
+    _set_tabular_schema(schema)
+    from .json_files import _set_JSON_schema
+    _set_JSON_schema(schema)

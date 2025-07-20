@@ -103,7 +103,7 @@ class ValueBase():
         
         return obj
 
-@define(slots=True)#eq and hash false so we can compare if entities are the same by name only
+@define(slots=True)
 class nameValueBase(ValueBase): #must beware of the hash = false, as "different" instances will hash to the same in sets and dictionaries
     """Entity wrapper
 
@@ -188,10 +188,10 @@ class formats():
         pattern = cls.get_pattern(inp_type)  # Ensure the format exists
         return bool(pattern.fullmatch(val))
 
-@define(slots=True)
+@define(slots=True, weakref_slot=True, hash=True)
 class Entity(nameValueBase):
 
-    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary
+    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary()
 
     @nameValueBase.val.setter
     def val(self, new_val:str):
@@ -231,15 +231,15 @@ class Column(nameValueBase):
         # Optionally delegate back to Base method if logic identical
         return super()._cached_fetch_object.__wrapped__(cls, name)
 
-@define(slots=True)
+@define(slots=True, weakref_slot=True, hash=True)
 class Metadata(nameValueBase):
     """Metadata is quite unique, mainly due to the 'items' attribute
     
     This basically allows for the value of one metadata field, to be an array, or dictionary of other metadata fields
 
     """
-    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary
-    
+    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary()
+
     @nameValueBase.val.setter
     def val(self, new_val):
         pass
@@ -247,8 +247,11 @@ class Metadata(nameValueBase):
     @classmethod
     @lru_cache(maxsize=256) #many different values so allow for larger cache for this
     def _cached_fetch_object(cls, name: str):
-        # Optionally delegate back to Base method if logic identical
-        return super()._cached_fetch_object.__wrapped__(cls, name)
+        obj = cls.schema.get(name)
+        if obj is None:
+            raise KeyError(f"no object found for key {name} in {cls.__name__}")
+        
+        return obj
 
 @define(slots=True)
 class Suffix(ValueBase):

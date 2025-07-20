@@ -22,16 +22,16 @@ class BidsDataset():
     """
     initialised = False
     
-    def __init__(self, root:str = Path.cwd()):
+    def __init__(self, root:str):
         
 
         self.root = root
         self.schema:'Namespace' = parse_load_schema()
-        self._tree_reference:Directory = Directory(_name=root, link=self, parent=None)
+        self._tree_reference:Directory = Directory(_name=root, _file_link=self, _name_link=None, parent=None)
         from .modules import set_all_schema_
         set_all_schema_(self, self.schema)
         from .modules.agnostic_files import _make_skeletonBIDS
-        _make_skeletonBIDS()
+        _make_skeletonBIDS(self.schema, self.tree)
         
     @property
     def tree(self):
@@ -41,16 +41,16 @@ class BidsDataset():
     def dataset_description(self):
         return self._tree_reference.fetch(r"/dataset_description.json")
 
-    def make(self, force=False):
-        self._removeRedundant()
-        
+    def build(self, force=False):
+        #self._removeRedundant() deprecated
+        if self.root == None:
+            raise FileNotFoundError("Please specify a root directory to build the dataset in")
+        """
         exists, msg = checkPath(self.root)
         if not exists:
             raise FileExistsError(msg)
-        
-        for child in self.children:
-            child.createBIDS()
-        return
+        """
+        self._tree_reference._make(force)
     
     def _removeRedundant(self):
         for child in self.children:
@@ -61,6 +61,10 @@ class BidsDataset():
                 #consider using __del__ method in order to just call pop. Concerns around whether the garbage collection always occurs
 
                 self.children.pop(child)
+
+    def _write_BIDS(self, force:bool):
+        path = Path(self.root)
+        path.mkdir(parents=False, exist_ok=force)
 
     def read(self, path:str = None):
         if path:

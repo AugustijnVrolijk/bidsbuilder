@@ -82,7 +82,7 @@ class selectorFunc:
             return self.val
         
         if self.requires_input:
-            final_args = args  
+            final_args = list(args)
         else:
             final_args = []
  

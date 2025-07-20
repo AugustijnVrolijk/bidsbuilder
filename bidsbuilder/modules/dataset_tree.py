@@ -10,11 +10,11 @@ import posixpath
 from attrs import define, field
 from typing import Union, TYPE_CHECKING
 from pathlib import Path
+from .filenames import filenameBase
+from .dataset_core import DatasetCore
 
 if TYPE_CHECKING:
     from ..bidsDataset import BidsDataset
-    from .dataset_core import DatasetCore
-    from .filenames import filenameBase
 
 @define(slots=True)
 class FileEntry:
@@ -27,8 +27,8 @@ class FileEntry:
 
     #have to add alias otherwise it gets stripped of "_" and gets changed to "name"
     _name: str = field(repr=True, alias="_name")
-    _file_link: Union['DatasetCore', 'BidsDataset'] = field(repr=False)
-    _name_link: 'filenameBase' = field(repr=False)
+    _file_link: Union['DatasetCore', 'BidsDataset'] = field(repr=False, alias='_file_link')
+    _name_link: 'filenameBase' = field(repr=False, alias='_name_link')
     parent: Union['Directory', None] = field(repr=False, default=None)
 
     _stat: os.stat_result = field(init=False, repr=False, default=None)
@@ -42,12 +42,21 @@ class FileEntry:
     """
 
     def __attrs_post_init__(self) -> None:
-        if isinstance(self.link, DatasetCore):
-            #is self.link.name = self.name redundant? Or will I always instantiate it already knowing the instance name
-            #self.link.name = self.name
-            self.link._tree_reference = self
-        return
+        
+        fully_init = 0
 
+        if isinstance(self._file_link, DatasetCore):
+            #is self.link.name = self.name redundant? Or will I always instantiate it already knowing the instance name
+            self._file_link._tree_link = self
+            fully_init += 1
+
+        if isinstance(self._name_link, filenameBase):
+            self._name_link._tree_link = self
+            fully_init += 1
+
+        if fully_init == 2:
+            self._file_link.__post_init__()
+        
     @property
     def name(self) -> str:
         return self._name
@@ -78,6 +87,9 @@ class FileEntry:
     def path(self) -> str:
         return self.parent.path + self.name
 
+    def _make(self, force:bool):
+        self._file_link._write_BIDS(force)
+
 @define(slots=True)
 class FileCollection(FileEntry):
     """File collections are stricly not a directory -> They are groups which contain related files
@@ -87,37 +99,42 @@ class FileCollection(FileEntry):
     """
     children: dict[str, Union['Directory', 'FileCollection', 'FileEntry']] = field(repr=False, factory=dict)
 
-    def addPath(self, name_ref: 'filenameBase', file_ref: 'DatasetCore'):
+    def __attrs_post_init__(self) -> None:
+        super().__attrs_post_init__()
+
+    def add_tree_node(self, name_ref: 'FileEntry'):
+        assert type(name_ref) == FileEntry, 'Collection add_tree_node expects strictly a FileEntry'
+        self.children[name_ref.name] = name_ref
+
+    def add_child(self, name_ref: 'filenameBase', file_ref: 'DatasetCore') -> 'FileEntry':
         
-        relpath = name_ref.name
+        relpath:Path = Path(name_ref.name)
         parts = relpath.parts
-       
-        assert len(parts) == 1, f"given file {name_ref} has no name"
-        #DEPENDS ON SCHEMA SYNTAX, IF A LEADING "/" ALWAYS MEANS ITS AT THE DATASET ROOT WE CAN CHECK THAT PARENT IS NONE
         if relpath.root:
             parts = parts[1:]
+        assert len(parts) == 1, f"given file {name_ref} has no name"
+        #DEPENDS ON SCHEMA SYNTAX, IF A LEADING "/" ALWAYS MEANS ITS AT THE DATASET ROOT WE CAN CHECK THAT PARENT IS NONE
+        
 
-        new_entry = FileEntry(_name=relpath, _file_link=file_ref, _name_link=name_ref, parent=self)
-        self.children[new_entry.name] = new_entry
+        #file collections can only add fileEntrys
+        new_entry = FileEntry(_name=parts[0], _file_link=file_ref, _name_link=name_ref, parent=self)
+        self.children[parts[0]] = new_entry
+        return new_entry
 
     def fetch(self, relpath: str, reference:bool=True) -> Union[None, 'DatasetCore', FileEntry]:
         #reference tells whether to return the UserFileEntry|FileTree instance or its linked DatasetCore instance 
-
-        relpath = Path(relpath)
-        parts = relpath.parts
-        if len(parts) == 0:
-            raise ValueError(f"relpath missing value: {relpath}")
         
-        child = self.children.get(parts[0])
+        relpath = str(relpath)
+        assert relpath.startswith(self.name), f"{relpath} is not a child of {self} - {self.name}"
+
+        child_name = relpath[len(self.name):]
+        child = self.children.get(child_name)
         if child is None:
             return None
         
-        if len(parts) == 1:
-            if reference:
-                return child.fetch_instance()
-            return child
-        
-        return child.fetch(posixpath.join(*parts[1:]), reference)
+        if reference:
+            return child.fetch_instance()
+        return child
 
     @property
     def relative_path(self) -> str:
@@ -137,39 +154,51 @@ class FileCollection(FileEntry):
         if self.parent is None:
             return self.name 
 
-        return posixpath.join(self.parent.relative_path,f'{self.name}')
+        return posixpath.join(self.parent.path,f'{self.name}')
 
+    def _make(self, force:bool):
+        for child in self.children.values():
+            child._make(force)
 
 @define(slots=True)
 class Directory(FileCollection):
     """Represent a directory with its associated files"""
     #UserFileEntry has the required info for dirs and Files
 
-    def addPath(self, raw_path: os.PathLike, obj_ref: 'DatasetCore', is_dir:bool=False):
+    def __attrs_post_init__(self) -> None:
+        super().__attrs_post_init__()
+
+    def add_tree_node(self, name_ref: Union['Directory', 'FileCollection', 'FileEntry']):
+        assert isinstance(name_ref, FileEntry), 'Directory add_tree_node expects a FileEntry or subclass'
+        self.children[name_ref.name] = name_ref
+        name_ref.parent = self
+
+    def add_child(self, name_ref: 'filenameBase', file_ref: 'DatasetCore', type_flag:str='collection') -> Union['Directory','FileCollection','FileEntry']:
+
+        child_type = {
+            "collection": FileCollection,
+            "directory": Directory,
+            "file": FileEntry
+        }
+        ret_class:FileEntry = child_type[type_flag.lower()]
         
-        relpath = Path(raw_path)
+        relpath:Path = Path(name_ref.name)
         parts = relpath.parts
-        if len(parts) == 0:
-            raise ValueError(f"relpath misisng value: {relpath}")
-        
-        #DEPENDS ON SCHEMA SYNTAX, IF A LEADING "/" ALWAYS MEANS ITS AT THE DATASET ROOT WE CAN CHECK THAT PARENT IS NONE
         if relpath.root:
             parts = parts[1:]
-    
-        if len(parts) == 1:
-            if is_dir:
-                tClass = Directory
-            else:
-                tClass = FileEntry
-            new_entry = tClass(_name=parts[0], link=obj_ref, parent=self)
-            
-            self.children[new_entry.name] = new_entry
-        else:
-            #CURRENT APPROACH WILL NOT BUILD INTERMEDIATE FOLDERS
+        assert len(parts) == 1, f"given file {name_ref} has no name"
+        
+        new_entry = ret_class(_name=parts[0], _file_link=file_ref, _name_link=name_ref, parent=self)
+        self.children[parts[0]] = new_entry
+        
+        return new_entry
+        """
+        #CURRENT APPROACH WILL NOT BUILD INTERMEDIATE FOLDERS
             try:
                 self.children[parts[0]].addPath(posixpath.join(*parts[1:]),obj_ref,is_dir)
             except:
                 raise KeyError(f"given path {relpath} refers to an intermediate folder which has not been created")
+        """
 
     def fetch(self, relpath: os.PathLike, reference:bool=True) -> Union[None, 'DatasetCore', FileEntry]:
         #reference tells whether to return the UserFileEntry|FileTree instance or its linked DatasetCore instance 
@@ -216,6 +245,13 @@ class Directory(FileCollection):
     def path(self) -> str:
 
         if self.parent is None:
-            return Path(self.name) 
+            return f"{self.name}/"   #need to add the trailing / as fileEntry just does parent.path + self.name
+        #so without the trailing / it would skip the / between the file and directory. 
+        #this is necessary to enable collections to work as containers but not directories
 
-        return self.parent.path / self.name
+        return posixpath.join(self.parent.path,f'{self.name}/')
+
+    def _make(self, force:bool):
+        self._file_link._write_BIDS(force)
+        for child in self.children.values():
+            child._make(force)
