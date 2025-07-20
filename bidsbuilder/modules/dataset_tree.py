@@ -218,7 +218,7 @@ class Directory(FileCollection):
         
         if len(parts) == 1:
             if reference:
-                return child.link
+                return child._file_link
             return child
         return child.fetch(posixpath.join(*parts[1:]), reference)
 

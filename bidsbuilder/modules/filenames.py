@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 @define(slots=True)
 class filenameBase():
 
-    _tree_link:'FileEntry' = field(init=False, repr=False, alias="_tree_link")
+    _tree_link:'FileEntry' = field(init=False, default=None, repr=False, alias="_tree_link")
 
     @property
     def name(self):
@@ -18,7 +18,10 @@ class filenameBase():
 
     @property #could consider caching, but parent can change, so need to then reset the cache
     def parent(self):
-        return self._tree_link.parent._name_link
+        if self._tree_link:
+            return self._tree_link.parent._name_link
+        else: 
+            None
 
 @define(slots=True)
 class agnosticFilename(filenameBase):

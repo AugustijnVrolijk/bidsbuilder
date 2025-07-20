@@ -22,3 +22,4 @@ class tabularJSONFile(JSONfile):
 
 def _set_tabular_schema(schema:'Namespace'):
     tabularJSONFile._schema = schema.rules.tabular_data
+    tabularJSONFile._recurse_depth = 2

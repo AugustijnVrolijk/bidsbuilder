@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from .util.util import checkPath
 from .modules.dataset_tree import Directory
+from .modules.directories import Subject
 from .util.schema import parse_load_schema
 
 if TYPE_CHECKING:
@@ -76,14 +77,6 @@ class BidsDataset():
 
         self.initialised = True
     
-    def addSubject():
-        pass
-
-    """"
-    reading files
-        -tsv
-        -json
-
-    data specific       -sql queries
-        -mne.io.raw
-    """
+    def addSubject(self, name:str) -> Subject:
+        sub = Subject.create(name, self.tree)
+        return sub

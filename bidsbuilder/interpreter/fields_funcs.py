@@ -17,16 +17,20 @@ def subject():
 def path(core:DatasetCore) -> str:
     return core._tree_link.relative_path
 
-def entities():
+def entities(core:DatasetCore):
+    return
     return notImplemented()
 
-def datatype():
+def datatype(core:DatasetCore):
+    return
     return notImplemented()
 
-def suffix():
+def suffix(core:DatasetCore):
+    return
     return notImplemented()
 
-def extension():
+def extension(core:DatasetCore):
+    return
     return notImplemented()
 
 def modality():

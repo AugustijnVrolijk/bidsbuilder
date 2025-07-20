@@ -242,7 +242,7 @@ class Metadata(nameValueBase):
 
     @nameValueBase.val.setter
     def val(self, new_val):
-        pass
+        self._val = new_val
 
     @classmethod
     @lru_cache(maxsize=256) #many different values so allow for larger cache for this

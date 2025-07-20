@@ -46,7 +46,7 @@ class selectorHook():
 @define(slots=True, repr=False)
 class selectorFunc:
     val: Any = field(repr=False)                                 #Can be a Callable, str, int, list, etc..
-    args: list[Any] = field(repr=False, default=[])            #in the case it is a callable, defines the arguments to give it
+    args: list[Any] = field(repr=False, factory=list)            #in the case it is a callable, defines the arguments to give it
     requires_input: bool = field(repr=False, default=False)     #Whether it needs the input datasetCore instance in the callable function
     is_callable: bool = field(repr=False, default=False) 
 
@@ -477,7 +477,6 @@ class SelectorParser():
                 return selectorFunc(val=None)
             else:
                 raise ValueError(f"unrecognised identifier for {cur.val}")
-                return cur.val
         
         else:
             raise TypeError(f"Unable to match token {cur}")

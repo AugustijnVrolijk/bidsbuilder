@@ -21,7 +21,7 @@ class categoryDict():
         """
         if key not in self._dict:
             raise KeyError(f"key: {key} not found in category dict: {self}")
-        self._dict[key][self.VALUE] = value
+        self._dict[key][self.VALUE].val = value
 
     def __getitem__(self, key):
         return self._dict[key][self.VALUE]

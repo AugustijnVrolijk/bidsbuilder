@@ -1,7 +1,14 @@
 from bidsbuilder import *
 
 def main():
-    test1 = BidsDataset(root=r"C:\Users\augus\BCI_Stuff\Aspen\test2")    
+    test1 = BidsDataset(root=r"C:\Users\augus\BCI_Stuff\Aspen\test2")  
+    test1.dataset_description["Funding"] = "this is an example"
+    test1.addSubject("hello")
+    tester2 = test1.addSubject("tester2")
+    tester2.add_session("IEMU")
+
+    #test1.addSubject("ASDASHDC138/(3)")
+    #test1.addSubject("hello")
     test1.build(True)
 
 if __name__ == "__main__":
