@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
-        <title>API Reference - bidsbuilder 0.1.0 documentation</title>
+        <title>bidsbuilder - bidsbuilder 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -216,7 +216,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="_sources/api.rst.txt" title="View this page">
+  <a class="muted-link" href="_sources/modules.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -230,84 +230,84 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="module-bidsbuilder">
-<span id="api-reference"></span><h1>API Reference<a class="headerlink" href="#module-bidsbuilder" title="Link to this heading">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.</span></span><span class="sig-name descname"><span class="pre">BidsDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.BidsDataset" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>At the time of writing: 24/06/2025
-Dataset needs the following context:</p>
-<dl class="simple">
-<dt>required:</dt><dd><ul class="simple">
-<li><p>dataset_description</p></li>
-<li><p>tree</p></li>
-<li><p>ignored</p></li>
-<li><p>datatypes</p></li>
-<li><p>modalities</p></li>
-<li><p>subjects</p></li>
+          <section id="bidsbuilder">
+<h1>bidsbuilder<a class="headerlink" href="#bidsbuilder" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="bidsbuilder.html">bidsbuilder package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bidsbuilder.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.interpreter.html">bidsbuilder.interpreter package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.interpreter.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.interpreter.html#module-bidsbuilder.interpreter.evaluation_funcs">bidsbuilder.interpreter.evaluation_funcs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.interpreter.html#module-bidsbuilder.interpreter.fields_funcs">bidsbuilder.interpreter.fields_funcs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.interpreter.html#module-bidsbuilder.interpreter.operator_funcs">bidsbuilder.interpreter.operator_funcs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.interpreter.html#module-bidsbuilder.interpreter.selectors">bidsbuilder.interpreter.selectors module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.interpreter.html#module-bidsbuilder.interpreter">Module contents</a></li>
 </ul>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>root</strong> (<em>str</em>)</p></li>
-<li><p><strong>minimal</strong> (<em>bool</em>)</p></li>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.html">bidsbuilder.modules package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules.agnostic_files">bidsbuilder.modules.agnostic_files module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules.dataset_core">bidsbuilder.modules.dataset_core module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules.dataset_tree">bidsbuilder.modules.dataset_tree module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules.directories">bidsbuilder.modules.directories module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#bidsbuilder-modules-file-collection-module">bidsbuilder.modules.file_collection module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules.filenames">bidsbuilder.modules.filenames module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules.json_files">bidsbuilder.modules.json_files module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules.schema_objects">bidsbuilder.modules.schema_objects module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules.tabular_files">bidsbuilder.modules.tabular_files module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.html#module-bidsbuilder.modules">Module contents</a></li>
 </ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset.addSubject">
-<span class="sig-name descname"><span class="pre">addSubject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.BidsDataset.addSubject" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="bidsbuilder.modules.html#bidsbuilder.modules.directories.Subject" title="bidsbuilder.modules.directories.Subject"><code class="xref py py-class docutils literal notranslate"><span class="pre">Subject</span></code></a></span></p>
-</dd>
-<dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>name</strong> (<em>str</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset.build">
-<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.BidsDataset.build" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset.dataset_description">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dataset_description</span></span><a class="headerlink" href="#bidsbuilder.BidsDataset.dataset_description" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset.initialised">
-<span class="sig-name descname"><span class="pre">initialised</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#bidsbuilder.BidsDataset.initialised" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset.read">
-<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.BidsDataset.read" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset.tree">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tree</span></span><a class="headerlink" href="#bidsbuilder.BidsDataset.tree" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.html">bidsbuilder.util package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.util.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.util.html#module-bidsbuilder.util.categoryDict">bidsbuilder.util.categoryDict module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.util.html#module-bidsbuilder.util.io">bidsbuilder.util.io module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.util.html#bidsbuilder-util-queryaspen-module">bidsbuilder.util.queryASPEN module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.util.html#module-bidsbuilder.util.schema">bidsbuilder.util.schema module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.util.html#module-bidsbuilder.util.util">bidsbuilder.util.util module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.util.html#module-bidsbuilder.util">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bidsbuilder.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bidsbuilder.html#module-bidsbuilder.bidsDataset">bidsbuilder.bidsDataset module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.bidsDataset.BidsDataset"><code class="docutils literal notranslate"><span class="pre">BidsDataset</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.bidsDataset.BidsDataset.addSubject"><code class="docutils literal notranslate"><span class="pre">BidsDataset.addSubject()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.bidsDataset.BidsDataset.build"><code class="docutils literal notranslate"><span class="pre">BidsDataset.build()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.bidsDataset.BidsDataset.dataset_description"><code class="docutils literal notranslate"><span class="pre">BidsDataset.dataset_description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.bidsDataset.BidsDataset.initialised"><code class="docutils literal notranslate"><span class="pre">BidsDataset.initialised</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.bidsDataset.BidsDataset.read"><code class="docutils literal notranslate"><span class="pre">BidsDataset.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.bidsDataset.BidsDataset.schema"><code class="docutils literal notranslate"><span class="pre">BidsDataset.schema</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.bidsDataset.BidsDataset.tree"><code class="docutils literal notranslate"><span class="pre">BidsDataset.tree</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bidsbuilder.html#module-bidsbuilder">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset"><code class="docutils literal notranslate"><span class="pre">BidsDataset</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset.addSubject"><code class="docutils literal notranslate"><span class="pre">BidsDataset.addSubject()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset.build"><code class="docutils literal notranslate"><span class="pre">BidsDataset.build()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset.dataset_description"><code class="docutils literal notranslate"><span class="pre">BidsDataset.dataset_description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset.initialised"><code class="docutils literal notranslate"><span class="pre">BidsDataset.initialised</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset.read"><code class="docutils literal notranslate"><span class="pre">BidsDataset.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset.schema"><code class="docutils literal notranslate"><span class="pre">BidsDataset.schema</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset.tree"><code class="docutils literal notranslate"><span class="pre">BidsDataset.tree</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
 </section>
 
         </article>
@@ -335,35 +335,8 @@ Dataset needs the following context:</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">API Reference</a><ul>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset"><code class="docutils literal notranslate"><span class="pre">BidsDataset</span></code></a><ul>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset.addSubject"><code class="docutils literal notranslate"><span class="pre">BidsDataset.addSubject()</span></code></a></li>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset.build"><code class="docutils literal notranslate"><span class="pre">BidsDataset.build()</span></code></a></li>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset.dataset_description"><code class="docutils literal notranslate"><span class="pre">BidsDataset.dataset_description</span></code></a></li>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset.initialised"><code class="docutils literal notranslate"><span class="pre">BidsDataset.initialised</span></code></a></li>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset.read"><code class="docutils literal notranslate"><span class="pre">BidsDataset.read()</span></code></a></li>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset.tree"><code class="docutils literal notranslate"><span class="pre">BidsDataset.tree</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>

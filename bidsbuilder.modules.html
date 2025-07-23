@@ -1,0 +1,1061 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
+        <title>bidsbuilder.modules package - bidsbuilder 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=25af2a20" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #2b2b2b;
+  --color-code-foreground: #f8f8f2;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #2b2b2b;
+  --color-code-foreground: #f8f8f2;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">bidsbuilder 0.1.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <span class="sidebar-brand-text">bidsbuilder 0.1.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/bidsbuilder.modules.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="bidsbuilder-modules-package">
+<h1>bidsbuilder.modules package<a class="headerlink" href="#bidsbuilder-modules-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-bidsbuilder.modules.agnostic_files">
+<span id="bidsbuilder-modules-agnostic-files-module"></span><h2>bidsbuilder.modules.agnostic_files module<a class="headerlink" href="#module-bidsbuilder.modules.agnostic_files" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-bidsbuilder.modules.dataset_core">
+<span id="bidsbuilder-modules-dataset-core-module"></span><h2>bidsbuilder.modules.dataset_core module<a class="headerlink" href="#module-bidsbuilder.modules.dataset_core" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_core.DatasetCore">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.dataset_core.</span></span><span class="sig-name descname"><span class="pre">DatasetCore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_level</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_core.DatasetCore.deleteSelf">
+<span class="sig-name descname"><span class="pre">deleteSelf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_core.DatasetCore.deleteSelf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_core.DatasetCore.exists">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exists</span></span><a class="headerlink" href="#bidsbuilder.modules.dataset_core.DatasetCore.exists" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_core.DatasetCore.filename">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filename</span></span><a class="headerlink" href="#bidsbuilder.modules.dataset_core.DatasetCore.filename" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-bidsbuilder.modules.dataset_tree">
+<span id="bidsbuilder-modules-dataset-tree-module"></span><h2>bidsbuilder.modules.dataset_tree module<a class="headerlink" href="#module-bidsbuilder.modules.dataset_tree" title="Link to this heading">¶</a></h2>
+<p>The below code was taken from src/bids_validator/types/files.py
+with a couple modifications for UserDirEntry to point to a datasetCore object
+allowing for object retrieval via the fileTree</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.Directory">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.dataset_tree.</span></span><span class="sig-name descname"><span class="pre">Directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_file_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_name_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.Directory" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection" title="bidsbuilder.modules.dataset_tree.FileCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileCollection</span></code></a></p>
+<p>Represent a directory with its associated files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>_file_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><em>DatasetCore</em></a><em> | </em><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.BidsDataset"><em>BidsDataset</em></a>)</p></li>
+<li><p><strong>_name_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><em>filenameBase</em></a>)</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>children</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection" title="bidsbuilder.modules.dataset_tree.FileCollection"><em>FileCollection</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><em>FileEntry</em></a><em>]</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.Directory.add_child">
+<span class="sig-name descname"><span class="pre">add_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'collection'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.Directory.add_child" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><code class="xref py py-class docutils literal notranslate"><span class="pre">Directory</span></code></a>, <a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection" title="bidsbuilder.modules.dataset_tree.FileCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileCollection</span></code></a>, <a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileEntry</span></code></a>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>name_ref</strong> (<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><em>filenameBase</em></a>)</p></li>
+<li><p><strong>file_ref</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><em>DatasetCore</em></a>)</p></li>
+<li><p><strong>type_flag</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.Directory.add_tree_node">
+<span class="sig-name descname"><span class="pre">add_tree_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_ref</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.Directory.add_tree_node" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name_ref</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection" title="bidsbuilder.modules.dataset_tree.FileCollection"><em>FileCollection</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><em>FileEntry</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.Directory.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.Directory.fetch" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatasetCore</span></code></a>, <a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileEntry</span></code></a>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>relpath</strong> (<em>PathLike</em>)</p></li>
+<li><p><strong>reference</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.Directory.is_dir">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_dir</span></span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.Directory.is_dir" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.Directory.path">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.Directory.path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.Directory.relative_path">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">relative_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.Directory.relative_path" title="Link to this definition">¶</a></dt>
+<dd><p>The path of the current Dir, relative to the root.</p>
+<p>Follows parents up to the root and joins with POSIX separators (/).
+Directories include trailing slashes for simpler matching.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.dataset_tree.</span></span><span class="sig-name descname"><span class="pre">FileCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_file_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_name_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileEntry</span></code></a></p>
+<p>File collections are stricly not a directory -&gt; They are groups which contain related files
+i.e. A raw data file and it’s JSON sidecar file would form a collection, with both individual files being FileEntry’s</p>
+<p>This enables grouping of similar metadata between them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>_file_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><em>DatasetCore</em></a><em> | </em><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.BidsDataset"><em>BidsDataset</em></a>)</p></li>
+<li><p><strong>_name_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><em>filenameBase</em></a>)</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>children</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection" title="bidsbuilder.modules.dataset_tree.FileCollection"><em>FileCollection</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><em>FileEntry</em></a><em>]</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection.add_child">
+<span class="sig-name descname"><span class="pre">add_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_ref</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.add_child" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileEntry</span></code></a></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>name_ref</strong> (<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><em>filenameBase</em></a>)</p></li>
+<li><p><strong>file_ref</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><em>DatasetCore</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection.add_tree_node">
+<span class="sig-name descname"><span class="pre">add_tree_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_ref</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.add_tree_node" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name_ref</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><em>FileEntry</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection.children">
+<span class="sig-name descname"><span class="pre">children</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">,</span> <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[Directory,</span> <span class="pre">FileCollection,</span> <span class="pre">FileEntry]]</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.children" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection.fetch">
+<span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">relpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.fetch" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatasetCore</span></code></a>, <a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileEntry</span></code></a>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>relpath</strong> (<em>str</em>)</p></li>
+<li><p><strong>reference</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection.is_dir">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_dir</span></span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.is_dir" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection.path">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection.relative_path">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">relative_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.relative_path" title="Link to this definition">¶</a></dt>
+<dd><p>The path of the current FileTree, relative to the root.</p>
+<p>Follows parents up to the root and joins with POSIX separators (/).
+Directories include trailing slashes for simpler matching.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.dataset_tree.</span></span><span class="sig-name descname"><span class="pre">FileEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_file_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_name_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Partial reimplementation of <code class="xref py py-class docutils literal notranslate"><span class="pre">os.DirEntry</span></code>.</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">os.DirEntry</span></code> can’t be instantiated from Python, but this can.</p>
+<p>TAKEN FROM src/bids_validator/types/files.py</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>_file_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><em>DatasetCore</em></a><em> | </em><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.BidsDataset"><em>BidsDataset</em></a>)</p></li>
+<li><p><strong>_name_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><em>filenameBase</em></a>)</p></li>
+<li><p><strong>parent</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry.fetch_instance">
+<span class="sig-name descname"><span class="pre">fetch_instance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry.fetch_instance" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatasetCore</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry.is_dir">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_dir</span></span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry.is_dir" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry.name">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry.parent">
+<span class="sig-name descname"><span class="pre">parent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code><span class="pre">[Directory]</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry.parent" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry.path">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry.path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry.relative_path">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">relative_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry.relative_path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-bidsbuilder.modules.directories">
+<span id="bidsbuilder-modules-directories-module"></span><h2>bidsbuilder.modules.directories module<a class="headerlink" href="#module-bidsbuilder.modules.directories" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.directories.Session">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.directories.</span></span><span class="sig-name descname"><span class="pre">Session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.directories.Session" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">folderBase</span></code></p>
+<p>At the time of writing: 24/06/2025
+Session needs the following context:</p>
+<dl class="simple">
+<dt>required:</dt><dd><ul class="simple">
+<li><p>ses_dirs</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_level</strong> (<em>str</em>)</p></li>
+<li><p><strong>_val</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.directories.Session.add_datatype">
+<span class="sig-name descname"><span class="pre">add_datatype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.directories.Session.add_datatype" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.directories.Session.create">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.directories.Session.create" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#bidsbuilder.modules.directories.Session" title="bidsbuilder.modules.directories.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tree</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.directories.Subject">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.directories.</span></span><span class="sig-name descname"><span class="pre">Subject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.directories.Subject" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">folderBase</span></code></p>
+<p>At the time of writing: 24/06/2025
+Subject needs the following context:</p>
+<dl class="simple">
+<dt>required:</dt><dd><ul class="simple">
+<li><p>sessions</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_level</strong> (<em>str</em>)</p></li>
+<li><p><strong>_val</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.directories.Subject.add_datatype">
+<span class="sig-name descname"><span class="pre">add_datatype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.directories.Subject.add_datatype" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>d_type</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.directories.Subject.add_session">
+<span class="sig-name descname"><span class="pre">add_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.directories.Subject.add_session" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ses</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.directories.Subject.anonymise">
+<span class="sig-name descname"><span class="pre">anonymise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.directories.Subject.anonymise" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.directories.Subject.val">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">val</span></span><a class="headerlink" href="#bidsbuilder.modules.directories.Subject.val" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="bidsbuilder-modules-file-collection-module">
+<h2>bidsbuilder.modules.file_collection module<a class="headerlink" href="#bidsbuilder-modules-file-collection-module" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-bidsbuilder.modules.filenames">
+<span id="bidsbuilder-modules-filenames-module"></span><h2>bidsbuilder.modules.filenames module<a class="headerlink" href="#module-bidsbuilder.modules.filenames" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.filenames.</span></span><span class="sig-name descname"><span class="pre">CompositeFilename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_entities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">filenameBase</span></code></a></p>
+<p>Base class for filename generation for files with entities</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_entities</strong> (<em>dict</em><em>[</em><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Entity" title="bidsbuilder.modules.schema_objects.Entity"><em>Entity</em></a><em>]</em>)</p></li>
+<li><p><strong>_suffix</strong> (<a class="reference internal" href="#bidsbuilder.modules.schema_objects.Suffix" title="bidsbuilder.modules.schema_objects.Suffix"><em>Suffix</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>_datatype</strong> (<a class="reference internal" href="#bidsbuilder.modules.schema_objects.raw_Datatype" title="bidsbuilder.modules.schema_objects.raw_Datatype"><em>raw_Datatype</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.parent">
+<span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.parent" title="Link to this definition">¶</a></dt>
+<dd><p>Parent filename object to inherit from</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase">filenameBase</a>, None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the current filename component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.datatype">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">datatype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#bidsbuilder.modules.schema_objects.raw_Datatype" title="bidsbuilder.modules.schema_objects.raw_Datatype"><span class="pre">raw_Datatype</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.datatype" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.entities">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">entities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.entities" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd><p>Construct the full filename by combining parent names and current name.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">ClassVar</span></code><span class="pre">[list]</span></em><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.schema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.suffix">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">suffix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Suffix" title="bidsbuilder.modules.schema_objects.Suffix"><span class="pre">Suffix</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.suffix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.update" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<em>str</em>)</p></li>
+<li><p><strong>val</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.agnosticFilename">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.filenames.</span></span><span class="sig-name descname"><span class="pre">agnosticFilename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_stem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_valid_extensions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_cur_ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.filenames.agnosticFilename" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">filenameBase</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_stem</strong> (<em>str</em>)</p></li>
+<li><p><strong>_valid_extensions</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>_cur_ext</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.agnosticFilename.name">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#bidsbuilder.modules.filenames.agnosticFilename.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.filenameBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.filenames.</span></span><span class="sig-name descname"><span class="pre">filenameBase</span></span><a class="headerlink" href="#bidsbuilder.modules.filenames.filenameBase" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.filenameBase.name">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#bidsbuilder.modules.filenames.filenameBase.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.filenameBase.parent">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#bidsbuilder.modules.filenames.filenameBase.parent" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-bidsbuilder.modules.json_files">
+<span id="bidsbuilder-modules-json-files-module"></span><h2>bidsbuilder.modules.json_files module<a class="headerlink" href="#module-bidsbuilder.modules.json_files" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.json_files.JSONfile">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.json_files.</span></span><span class="sig-name descname"><span class="pre">JSONfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.json_files.JSONfile" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatasetCore</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_level</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.json_files.agnostic_JSONfile">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.json_files.</span></span><span class="sig-name descname"><span class="pre">agnostic_JSONfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.json_files.agnostic_JSONfile" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.json_files.JSONfile" title="bidsbuilder.modules.json_files.JSONfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">JSONfile</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_level</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.json_files.extra_JSONfile">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.json_files.</span></span><span class="sig-name descname"><span class="pre">extra_JSONfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.json_files.extra_JSONfile" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.json_files.JSONfile" title="bidsbuilder.modules.json_files.JSONfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">JSONfile</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_level</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.json_files.sidecar_JSONfile">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.json_files.</span></span><span class="sig-name descname"><span class="pre">sidecar_JSONfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.json_files.sidecar_JSONfile" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.json_files.JSONfile" title="bidsbuilder.modules.json_files.JSONfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">JSONfile</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_level</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-bidsbuilder.modules.schema_objects">
+<span id="bidsbuilder-modules-schema-objects-module"></span><h2>bidsbuilder.modules.schema_objects module<a class="headerlink" href="#module-bidsbuilder.modules.schema_objects" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.schema_objects.Column">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.schema_objects.</span></span><span class="sig-name descname"><span class="pre">Column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.schema_objects.Column" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">nameValueBase</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>_val</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.schema_objects.Column.val">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">val</span></span><a class="headerlink" href="#bidsbuilder.modules.schema_objects.Column.val" title="Link to this definition">¶</a></dt>
+<dd><p>Public getter for the entity value.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.schema_objects.Entity">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.schema_objects.</span></span><span class="sig-name descname"><span class="pre">Entity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.schema_objects.Entity" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">nameValueBase</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>_val</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.schema_objects.Entity.val">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">val</span></span><a class="headerlink" href="#bidsbuilder.modules.schema_objects.Entity.val" title="Link to this definition">¶</a></dt>
+<dd><p>Public getter for the entity value.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.schema_objects.Metadata">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.schema_objects.</span></span><span class="sig-name descname"><span class="pre">Metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.schema_objects.Metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">nameValueBase</span></code></p>
+<p>Metadata is quite unique, mainly due to the ‘items’ attribute</p>
+<p>This basically allows for the value of one metadata field, to be an array, or dictionary of other metadata fields</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_name</strong> (<em>str</em>)</p></li>
+<li><p><strong>_val</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="bidsbuilder.modules.schema_objects.Metadata.val">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">val</span></span><a class="headerlink" href="#bidsbuilder.modules.schema_objects.Metadata.val" title="Link to this definition">¶</a></dt>
+<dd><p>Public getter for the entity value.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.schema_objects.Suffix">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.schema_objects.</span></span><span class="sig-name descname"><span class="pre">Suffix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.schema_objects.Suffix" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueBase</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_name</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.schema_objects.raw_Datatype">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.schema_objects.</span></span><span class="sig-name descname"><span class="pre">raw_Datatype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.schema_objects.raw_Datatype" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueBase</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_name</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-bidsbuilder.modules.tabular_files">
+<span id="bidsbuilder-modules-tabular-files-module"></span><h2>bidsbuilder.modules.tabular_files module<a class="headerlink" href="#module-bidsbuilder.modules.tabular_files" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.tabular_files.tabularFile">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.tabular_files.</span></span><span class="sig-name descname"><span class="pre">tabularFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.tabular_files.tabularFile" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatasetCore</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_level</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bidsbuilder.modules.tabular_files.tabularJSONFile">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.tabular_files.</span></span><span class="sig-name descname"><span class="pre">tabularJSONFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'optional'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.tabular_files.tabularJSONFile" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.json_files.JSONfile" title="bidsbuilder.modules.json_files.JSONfile"><code class="xref py py-class docutils literal notranslate"><span class="pre">JSONfile</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_level</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-bidsbuilder.modules">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-bidsbuilder.modules" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="bidsbuilder.modules.set_all_schema_">
+<span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.</span></span><span class="sig-name descname"><span class="pre">set_all_schema_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.set_all_schema_" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.BidsDataset"><em>BidsDataset</em></a>)</p></li>
+<li><p><strong>schema</strong> (<em>Namespace</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Augustijn Vrolijk
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">bidsbuilder.modules package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules.agnostic_files">bidsbuilder.modules.agnostic_files module</a></li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules.dataset_core">bidsbuilder.modules.dataset_core module</a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore"><code class="docutils literal notranslate"><span class="pre">DatasetCore</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore.deleteSelf"><code class="docutils literal notranslate"><span class="pre">DatasetCore.deleteSelf()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore.exists"><code class="docutils literal notranslate"><span class="pre">DatasetCore.exists</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore.filename"><code class="docutils literal notranslate"><span class="pre">DatasetCore.filename</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules.dataset_tree">bidsbuilder.modules.dataset_tree module</a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory"><code class="docutils literal notranslate"><span class="pre">Directory</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory.add_child"><code class="docutils literal notranslate"><span class="pre">Directory.add_child()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory.add_tree_node"><code class="docutils literal notranslate"><span class="pre">Directory.add_tree_node()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory.fetch"><code class="docutils literal notranslate"><span class="pre">Directory.fetch()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory.is_dir"><code class="docutils literal notranslate"><span class="pre">Directory.is_dir</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory.path"><code class="docutils literal notranslate"><span class="pre">Directory.path</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory.relative_path"><code class="docutils literal notranslate"><span class="pre">Directory.relative_path</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection"><code class="docutils literal notranslate"><span class="pre">FileCollection</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection.add_child"><code class="docutils literal notranslate"><span class="pre">FileCollection.add_child()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection.add_tree_node"><code class="docutils literal notranslate"><span class="pre">FileCollection.add_tree_node()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection.children"><code class="docutils literal notranslate"><span class="pre">FileCollection.children</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection.fetch"><code class="docutils literal notranslate"><span class="pre">FileCollection.fetch()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection.is_dir"><code class="docutils literal notranslate"><span class="pre">FileCollection.is_dir</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection.path"><code class="docutils literal notranslate"><span class="pre">FileCollection.path</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection.relative_path"><code class="docutils literal notranslate"><span class="pre">FileCollection.relative_path</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry"><code class="docutils literal notranslate"><span class="pre">FileEntry</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry.fetch_instance"><code class="docutils literal notranslate"><span class="pre">FileEntry.fetch_instance()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry.is_dir"><code class="docutils literal notranslate"><span class="pre">FileEntry.is_dir</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry.name"><code class="docutils literal notranslate"><span class="pre">FileEntry.name</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry.parent"><code class="docutils literal notranslate"><span class="pre">FileEntry.parent</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry.path"><code class="docutils literal notranslate"><span class="pre">FileEntry.path</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry.relative_path"><code class="docutils literal notranslate"><span class="pre">FileEntry.relative_path</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules.directories">bidsbuilder.modules.directories module</a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.directories.Session"><code class="docutils literal notranslate"><span class="pre">Session</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.directories.Session.add_datatype"><code class="docutils literal notranslate"><span class="pre">Session.add_datatype()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.directories.Session.create"><code class="docutils literal notranslate"><span class="pre">Session.create()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder.modules.directories.Subject"><code class="docutils literal notranslate"><span class="pre">Subject</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.directories.Subject.add_datatype"><code class="docutils literal notranslate"><span class="pre">Subject.add_datatype()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.directories.Subject.add_session"><code class="docutils literal notranslate"><span class="pre">Subject.add_session()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.directories.Subject.anonymise"><code class="docutils literal notranslate"><span class="pre">Subject.anonymise()</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.directories.Subject.val"><code class="docutils literal notranslate"><span class="pre">Subject.val</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder-modules-file-collection-module">bidsbuilder.modules.file_collection module</a></li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules.filenames">bidsbuilder.modules.filenames module</a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename"><code class="docutils literal notranslate"><span class="pre">CompositeFilename</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.parent"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.parent</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.name"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.name</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.datatype"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.datatype</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.entities"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.entities</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.name</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.schema"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.schema</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.suffix"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.suffix</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.update"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.update()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.agnosticFilename"><code class="docutils literal notranslate"><span class="pre">agnosticFilename</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.agnosticFilename.name"><code class="docutils literal notranslate"><span class="pre">agnosticFilename.name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase"><code class="docutils literal notranslate"><span class="pre">filenameBase</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase.name"><code class="docutils literal notranslate"><span class="pre">filenameBase.name</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase.parent"><code class="docutils literal notranslate"><span class="pre">filenameBase.parent</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules.json_files">bidsbuilder.modules.json_files module</a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.json_files.JSONfile"><code class="docutils literal notranslate"><span class="pre">JSONfile</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.json_files.agnostic_JSONfile"><code class="docutils literal notranslate"><span class="pre">agnostic_JSONfile</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.json_files.extra_JSONfile"><code class="docutils literal notranslate"><span class="pre">extra_JSONfile</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.json_files.sidecar_JSONfile"><code class="docutils literal notranslate"><span class="pre">sidecar_JSONfile</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules.schema_objects">bidsbuilder.modules.schema_objects module</a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Column"><code class="docutils literal notranslate"><span class="pre">Column</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Column.val"><code class="docutils literal notranslate"><span class="pre">Column.val</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Entity"><code class="docutils literal notranslate"><span class="pre">Entity</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Entity.val"><code class="docutils literal notranslate"><span class="pre">Entity.val</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Metadata"><code class="docutils literal notranslate"><span class="pre">Metadata</span></code></a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Metadata.val"><code class="docutils literal notranslate"><span class="pre">Metadata.val</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bidsbuilder.modules.schema_objects.Suffix"><code class="docutils literal notranslate"><span class="pre">Suffix</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.schema_objects.raw_Datatype"><code class="docutils literal notranslate"><span class="pre">raw_Datatype</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules.tabular_files">bidsbuilder.modules.tabular_files module</a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.tabular_files.tabularFile"><code class="docutils literal notranslate"><span class="pre">tabularFile</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.tabular_files.tabularJSONFile"><code class="docutils literal notranslate"><span class="pre">tabularJSONFile</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-bidsbuilder.modules">Module contents</a><ul>
+<li><a class="reference internal" href="#bidsbuilder.modules.set_all_schema_"><code class="docutils literal notranslate"><span class="pre">set_all_schema_()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>
