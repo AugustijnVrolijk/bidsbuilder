@@ -197,7 +197,39 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Getting Started</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.modules.html">bidsbuilder.modules</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of bidsbuilder.modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.agnostic_files.html">bidsbuilder.modules.agnostic_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.dataset_core.html">bidsbuilder.modules.dataset_core</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.dataset_tree.html">bidsbuilder.modules.dataset_tree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.directories.html">bidsbuilder.modules.directories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.filenames.html">bidsbuilder.modules.filenames</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.json_files.html">bidsbuilder.modules.json_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.schema_objects.html">bidsbuilder.modules.schema_objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.tabular_files.html">bidsbuilder.modules.tabular_files</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.html">bidsbuilder.interpreter</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of bidsbuilder.interpreter</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.evaluation_funcs.html">bidsbuilder.interpreter.evaluation_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.fields_funcs.html">bidsbuilder.interpreter.fields_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.operator_funcs.html">bidsbuilder.interpreter.operator_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.selectors.html">bidsbuilder.interpreter.selectors</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.util.html">bidsbuilder.util</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of bidsbuilder.util</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.categoryDict.html">bidsbuilder.util.categoryDict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.io.html">bidsbuilder.util.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.schema.html">bidsbuilder.util.schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.util.html">bidsbuilder.util.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
 </div>
 </div>
 
@@ -273,7 +305,7 @@
 <dt class="sig sig-object py" id="bidsbuilder.util.categoryDict.categoryDict">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.util.categoryDict.</span></span><span class="sig-name descname"><span class="pre">categoryDict</span></span><a class="headerlink" href="#bidsbuilder.util.categoryDict.categoryDict" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>was planning on making a modified dict with
+<p>was planning on making a modified dict with 
 key: (category, value) pairs, modifying setattr and getattr to only return the value, apart from a special getter getting both
 but this would only be used for json files and metadata, so will just implement this directly there…</p>
 <dl class="py attribute">
@@ -347,19 +379,31 @@ Filenames (minus extensions) and directory names become keys
 in the associative array (dict) of entries composed from content
 of files and entire directories.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>schema_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Directory containing yaml files or yaml file. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use the
-default schema packaged with <code class="docutils literal notranslate"><span class="pre">bidsschematools</span></code>.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Schema in dictionary form.</p>
-</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Namespace</span></code></span></p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>This function is cached, so it will only be called once per schema path.</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>schema_path<span class="classifier">str, optional</span></dt><dd><p>Directory containing yaml files or yaml file. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use the
+default schema packaged with <code class="docutils literal notranslate"><span class="pre">bidsschematools</span></code>.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>dict</dt><dd><p>Schema in dictionary form.</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><p>This function is cached, so it will only be called once per schema path.</p>
+</div></blockquote>
+</section>
 </dd></dl>
 
 <dl class="py function">
@@ -374,8 +418,20 @@ default schema packaged with <code class="docutils literal notranslate"><span cl
 <dt class="sig sig-object py" id="bidsbuilder.util.util.checkPath">
 <span class="sig-prename descclassname"><span class="pre">bidsbuilder.util.util.</span></span><span class="sig-name descname"><span class="pre">checkPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.util.util.checkPath" title="Link to this definition">¶</a></dt>
 <dd><p>check path and create folder struct if necessary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>)</p></li>
+<li><p><strong>force</strong> (<em>bool</em>)</p></li>
+<li><p><strong>flag</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="simple">
-<dt>inputs:</dt><dd><ul class="simple">
+<dt>inputs: </dt><dd><ul class="simple">
 <li><p>path: path to check</p></li>
 <li><p>force: whether to ask the user about potential conflict or force path creation</p></li>
 <li><dl class="simple">
@@ -391,22 +447,8 @@ can still write to a folder (used if you want to write your data to a folder)</p
 </li>
 </ul>
 </dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>whether the path was successfully created/found depending on the flag</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p>success</p></li>
-</ul>
-</p>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<em>str</em>)</p></li>
-<li><p><strong>force</strong> (<em>bool</em>)</p></li>
-<li><p><strong>flag</strong> (<em>str</em>)</p></li>
+<dt>returns:</dt><dd><ul class="simple">
+<li><p>success: whether the path was successfully created/found depending on the flag</p></li>
 </ul>
 </dd>
 </dl>
@@ -558,7 +600,7 @@ can still write to a folder (used if you want to write your data to a folder)</p
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=01f34227"></script>
+</div><script src="_static/documentation_options.js?v=38b66d78"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

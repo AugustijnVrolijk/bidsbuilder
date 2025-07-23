@@ -197,7 +197,39 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Getting Started</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.modules.html">bidsbuilder.modules</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of bidsbuilder.modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.agnostic_files.html">bidsbuilder.modules.agnostic_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.dataset_core.html">bidsbuilder.modules.dataset_core</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.dataset_tree.html">bidsbuilder.modules.dataset_tree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.directories.html">bidsbuilder.modules.directories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.filenames.html">bidsbuilder.modules.filenames</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.json_files.html">bidsbuilder.modules.json_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.schema_objects.html">bidsbuilder.modules.schema_objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.modules.tabular_files.html">bidsbuilder.modules.tabular_files</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.html">bidsbuilder.interpreter</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of bidsbuilder.interpreter</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.evaluation_funcs.html">bidsbuilder.interpreter.evaluation_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.fields_funcs.html">bidsbuilder.interpreter.fields_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.operator_funcs.html">bidsbuilder.interpreter.operator_funcs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.interpreter.selectors.html">bidsbuilder.interpreter.selectors</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.util.html">bidsbuilder.util</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of bidsbuilder.util</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.categoryDict.html">bidsbuilder.util.categoryDict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.io.html">bidsbuilder.util.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.schema.html">bidsbuilder.util.schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.util.html">bidsbuilder.util.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
 </div>
 </div>
 
@@ -275,9 +307,6 @@
 </section>
 <section id="module-bidsbuilder.modules.dataset_tree">
 <span id="bidsbuilder-modules-dataset-tree-module"></span><h2>bidsbuilder.modules.dataset_tree module<a class="headerlink" href="#module-bidsbuilder.modules.dataset_tree" title="Link to this heading">¶</a></h2>
-<p>The below code was taken from src/bids_validator/types/files.py
-with a couple modifications for UserDirEntry to point to a datasetCore object
-allowing for object retrieval via the fileTree</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.Directory">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.dataset_tree.</span></span><span class="sig-name descname"><span class="pre">Directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_file_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_name_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.Directory" title="Link to this definition">¶</a></dt>
@@ -287,10 +316,10 @@ allowing for object retrieval via the fileTree</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>_name</strong> (<em>str</em>)</p></li>
-<li><p><strong>_file_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><em>DatasetCore</em></a><em> | </em><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.BidsDataset"><em>BidsDataset</em></a>)</p></li>
+<li><p><strong>_file_link</strong> (<em>Union</em><em>[</em><em>'DatasetCore'</em><em>, </em><em>'BidsDataset'</em><em>]</em>)</p></li>
 <li><p><strong>_name_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><em>filenameBase</em></a>)</p></li>
-<li><p><strong>parent</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>children</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection" title="bidsbuilder.modules.dataset_tree.FileCollection"><em>FileCollection</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><em>FileEntry</em></a><em>]</em>)</p></li>
+<li><p><strong>parent</strong> (<em>Union</em><em>[</em><em>'Directory'</em><em>, </em><em>None</em><em>]</em>)</p></li>
+<li><p><strong>children</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Union</em><em>[</em><em>'Directory'</em><em>, </em><em>'FileCollection'</em><em>, </em><em>'FileEntry'</em><em>]</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -368,10 +397,10 @@ i.e. A raw data file and it’s JSON sidecar file would form a collection, with 
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>_name</strong> (<em>str</em>)</p></li>
-<li><p><strong>_file_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><em>DatasetCore</em></a><em> | </em><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.BidsDataset"><em>BidsDataset</em></a>)</p></li>
+<li><p><strong>_file_link</strong> (<em>Union</em><em>[</em><em>'DatasetCore'</em><em>, </em><em>'BidsDataset'</em><em>]</em>)</p></li>
 <li><p><strong>_name_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><em>filenameBase</em></a>)</p></li>
-<li><p><strong>parent</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><em>None</em>)</p></li>
-<li><p><strong>children</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileCollection" title="bidsbuilder.modules.dataset_tree.FileCollection"><em>FileCollection</em></a><em> | </em><a class="reference internal" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="bidsbuilder.modules.dataset_tree.FileEntry"><em>FileEntry</em></a><em>]</em>)</p></li>
+<li><p><strong>parent</strong> (<em>Union</em><em>[</em><em>'Directory'</em><em>, </em><em>None</em><em>]</em>)</p></li>
+<li><p><strong>children</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Union</em><em>[</em><em>'Directory'</em><em>, </em><em>'FileCollection'</em><em>, </em><em>'FileEntry'</em><em>]</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -403,7 +432,7 @@ i.e. A raw data file and it’s JSON sidecar file would form a collection, with 
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileCollection.children">
-<span class="sig-name descname"><span class="pre">children</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code><span class="pre">[</span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code><span class="pre">,</span> <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code><span class="pre">[Directory,</span> <span class="pre">FileCollection,</span> <span class="pre">FileEntry]]</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.children" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">children</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict[str,</span> <span class="pre">Union['Directory',</span> <span class="pre">'FileCollection',</span> <span class="pre">'FileEntry']]</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileCollection.children" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -446,16 +475,13 @@ Directories include trailing slashes for simpler matching.</p>
 <dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.dataset_tree.</span></span><span class="sig-name descname"><span class="pre">FileEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_file_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_name_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Partial reimplementation of <code class="xref py py-class docutils literal notranslate"><span class="pre">os.DirEntry</span></code>.</p>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">os.DirEntry</span></code> can’t be instantiated from Python, but this can.</p>
-<p>TAKEN FROM src/bids_validator/types/files.py</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>_name</strong> (<em>str</em>)</p></li>
-<li><p><strong>_file_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_core.DatasetCore" title="bidsbuilder.modules.dataset_core.DatasetCore"><em>DatasetCore</em></a><em> | </em><a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.BidsDataset"><em>BidsDataset</em></a>)</p></li>
+<li><p><strong>_file_link</strong> (<em>Union</em><em>[</em><em>'DatasetCore'</em><em>, </em><em>'BidsDataset'</em><em>]</em>)</p></li>
 <li><p><strong>_name_link</strong> (<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><em>filenameBase</em></a>)</p></li>
-<li><p><strong>parent</strong> (<a class="reference internal" href="#bidsbuilder.modules.dataset_tree.Directory" title="bidsbuilder.modules.dataset_tree.Directory"><em>Directory</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>parent</strong> (<em>Union</em><em>[</em><em>'Directory'</em><em>, </em><em>None</em><em>]</em>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -481,7 +507,7 @@ Directories include trailing slashes for simpler matching.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="bidsbuilder.modules.dataset_tree.FileEntry.parent">
-<span class="sig-name descname"><span class="pre">parent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code><span class="pre">[Directory]</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry.parent" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">parent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union['Directory',</span> <span class="pre">None]</span></em><a class="headerlink" href="#bidsbuilder.modules.dataset_tree.FileEntry.parent" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -602,6 +628,11 @@ Subject needs the following context:</p>
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">bidsbuilder.modules.filenames.</span></span><span class="sig-name descname"><span class="pre">CompositeFilename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_entities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_datatype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">filenameBase</span></code></a></p>
 <p>Base class for filename generation for files with entities</p>
+<dl class="simple">
+<dt>Attributes:</dt><dd><p>parent (Union[filenameBase, None]): Parent filename object to inherit from
+name (str): Name of the current filename component</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -611,28 +642,6 @@ Subject needs the following context:</p>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.parent">
-<span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.parent" title="Link to this definition">¶</a></dt>
-<dd><p>Parent filename object to inherit from</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[<a class="reference internal" href="#bidsbuilder.modules.filenames.filenameBase" title="bidsbuilder.modules.filenames.filenameBase">filenameBase</a>, None]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.name">
-<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.name" title="Link to this definition">¶</a></dt>
-<dd><p>Name of the current filename component</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.datatype">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">datatype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#bidsbuilder.modules.schema_objects.raw_Datatype" title="bidsbuilder.modules.schema_objects.raw_Datatype"><span class="pre">raw_Datatype</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.datatype" title="Link to this definition">¶</a></dt>
@@ -644,8 +653,8 @@ Subject needs the following context:</p>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="id0">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="bidsbuilder.modules.filenames.CompositeFilename.name">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#bidsbuilder.modules.filenames.CompositeFilename.name" title="Link to this definition">¶</a></dt>
 <dd><p>Construct the full filename by combining parent names and current name.</p>
 </dd></dl>
 
@@ -880,7 +889,7 @@ Subject needs the following context:</p>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dataset</strong> (<a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.BidsDataset"><em>BidsDataset</em></a>)</p></li>
+<li><p><strong>dataset</strong> (<a class="reference internal" href="bidsbuilder.html#bidsbuilder.BidsDataset" title="bidsbuilder.main_module.BidsDataset"><em>BidsDataset</em></a>)</p></li>
 <li><p><strong>schema</strong> (<em>Namespace</em>)</p></li>
 </ul>
 </dd>
@@ -988,11 +997,9 @@ Subject needs the following context:</p>
 <li><a class="reference internal" href="#bidsbuilder-modules-file-collection-module">bidsbuilder.modules.file_collection module</a></li>
 <li><a class="reference internal" href="#module-bidsbuilder.modules.filenames">bidsbuilder.modules.filenames module</a><ul>
 <li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename"><code class="docutils literal notranslate"><span class="pre">CompositeFilename</span></code></a><ul>
-<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.parent"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.parent</span></code></a></li>
-<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.name"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.name</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.datatype"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.datatype</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.entities"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.entities</span></code></a></li>
-<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.name</span></code></a></li>
+<li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.name"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.name</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.schema"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.schema</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.suffix"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.suffix</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.modules.filenames.CompositeFilename.update"><code class="docutils literal notranslate"><span class="pre">CompositeFilename.update()</span></code></a></li>
@@ -1053,7 +1060,7 @@ Subject needs the following context:</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=01f34227"></script>
+</div><script src="_static/documentation_options.js?v=38b66d78"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
