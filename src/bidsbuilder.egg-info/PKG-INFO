@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: bidsbuilder
 Version: 0.1.0
 Requires-Dist: attrs>=25.3.0
