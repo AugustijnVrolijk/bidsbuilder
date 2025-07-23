@@ -1,4 +1,4 @@
-# wrapBIDS is a library facilitating the creation and manipulation of BIDS approved datasets via pythonic wrappers of all required files and metadata. #
+# bidsbuilder is a library facilitating the creation of BIDS approved datasets via schema-driven pythonic objects of all required files and metadata. #
 
 wrapBIDS interprets the bids schema (https://github.com/bids-standard/bids-specification/tree/master/src/schema) using the bidsschematools library.
 
