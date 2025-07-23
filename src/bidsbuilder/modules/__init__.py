@@ -2,7 +2,7 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from bidsschematools.types import Namespace
-    from ..bidsDataset import BidsDataset
+    from ..main_module import BidsDataset
 
 def set_all_schema_(dataset:'BidsDataset',schema:'Namespace'):
     from .dataset_core import _set_dataset_core

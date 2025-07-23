@@ -6,5 +6,5 @@ try:
 except Exception:
     __version__ = "0.0.0"
 
-from .bidsDataset import BidsDataset
+from .main_module import BidsDataset
 __all__ = ["BidsDataset"]

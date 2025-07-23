@@ -3,7 +3,7 @@ from attrs import define, field
 from pathlib import Path
 
 if TYPE_CHECKING:
-    from ..bidsDataset import BidsDataset
+    from ..main_module import BidsDataset
     from .dataset_tree import FileEntry
     from .filenames import filenameBase
 

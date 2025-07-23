@@ -1,29 +1,21 @@
-"""The below code was taken from src/bids_validator/types/files.py
-with a couple modifications for UserDirEntry to point to a datasetCore object
-allowing for object retrieval via the fileTree
-"""
+from __future__ import annotations
 
 import os
-import stat
 import posixpath
 
 from attrs import define, field
 from typing import Union, TYPE_CHECKING
 from pathlib import Path
+
 from .filenames import filenameBase
 from .dataset_core import DatasetCore
 
+
 if TYPE_CHECKING:
-    from ..bidsDataset import BidsDataset
+    from ..main_module import BidsDataset
 
 @define(slots=True)
 class FileEntry:
-    """Partial reimplementation of :class:`os.DirEntry`.
-
-    :class:`os.DirEntry` can't be instantiated from Python, but this can.
-
-    TAKEN FROM src/bids_validator/types/files.py
-    """
 
     #have to add alias otherwise it gets stripped of "_" and gets changed to "name"
     _name: str = field(repr=True, alias="_name")

@@ -22,7 +22,7 @@ def demo():
     myData.build(force=True)
 
 if __name__ == "__main__":
-    demo()
+    main()
 
 
 

@@ -15,12 +15,11 @@ release = '0.1.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ["sphinx.ext.autodoc",
-            "sphinx.ext.napoleon",  # If using Google/NumPy-style docstrings
             "sphinx.ext.autosummary",
-            "sphinx_autodoc_typehints",
-            "myst_parser",]  # If you're using Markdown]
+            "sphinx_autodoc_typehints",] 
 
 autosummary_generate = True
+autodoc_typehints = "description"
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -30,19 +29,15 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = "furo"
 html_static_path = ['_static']
+html_theme_options = {
+    "navigation_with_keys": True,  # enable keyboard navigation (optional)
+    "sidebar_hide_name": False,     # keep sidebar visible with project name
+}
 
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../../src'))
 
-extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",          # for Google/NumPy docstring styles
-    "sphinx_autodoc_typehints",     # show type hints
-]
 
-autodoc_typehints = "description"
-
-html_theme = "furo"

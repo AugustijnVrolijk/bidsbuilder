@@ -1,11 +1,13 @@
+
 from attrs import define, field
-from typing import TYPE_CHECKING, Union, Any, ClassVar
+from typing import TYPE_CHECKING, Union, Any
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
 from .dataset_core import DatasetCore
-from ..modules.schema_objects import CompositeFilename, Entity, Suffix
+from .schema_objects import Entity, Suffix
+from .filenames import CompositeFilename
 from .directories import Subject, Session
 
 """
@@ -65,7 +67,7 @@ class dataCollection(DatasetCore):
                 #insures the correct name is stored in final dictionary
                 final_ents[cur_ent.name] = cur_ent
 
-        t = CompositeFilename(parent. final_ents, suffix=suffix)
+        t = CompositeFilename(final_ents, suffix=suffix)
         dataset = cls(t)
         dataset.populate_metadata(metadata)
         return dataset

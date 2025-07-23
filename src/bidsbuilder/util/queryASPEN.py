@@ -25,6 +25,7 @@ def connect_to_database():
         database=vals['database']
     ) 
 
+"""
 def queryASPEN(query):
     connection = connect_to_database()
     cursor = connection.cursor()
@@ -34,9 +35,4 @@ def queryASPEN(query):
     cursor.close()
     connection.close()
     return pd.DataFrame(results, columns=columns)
-
-def main():
-    pass
-
-if __name__ == "__main__":
-    main()
+"""
