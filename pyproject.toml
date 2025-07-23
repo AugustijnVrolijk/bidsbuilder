@@ -23,5 +23,6 @@ where = ["src"]
 [project.optional-dependencies]
 docs = [
   "sphinx",
-  "sphinx-autodoc-typehints"
+  "sphinx-autodoc-typehints",
+  "furo"
 ]
