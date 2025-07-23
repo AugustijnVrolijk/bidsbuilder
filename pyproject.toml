@@ -19,3 +19,9 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.optional-dependencies]
+docs = [
+  "sphinx",
+  "sphinx-autodoc-typehints"
+]
