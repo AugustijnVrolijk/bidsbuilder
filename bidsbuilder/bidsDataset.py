@@ -23,7 +23,7 @@ class BidsDataset():
     """
     initialised = False
     
-    def __init__(self, root:str):
+    def __init__(self, root:str, minimal:bool=False):
         
 
         self.root = root
@@ -32,7 +32,7 @@ class BidsDataset():
         from .modules import set_all_schema_
         set_all_schema_(self, self.schema)
         from .modules.agnostic_files import _make_skeletonBIDS
-        _make_skeletonBIDS(self.schema, self.tree)
+        _make_skeletonBIDS(self.schema, self.tree, minimal)
         
     @property
     def tree(self):

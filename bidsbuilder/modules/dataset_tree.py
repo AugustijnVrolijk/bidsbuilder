@@ -71,7 +71,11 @@ class FileEntry:
         #remove old
         self.parent.children.pop(self.name)
         self._name = new_name
-
+    
+    @property
+    def is_dir(self):
+        return False
+    
     def __fspath__(self) -> str:
         return self.path
 
@@ -135,6 +139,10 @@ class FileCollection(FileEntry):
         if reference:
             return child.fetch_instance()
         return child
+
+    @property
+    def is_dir(self):
+        return False
 
     @property
     def relative_path(self) -> str:
@@ -228,6 +236,10 @@ class Directory(FileCollection):
             return False
         child = self.children.get(parts[0], False)
         return child and (len(parts) == 1 or posixpath.join(*parts[1:]) in child)
+
+    @property
+    def is_dir(self):
+        return True
 
     @property
     def relative_path(self) -> str:

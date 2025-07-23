@@ -38,3 +38,9 @@ Possibly thinking of using schema.meta.associations to find associated extra fil
 possible hardcoded solution:
     have an option when adding data or subject etc... to create addititonal, i.e. nData = data(events=True, physio=True)
     this will additionally add in those blocks with the correct suffix..
+
+FUTURE IMPROVEMENTS:
+    - add this information into the schema, to remove all ambiguity
+        Would probably need time to see if bidsbuilder is even used by other labs.. If people are keen
+        on using it, might give some more leverage into changing schema, I think changes like this were
+        discussed but shot down previously...

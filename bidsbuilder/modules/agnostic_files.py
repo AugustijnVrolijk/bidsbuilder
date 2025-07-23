@@ -12,7 +12,7 @@ from .dataset_core import DatasetCore
 if TYPE_CHECKING:
     from bidsschematools.types import Namespace
 
-def _make_skeletonBIDS(schema:'Namespace', tree:'Directory'):
+def _make_skeletonBIDS(schema:'Namespace', tree:'Directory', minimal:bool=False):
     """agnostic files are found in rules.files.common:
     this is seperated in tabular files, and core
     
@@ -32,7 +32,7 @@ def _make_skeletonBIDS(schema:'Namespace', tree:'Directory'):
            
         c_f_info = _clean_file_info(file_info)
         class_builder = _resolve_class_type(c_f_info, is_dir)
-        class_builder(c_f_info, tree)
+        class_builder(c_f_info, tree, minimal)
         
     return
 
@@ -91,36 +91,44 @@ def _resolve_class_type(file_info:dict[str, Any], is_dir:bool=False) -> Callable
     else:
         return _process_UNKNOWN
 
-def _process_folder(file_info:dict[str, Any], tree:'Directory') -> Directory:
+def _process_folder(file_info:dict[str, Any], tree:'Directory', minimal:bool=False) -> Directory:
     assert file_info["extensions"] == []
     filename = agnosticFilename(file_info["stem"])
     file = DatasetCore(_level=file_info["level"])
+    if minimal:
+        file.exists = False
     tree.add_child(filename,file,type_flag="directory")
     return
 
 
-def _process_JSON(file_info:dict[str, Any], tree:'Directory') -> FileEntry:
+def _process_JSON(file_info:dict[str, Any], tree:'Directory', minimal:bool=False) -> FileEntry:
     assert file_info["extensions"] == [".json"]
     filename = agnosticFilename(file_info["stem"], [".json"], ".json")
     file = agnostic_JSONfile(_level=file_info["level"])
+    if minimal:
+        file.exists = False
     tree.add_child(filename, file, "file")
     #no need to assign links, as creating a FileEntry does this
     return
 
-def _process_TSV(file_info:dict[str, Any], tree:'Directory') -> FileCollection:
+def _process_TSV(file_info:dict[str, Any], tree:'Directory', minimal:bool=False) -> FileCollection:
     col_name = agnosticFilename(file_info["stem"])
     ret_obj = tree.add_child(col_name, None, 'collection')
     #tsv:
     filename = agnosticFilename('', [".tsv"], ".tsv")
     file = tabularFile(_level=file_info["level"])
+    if minimal:
+        file.exists = False
     ret_obj.add_child(filename, file)
     #json:
     filename = agnosticFilename('', [".json"], ".json")
     file = tabularJSONFile(_level=file_info["level"])
+    if minimal:
+        file.exists = False
     ret_obj.add_child(filename, file)
     return
 
-def _process_UNKNOWN(file_info:dict[str, Any], tree:'Directory') -> FileEntry:
+def _process_UNKNOWN(file_info:dict[str, Any], tree:'Directory', minimal:bool=False) -> FileEntry:
     if len(file_info["extensions"]) == 0:
         cur_ext = ''
     else:
@@ -129,4 +137,6 @@ def _process_UNKNOWN(file_info:dict[str, Any], tree:'Directory') -> FileEntry:
     file = DatasetCore(_level=file_info["level"])
     tree.add_child(filename, file, "file")
     #no need to assign links, as creating a FileEntry does this
+    if minimal:
+        file.exists = False
     return

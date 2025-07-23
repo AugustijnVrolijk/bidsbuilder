@@ -31,9 +31,10 @@ class JSONfile(DatasetCore):
             if val.val is None:
                 match cat:
                     case "required":
+                        final_json[key] = "MISSING"
                         pass
                     case "recommended":
-                        final_json[key] = "MISSING"
+                        pass
                     case "optional":
                         pass
             else:

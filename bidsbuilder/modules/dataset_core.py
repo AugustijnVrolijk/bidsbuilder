@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Union, ClassVar
 from attrs import define, field
+from pathlib import Path
 
 if TYPE_CHECKING:
     from ..bidsDataset import BidsDataset
@@ -34,6 +35,7 @@ class DatasetCore():
         if self._level != "required":
             self._exists = value
 
+
     @property
     def filename(self):
         return self._tree_link._file_link
@@ -43,7 +45,12 @@ class DatasetCore():
             self._make_file(force)
 
     def _make_file(self, force:bool):
-        pass
+        filename = Path(self._tree_link.path)  # or .json, .tsv, etc.
+        if self._tree_link.is_dir:
+            filename.mkdir(parents=False,exist_ok=force)
+        else:
+            with open(filename, 'w') as f:
+                pass  # creates the file, nothing is written
         #raise NotImplementedError(f"no _make_file defined for {self}")
 
     def _read_BIDS(self):

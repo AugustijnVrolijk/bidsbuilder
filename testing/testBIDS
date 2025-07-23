@@ -1,15 +1,35 @@
 from bidsbuilder import *
 
 def main():
-    test1 = BidsDataset(root=r"C:\Users\augus\BCI_Stuff\Aspen\test2")  
+    test1 = BidsDataset(root=r"C:\Users\augus\BCI_Stuff\Aspen\test")
     test1.dataset_description["Funding"] = "this is an example"
     test1.addSubject("hello")
     tester2 = test1.addSubject("tester2")
-    tester2.add_session("IEMU")
-
+    ses_iemu = tester2.add_session("IEMU")
     #test1.addSubject("ASDASHDC138/(3)")
     #test1.addSubject("hello")
     test1.build(True)
 
+
+def demo():
+    folderPath = r"C:\Users\augus\BCI_Stuff\Aspen\demo2"
+    myData = BidsDataset(folderPath, minimal=True)
+    subjects = ["mariana", "erdi"]
+    for sub in subjects:
+        print(sub)
+        t1 = myData.addSubject(sub)
+        t1.add_session("IEMU")
+    myData.build(force=True)
+
 if __name__ == "__main__":
-    main()
+    demo()
+
+
+
+"""
+- TABULAR FILES
+- DIRECTORIES
+
+- ASPEN
+- LOGGING
+"""
