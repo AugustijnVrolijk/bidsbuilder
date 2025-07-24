@@ -1,5 +1,5 @@
 from bidsbuilder.util.categoryDict import categoryDict
-from bidsbuilder.util.schema import parse_load_schema
+from bidsbuilder.schema.schema import parse_load_schema
 
 schema = parse_load_schema(debug=True)
 

@@ -1,13 +1,12 @@
-from ..util.categoryDict import categoryDict
-from .schema_objects import Metadata
-from .dataset_core import DatasetCore
+from ...util.categoryDict import categoryDict
+from ..schema_objects import Metadata
+from ..core.dataset_core import DatasetCore
 from .json_files import JSONfile
 
 from attrs import define, field
 from typing import TYPE_CHECKING, ClassVar, Any
 
 if TYPE_CHECKING:
-    from ..interpreter.selectors import selectorHook
     from bidsschematools.types.namespace import Namespace
 
 @define(slots=True)

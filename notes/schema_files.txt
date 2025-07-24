@@ -1,0 +1,56 @@
+NOTES REGARDING THE STRUCTURING OF THE INTERPRETING THE SCHEMA FOR FILE WRAPPERS (JSON, TABULAR)
+
+
+What I want to distinguish:
+    1. - how will hooks work -> (when does an object need to re-check the schema to see for updates)
+    2. - seperation of schema related work from object wrappers
+
+1.  We need hooks -> looking at schema.rules.dataset_metadata we get selectors like:
+                    - path == "/dataset_description.json"
+                    - '!exists("CITATION.cff", "dataset")'
+    In this instance the metadata for dataset_description depends on the parameter of another file (in this case the "exists"
+    parameter of CITATION.cff)
+
+    Hooks enable a callback on the relevant schema, to re-evaluate if the parameter change now changes the valid metadata
+
+Design choices of hooks:
+    An attribute with callbacks, must remember: the object which depends on it 
+
+    Most reliable method: when initially checking the schema for a file, put callbacks on all selectors it faces
+    VERY MEMORY INTENSIVE, you'd get huge lists.. (for stuff like datatype == "eeg")
+
+
+
+    Memory vs Performance:
+        remember either the full list of relevant schema items, i.e for (CITATION.cff)._exists, it would remember (rules.dataset_metadata.dataset_authors; (dataset_description))
+        Or just a list of the relevant files
+
+        this makes a difference in regards to callbacks on "self". For the latter no memory would be used, instead a special clause can be added for all attributes
+        that they re-run the schema when changed
+
+    Caveat 1:
+        children: for selectors like datatype == "pet"
+    
+        in this case the list of callbacks would be huge
+
+
+2. Should I seperate all schema related operations into a seperate file
+i.e. for JSONfile it currently has functions to call the schema, clean its output
+Should I really seperate and make JSON file just have a function which takes in a dictionary? 
+    maybe yes, this could seperate and make their roles more clear
+
+    would also allow for more refined parsing elegantly, i.e. only parse the relevant datatype
+    or setting metadata values already for stuff which has enums with 1 options etc..
+
+
+this looks at the bigger question of when should the schema be evaluated and looked at?
+
+    When created? -> probably not.. sometimes schema depends on sidecars, other files etc..
+                        so the file needs to be linked to the dataset_tree so it can access those
+    After "whole initialisation" ? -> probably yes. Once all files are created and linked in the dataset_tree
+    In this case we can set up this step in a _post_init_ method(), which gets called by a dataset_tree when it is linked
+
+    brings a bit of a question for support of unlinked files
+
+    i.e. if I user instantiates a subject, or even datatype folder without linking it to a dataset..
+    should this be supported? -it technically could...

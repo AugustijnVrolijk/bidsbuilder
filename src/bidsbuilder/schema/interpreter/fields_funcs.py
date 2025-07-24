@@ -1,9 +1,9 @@
 
 from typing import TYPE_CHECKING
-from bidsbuilder.modules.dataset_core import DatasetCore
+from ...modules.core.dataset_core import DatasetCore
 
 if TYPE_CHECKING:
-    from ..main_module import BidsDataset
+    from ...main_module import BidsDataset
 
 def schema():
     return notImplemented()
@@ -49,7 +49,7 @@ def json(core:DatasetCore):
     """   NOT YET COMPLETED NEED TO MAKE A MORE ROBUST METHOD
     WHICH TAKES INTO ACCOUNT THE INHERITANCE PRINCIPLE IN ORDER TO COLLECT ALL METADATA
     """
-    from ..modules.json_files import JSONfile
+    from ...modules.file_bases.json_files import JSONfile
     assert isinstance(core, JSONfile), f"given core: {core} was not a JSON\n update fields_funcs.json to use inheritance principle"
     return core
 

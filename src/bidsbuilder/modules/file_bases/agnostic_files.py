@@ -2,12 +2,12 @@ from pathlib import Path
 
 from typing import TYPE_CHECKING, Generator, Any, Callable
 
-from ..util.util import isDir
-from .filenames import agnosticFilename
-from .dataset_tree import Directory, FileCollection, FileEntry
+from ...util.util import isDir
+from ..core.filenames import agnosticFilename
+from ..core.dataset_tree import Directory, FileCollection, FileEntry
 from .json_files import agnostic_JSONfile
 from .tabular_files import tabularJSONFile, tabularFile
-from .dataset_core import DatasetCore
+from ..core.dataset_core import DatasetCore
 
 if TYPE_CHECKING:
     from bidsschematools.types import Namespace

@@ -12,7 +12,7 @@ from .dataset_core import DatasetCore
 
 
 if TYPE_CHECKING:
-    from ..main_module import BidsDataset
+    from ...main_module import BidsDataset
 
 @define(slots=True)
 class FileEntry:

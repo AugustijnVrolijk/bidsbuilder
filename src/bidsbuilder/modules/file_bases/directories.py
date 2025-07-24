@@ -1,9 +1,9 @@
 from attrs import define, field
 from typing import ClassVar, TYPE_CHECKING
-from .dataset_core import DatasetCore
-from .schema_objects import Entity, Suffix
-from .filenames import CompositeFilename
-from .dataset_tree import Directory
+from ..core.dataset_core import DatasetCore
+from ..schema_objects import Entity, Suffix
+from ..core.filenames import CompositeFilename
+from ..core.dataset_tree import Directory
 
 from pathlib import Path
 

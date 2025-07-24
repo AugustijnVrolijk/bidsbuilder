@@ -3,7 +3,7 @@ from bidsschematools.types import Namespace
 from bidsschematools.schema import dereference, flatten_enums, _get_bids_version, _get_schema_version, _find
 from bidsschematools.utils import get_bundled_schema_path
 
-from ..interpreter.selectors import selectorHook
+from .interpreter.selectors import selectorHook
 
 def filter_schema(schema:Namespace):
     del schema["meta"]

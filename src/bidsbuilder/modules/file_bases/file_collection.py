@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Union, Any
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
-from .dataset_core import DatasetCore
-from .schema_objects import Entity, Suffix
-from .filenames import CompositeFilename
+from ..core.dataset_core import DatasetCore
+from ..schema_objects import Entity, Suffix
+from ..core.filenames import CompositeFilename
 from .directories import Subject, Session
 
 """

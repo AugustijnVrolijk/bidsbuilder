@@ -2,10 +2,10 @@ import re
 
 from typing import Any, Union, TYPE_CHECKING
 from functools import wraps
-from ..modules.dataset_tree import FileEntry
+from ...modules.core.dataset_tree import FileEntry
 
 if TYPE_CHECKING:
-    from bidsbuilder.modules.dataset_core import DatasetCore
+    from bidsbuilder.modules.core.dataset_core import DatasetCore
 
 
 def checkNone(func):
@@ -33,6 +33,8 @@ def count(arg:list, val:Any) -> int:
 @checkNone
 def exists(core:'DatasetCore', arg:Union[str|list], rule:str) -> int:
     """
+    NEEDS UPDATE, WILL COUNT "GHOST" FILES AS EXISTING - Initialised files with the _exists attribute set to False
+
     Count of files in an array that exist in the dataset. String is array with length 1. See following section for the meanings of rules.
 
     exists(sidecar.IntendedFor, "subject")

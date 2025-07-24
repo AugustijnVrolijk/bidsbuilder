@@ -1,5 +1,5 @@
 from attrs import define, field
-from ..modules.schema_objects import *
+from ..schema_objects import *
 
 from typing import Union, ClassVar, TYPE_CHECKING
 

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from attrs import define, field
 
 if TYPE_CHECKING:
-    from bidsbuilder.modules.dataset_core import DatasetCore
+    from bidsbuilder.modules.core.dataset_core import DatasetCore
 
 @define(slots=True, repr=True)
 class selectorHook():

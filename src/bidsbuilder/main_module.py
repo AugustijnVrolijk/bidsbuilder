@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import TYPE_CHECKING
 from .util.util import checkPath
-from .modules.dataset_tree import Directory
-from .modules.directories import Subject
-from .util.schema import parse_load_schema
+from .modules.core.dataset_tree import Directory
+from .modules.file_bases.directories import Subject
+from .schema.schema import parse_load_schema
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -31,7 +31,7 @@ class BidsDataset():
         self._tree_reference:Directory = Directory(_name=root, _file_link=self, _name_link=None, parent=None)
         from .modules import set_all_schema_
         set_all_schema_(self, self.schema)
-        from .modules.agnostic_files import _make_skeletonBIDS
+        from .modules.file_bases.agnostic_files import _make_skeletonBIDS
         _make_skeletonBIDS(self.schema, self.tree, minimal)
         
     @property

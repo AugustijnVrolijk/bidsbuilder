@@ -1,5 +1,5 @@
-from bidsbuilder.util.schema import parse_load_schema
-from bidsbuilder.interpreter.selectors import selectorHook, SelectorParser
+from bidsbuilder.schema.schema import parse_load_schema
+from bidsbuilder.schema.interpreter.selectors import selectorHook, SelectorParser
 
 schema = parse_load_schema(debug=True)
 

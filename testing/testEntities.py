@@ -1,8 +1,8 @@
-from bidsbuilder.util.schema import parse_load_schema
+from bidsbuilder.schema.schema import parse_load_schema
 
 schema = parse_load_schema(debug=True)
 
-from bidsbuilder.modules.filenames import CompositeFilename
+from bidsbuilder.modules.core.filenames import CompositeFilename
 from bidsbuilder.modules.schema_objects import *
 
 _set_object_schemas(schema)

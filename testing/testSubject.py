@@ -1,4 +1,4 @@
-from bidsbuilder.modules.directories import Subject
+from bidsbuilder.modules.file_bases.directories import Subject
 
 hello = Subject()
 print(hello)
