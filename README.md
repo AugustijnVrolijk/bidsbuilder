@@ -22,3 +22,28 @@ Future features:
 Possible future features:
 * Web-based UI to easily modify and interact with datasets without needing to use Python
 
+## ROADMAP ##
+
+Next features in order:
+* callbacks on selectors
+    * Finish metadata class
+* tabular file support
+    * Finish columns class
+    * Create tabular file class
+    * Integrate seperate TSV-sidecar-JSON class with tabular
+* fix dataset data folders
+    * Fix subject/session/datatype class
+    * Integrate subject with dataset files (participants.tsv, etc..)
+    * Add support for folder level files (scans.tsv, sessions.tsv)
+* support for data adding
+    * Update data_collections class
+    * Add support for all possible sidecar files (tabular and json, i.e. coordsystem.json)
+* raw data conversion
+    * link to mne library, conversion of raw data (file path) via mne to bids approved format
+* clean docs
+    * add tutorial/guide
+    * hide API for non-user facing functions/classes
+    * clean up general page layout/look
+* add thorough testing
+    * stuff like meta.associations
+    * general unit tests etc..
