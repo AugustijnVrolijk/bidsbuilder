@@ -1,7 +1,7 @@
-﻿bidsbuilder.interpreter
-=======================
+bidsbuilder.schema.interpreter
+==============================
 
-.. automodule:: bidsbuilder.interpreter
+.. automodule:: bidsbuilder.schema.interpreter
 
    
 .. rubric:: Modules

@@ -16,12 +16,6 @@
    :toctree:
    :recursive:
 
-   agnostic_files
-   dataset_core
-   dataset_tree
-   directories
-   file_collection
-   filenames
-   json_files
+   core
+   file_bases
    schema_objects
-   tabular_files

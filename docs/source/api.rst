@@ -5,8 +5,8 @@ API Reference
    :toctree: _autosummary
    :recursive:
 
+   bidsbuilder.schema
    bidsbuilder.modules
-   bidsbuilder.interpreter
    bidsbuilder.util
 
 ----------------------------

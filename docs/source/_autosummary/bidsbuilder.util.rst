@@ -10,8 +10,8 @@
    :toctree:
    :recursive:
 
+   callback_property
    categoryDict
    io
    queryASPEN
-   schema
    util

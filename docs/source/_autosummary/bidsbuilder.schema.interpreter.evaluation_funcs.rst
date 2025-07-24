@@ -1,7 +1,7 @@
-bidsbuilder.interpreter.evaluation\_funcs
-=========================================
+bidsbuilder.schema.interpreter.evaluation\_funcs
+================================================
 
-.. automodule:: bidsbuilder.interpreter.evaluation_funcs
+.. automodule:: bidsbuilder.schema.interpreter.evaluation_funcs
 
    
    .. rubric:: Functions

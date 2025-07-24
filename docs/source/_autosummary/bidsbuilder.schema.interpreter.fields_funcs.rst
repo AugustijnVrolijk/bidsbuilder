@@ -1,7 +1,7 @@
-bidsbuilder.interpreter.fields\_funcs
-=====================================
+bidsbuilder.schema.interpreter.fields\_funcs
+============================================
 
-.. automodule:: bidsbuilder.interpreter.fields_funcs
+.. automodule:: bidsbuilder.schema.interpreter.fields_funcs
 
    
    .. rubric:: Functions
