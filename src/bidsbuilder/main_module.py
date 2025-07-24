@@ -21,11 +21,11 @@ class BidsDataset():
       - modalities
       - subjects
     """
-    initialised = False
     
+
     def __init__(self, root:str, minimal:bool=False):
         
-
+        self._frozen = True
         self.root = root
         self.schema:'Namespace' = parse_load_schema()
         self._tree_reference:Directory = Directory(_name=root, _file_link=self, _name_link=None, parent=None)
@@ -33,7 +33,22 @@ class BidsDataset():
         set_all_schema_(self, self.schema)
         from .modules.file_bases.agnostic_files import _make_skeletonBIDS
         _make_skeletonBIDS(self.schema, self.tree, minimal)
-        
+        self._frozen = False
+
+    @property
+    def _frozen(self):
+        return self.__frozen
+
+    @_frozen.setter
+    def _frozen(self, val:bool):
+        self.__frozen = val
+        if val == False:
+            for node in self.tree._iter_tree():
+                if node._file_link:
+                    node._file_link._check_schema(add_callbacks=True)
+        elif val != True:
+            raise ValueError(f"frozen must be true or false")
+
     @property
     def tree(self):
         return self._tree_reference
@@ -66,6 +81,9 @@ class BidsDataset():
     def _write_BIDS(self, force:bool):
         path = Path(self.root)
         path.mkdir(parents=False, exist_ok=force)
+
+    def _check_schema(self, add_callbacks:bool):
+        return
 
     def read(self, path:str = None):
         if path:

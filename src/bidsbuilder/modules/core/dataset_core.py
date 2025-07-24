@@ -19,9 +19,13 @@ class DatasetCore():
         if self._level == "required":
             self.exists = True
 
-    def __post_init__(self):
-        #not from attrs, but if an init needs to be run, once filename and the tree reference have been linked
-        pass
+    def __core_post_init__(self, add_callbacks=False):
+        if not self._dataset._frozen:
+            self._check_schema(add_callbacks)
+
+    def _check_schema(self, *args, **kwargs):
+        return
+        raise NotImplementedError(f"__post_init__ not defined for class {type(self)}")
 
     @property 
     def exists(self):

@@ -17,21 +17,27 @@ Design choices of hooks:
     An attribute with callbacks, must remember: the object which depends on it 
 
     Most reliable method: when initially checking the schema for a file, put callbacks on all selectors it faces
-    VERY MEMORY INTENSIVE, you'd get huge lists.. (for stuff like datatype == "eeg")
+    VERY MEMORY INTENSIVE, you'd get huge lists.. (for stuff like datatype == "eeg", every file would set a callback on every datatype ==
+    for that selector...)
+
+    FIX 1: dont have callbacks point to selector, rather just an object. I.e. datatype wouldn't have a list for each selector callback
+    for a file, but just 1 being that the file needs to recheck the schema
+
+    POSSIBILITY 1:
+        hardcode certain aspects to reduce reliance on intricate callback webs:
+
+        when a filename gets changed (path, entities, suffix, datatype, etc..) rerun schema on self AND ALL children
 
 
+DIFFICULTY: 
+    How to assign callbacks?
 
-    Memory vs Performance:
-        remember either the full list of relevant schema items, i.e for (CITATION.cff)._exists, it would remember (rules.dataset_metadata.dataset_authors; (dataset_description))
-        Or just a list of the relevant files
+    the way selectors work, is given a dataset core they evaluate to true or false...
+    can we along the way intercept those which reflect properties to be callbacked?
+    i.e. "==" or (operator.eq) is not, but sidecar.attribute is, in this case for attribute
 
-        this makes a difference in regards to callbacks on "self". For the latter no memory would be used, instead a special clause can be added for all attributes
-        that they re-run the schema when changed
-
-    Caveat 1:
-        children: for selectors like datatype == "pet"
-    
-        in this case the list of callbacks would be huge
+    possibly: have the fields and eval functions hardcoded? i.e the get_property function (".") could have a value 
+    passed to add callbacks
 
 
 2. Should I seperate all schema related operations into a seperate file
@@ -54,3 +60,7 @@ this looks at the bigger question of when should the schema be evaluated and loo
 
     i.e. if I user instantiates a subject, or even datatype folder without linking it to a dataset..
     should this be supported? -it technically could...
+
+One last remark:
+    treat agnostic files differently
+    They should all be initialised before parsing, and adding callbacks. Lots of interconnected dependencies

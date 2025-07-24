@@ -26,6 +26,9 @@ class categoryDict():
     def __getitem__(self, key):
         return self._dict[key][self.VALUE]
 
+    def __contains__(self, val:Any):
+        return val in self._dict
+
     def _get_val_cat(self, key):
         return self._dict[key]
     

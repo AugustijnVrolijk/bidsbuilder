@@ -4,7 +4,7 @@ import os
 import posixpath
 
 from attrs import define, field
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, Generator
 from pathlib import Path
 
 from .filenames import filenameBase
@@ -38,7 +38,6 @@ class FileEntry:
         fully_init = 0
 
         if isinstance(self._file_link, DatasetCore):
-            #is self.link.name = self.name redundant? Or will I always instantiate it already knowing the instance name
             self._file_link._tree_link = self
             fully_init += 1
 
@@ -47,8 +46,8 @@ class FileEntry:
             fully_init += 1
 
         if fully_init == 2:
-            self._file_link.__post_init__()
-        
+            self._file_link.__core_post_init__()    
+    
     @property
     def name(self) -> str:
         return self._name
@@ -85,6 +84,9 @@ class FileEntry:
 
     def _make(self, force:bool):
         self._file_link._write_BIDS(force)
+
+    def _iter_tree(self) -> Generator['FileEntry', None, None]:
+        yield self
 
 @define(slots=True)
 class FileCollection(FileEntry):
@@ -159,6 +161,11 @@ class FileCollection(FileEntry):
     def _make(self, force:bool):
         for child in self.children.values():
             child._make(force)
+
+    def _iter_tree(self) -> Generator['FileEntry', None, None]:
+        yield self
+        for child in self.children.values():
+            yield from child._iter_tree()
 
 @define(slots=True)
 class Directory(FileCollection):

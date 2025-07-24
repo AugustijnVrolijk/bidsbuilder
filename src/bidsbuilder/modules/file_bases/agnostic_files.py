@@ -108,7 +108,6 @@ def _process_JSON(file_info:dict[str, Any], tree:'Directory', minimal:bool=False
     if minimal:
         file.exists = False
     tree.add_child(filename, file, "file")
-    #no need to assign links, as creating a FileEntry does this
     return
 
 def _process_TSV(file_info:dict[str, Any], tree:'Directory', minimal:bool=False) -> FileCollection:

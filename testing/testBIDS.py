@@ -6,7 +6,7 @@ def main():
     hello = test1.addSubject("hello")
     hello.add_session("IEMU")
     tester2 = test1.addSubject("tester2")
-    ses_iemu = tester2.add_session("IEMU")
+    #ses_iemu = tester2.add_session("IEMU")
     #test1.addSubject("ASDASHDC138/(3)")
     #test1.addSubject("hello")
     test1.build(True)
