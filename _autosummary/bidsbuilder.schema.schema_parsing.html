@@ -202,6 +202,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Getting Started</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="bidsbuilder.schema.html">bidsbuilder.schema</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of bidsbuilder.schema</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.schema.callback_property.html">bidsbuilder.schema.callback_property</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="bidsbuilder.schema.interpreter.html">bidsbuilder.schema.interpreter</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of bidsbuilder.schema.interpreter</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="bidsbuilder.schema.interpreter.evaluation_funcs.html">bidsbuilder.schema.interpreter.evaluation_funcs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="bidsbuilder.schema.interpreter.fields_funcs.html">bidsbuilder.schema.interpreter.fields_funcs</a></li>
@@ -231,7 +232,6 @@
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="bidsbuilder.util.html">bidsbuilder.util</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of bidsbuilder.util</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.callback_property.html">bidsbuilder.util.callback_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.categoryDict.html">bidsbuilder.util.categoryDict</a></li>
 <li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.io.html">bidsbuilder.util.io</a></li>
 <li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.util.html">bidsbuilder.util.util</a></li>
@@ -281,6 +281,16 @@
         <article role="main" id="furo-main-content">
           <section id="module-bidsbuilder.schema.schema_parsing">
 <span id="bidsbuilder-schema-schema-parsing"></span><h1>bidsbuilder.schema.schema_parsing<a class="headerlink" href="#module-bidsbuilder.schema.schema_parsing" title="Link to this heading">¶</a></h1>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">JSON_check_schema</span></code>(reference, schema[, ...])</p></td>
+<td><p>generator, which when given schema, a list of current labels yields tuples of the format:  (&quot;add&quot;/&quot;del&quot;, label, fields) the first variable tells whether to add or remove the given fields</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 
         </article>

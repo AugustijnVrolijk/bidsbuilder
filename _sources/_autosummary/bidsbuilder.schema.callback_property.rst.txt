@@ -1,0 +1,12 @@
+bidsbuilder.schema.callback\_property
+=====================================
+
+.. automodule:: bidsbuilder.schema.callback_property
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CallbackField
+   

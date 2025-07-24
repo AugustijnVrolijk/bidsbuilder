@@ -4,3 +4,9 @@ bidsbuilder.schema.schema\_parsing
 .. automodule:: bidsbuilder.schema.schema_parsing
 
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      JSON_check_schema
+   

@@ -200,6 +200,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.schema.html">bidsbuilder.schema</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of bidsbuilder.schema</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.schema.callback_property.html">bidsbuilder.schema.callback_property</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.schema.interpreter.html">bidsbuilder.schema.interpreter</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of bidsbuilder.schema.interpreter</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/bidsbuilder.schema.interpreter.evaluation_funcs.html">bidsbuilder.schema.interpreter.evaluation_funcs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/bidsbuilder.schema.interpreter.fields_funcs.html">bidsbuilder.schema.interpreter.fields_funcs</a></li>
@@ -229,7 +230,6 @@
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.util.html">bidsbuilder.util</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of bidsbuilder.util</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.callback_property.html">bidsbuilder.util.callback_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.categoryDict.html">bidsbuilder.util.categoryDict</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.io.html">bidsbuilder.util.io</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.util.html">bidsbuilder.util.util</a></li>
@@ -384,6 +384,13 @@
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li>
+    bidsbuilder.schema.callback_property
+
+        <ul>
+          <li><a href="_autosummary/bidsbuilder.schema.callback_property.html#module-bidsbuilder.schema.callback_property">module</a>
+</li>
+        </ul></li>
+        <li>
     bidsbuilder.schema.interpreter
 
         <ul>
@@ -437,13 +444,6 @@
 
         <ul>
           <li><a href="_autosummary/bidsbuilder.util.html#module-bidsbuilder.util">module</a>, <a href="bidsbuilder.util.html#module-bidsbuilder.util">[1]</a>
-</li>
-        </ul></li>
-        <li>
-    bidsbuilder.util.callback_property
-
-        <ul>
-          <li><a href="_autosummary/bidsbuilder.util.callback_property.html#module-bidsbuilder.util.callback_property">module</a>
 </li>
         </ul></li>
         <li>
@@ -529,8 +529,6 @@
   <h2>I</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="api.html#bidsbuilder.BidsDataset.initialised">initialised (bidsbuilder.BidsDataset attribute)</a>, <a href="bidsbuilder.html#bidsbuilder.BidsDataset.initialised">[1]</a>
-</li>
         <li><a href="bidsbuilder.util.html#bidsbuilder.util.util.isDir">isDir() (in module bidsbuilder.util.util)</a>
 </li>
     </ul></td>
@@ -595,6 +593,8 @@
 </li>
           <li><a href="_autosummary/bidsbuilder.schema.html#module-bidsbuilder.schema">bidsbuilder.schema</a>
 </li>
+          <li><a href="_autosummary/bidsbuilder.schema.callback_property.html#module-bidsbuilder.schema.callback_property">bidsbuilder.schema.callback_property</a>
+</li>
           <li><a href="_autosummary/bidsbuilder.schema.interpreter.html#module-bidsbuilder.schema.interpreter">bidsbuilder.schema.interpreter</a>
 </li>
           <li><a href="_autosummary/bidsbuilder.schema.interpreter.evaluation_funcs.html#module-bidsbuilder.schema.interpreter.evaluation_funcs">bidsbuilder.schema.interpreter.evaluation_funcs</a>
@@ -610,8 +610,6 @@
           <li><a href="_autosummary/bidsbuilder.schema.schema_parsing.html#module-bidsbuilder.schema.schema_parsing">bidsbuilder.schema.schema_parsing</a>
 </li>
           <li><a href="_autosummary/bidsbuilder.util.html#module-bidsbuilder.util">bidsbuilder.util</a>, <a href="bidsbuilder.util.html#module-bidsbuilder.util">[1]</a>
-</li>
-          <li><a href="_autosummary/bidsbuilder.util.callback_property.html#module-bidsbuilder.util.callback_property">bidsbuilder.util.callback_property</a>
 </li>
           <li><a href="_autosummary/bidsbuilder.util.categoryDict.html#module-bidsbuilder.util.categoryDict">bidsbuilder.util.categoryDict</a>, <a href="bidsbuilder.util.html#module-bidsbuilder.util.categoryDict">[1]</a>
 </li>
@@ -668,12 +666,10 @@
   <h2>S</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="bidsbuilder.html#bidsbuilder.BidsDataset.schema">schema (bidsbuilder.BidsDataset attribute)</a>
+        <li><a href="bidsbuilder.modules.html#bidsbuilder.modules.set_all_schema_">set_all_schema_() (in module bidsbuilder.modules)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="bidsbuilder.modules.html#bidsbuilder.modules.set_all_schema_">set_all_schema_() (in module bidsbuilder.modules)</a>
-</li>
         <li><a href="bidsbuilder.modules.html#bidsbuilder.modules.schema_objects.Suffix">Suffix (class in bidsbuilder.modules.schema_objects)</a>
 </li>
     </ul></td>

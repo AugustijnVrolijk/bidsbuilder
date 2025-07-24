@@ -202,6 +202,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.schema.html">bidsbuilder.schema</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of bidsbuilder.schema</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.schema.callback_property.html">bidsbuilder.schema.callback_property</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.schema.interpreter.html">bidsbuilder.schema.interpreter</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of bidsbuilder.schema.interpreter</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/bidsbuilder.schema.interpreter.evaluation_funcs.html">bidsbuilder.schema.interpreter.evaluation_funcs</a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/bidsbuilder.schema.interpreter.fields_funcs.html">bidsbuilder.schema.interpreter.fields_funcs</a></li>
@@ -231,7 +232,6 @@
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/bidsbuilder.util.html">bidsbuilder.util</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of bidsbuilder.util</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.callback_property.html">bidsbuilder.util.callback_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.categoryDict.html">bidsbuilder.util.categoryDict</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.io.html">bidsbuilder.util.io</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/bidsbuilder.util.util.html">bidsbuilder.util.util</a></li>
@@ -421,11 +421,6 @@ Dataset needs the following context:</p>
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dataset_description</span></span><a class="headerlink" href="#bidsbuilder.BidsDataset.dataset_description" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset.initialised">
-<span class="sig-name descname"><span class="pre">initialised</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#bidsbuilder.BidsDataset.initialised" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="bidsbuilder.BidsDataset.read">
 <span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#bidsbuilder.BidsDataset.read" title="Link to this definition">¶</a></dt>
@@ -435,11 +430,6 @@ Dataset needs the following context:</p>
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="bidsbuilder.BidsDataset.schema">
-<span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">Namespace</span></code></em><a class="headerlink" href="#bidsbuilder.BidsDataset.schema" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="bidsbuilder.BidsDataset.tree">
@@ -497,9 +487,7 @@ Dataset needs the following context:</p>
 <li><a class="reference internal" href="#bidsbuilder.BidsDataset.addSubject"><code class="docutils literal notranslate"><span class="pre">BidsDataset.addSubject()</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.BidsDataset.build"><code class="docutils literal notranslate"><span class="pre">BidsDataset.build()</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.BidsDataset.dataset_description"><code class="docutils literal notranslate"><span class="pre">BidsDataset.dataset_description</span></code></a></li>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset.initialised"><code class="docutils literal notranslate"><span class="pre">BidsDataset.initialised</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.BidsDataset.read"><code class="docutils literal notranslate"><span class="pre">BidsDataset.read()</span></code></a></li>
-<li><a class="reference internal" href="#bidsbuilder.BidsDataset.schema"><code class="docutils literal notranslate"><span class="pre">BidsDataset.schema</span></code></a></li>
 <li><a class="reference internal" href="#bidsbuilder.BidsDataset.tree"><code class="docutils literal notranslate"><span class="pre">BidsDataset.tree</span></code></a></li>
 </ul>
 </li>
