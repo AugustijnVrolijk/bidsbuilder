@@ -1,8 +1,8 @@
 # bidsbuilder is a library facilitating the creation of BIDS approved datasets via schema-driven pythonic objects of all required files and metadata. #
 
-wrapBIDS interprets the bids schema (https://github.com/bids-standard/bids-specification/tree/master/src/schema) using the bidsschematools library.
+bidsbuilder interprets the bids schema (https://github.com/bids-standard/bids-specification/tree/master/src/schema) using the bidsschematools library and a bids-language interpreter.
 
-The interpreted schema enables quick retrieval of required metadata when adding data, wrapBIDS complements this by adding a system of hooks based on schema selectors and checks, enabling dynamic changing of required metadata linked to schema dependencies.
+The interpreted schema enables quick retrieval of required metadata when adding data, bidsbuilder complements this by adding a system of hooks based on schema selectors and checks, enabling dynamic changing of required metadata linked to schema dependencies.
 
 Base classes are added to support core functions such as json sidecars, tabular data files, paths from entities and more.
 
