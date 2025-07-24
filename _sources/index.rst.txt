@@ -6,9 +6,7 @@
 bidsbuilder documentation
 =========================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+bidsbuilder is still being built: https://github.com/AugustijnVrolijk/bidsbuilder... These docs are also still in development
 
 Welcome to the documentation for **bidsbuilder**, a library for ...
 

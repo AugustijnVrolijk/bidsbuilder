@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="bidsbuilder.util" href="bidsbuilder.util.html" /><link rel="prev" title="bidsbuilder.interpreter.operator_funcs" href="bidsbuilder.interpreter.operator_funcs.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="bidsbuilder.schema.interpreter.fields_funcs" href="bidsbuilder.schema.interpreter.fields_funcs.html" /><link rel="prev" title="bidsbuilder.schema.interpreter" href="bidsbuilder.schema.interpreter.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.07.19 -->
-        <title>bidsbuilder.interpreter.selectors - bidsbuilder 0.1.0 documentation</title>
+        <title>bidsbuilder.schema.interpreter.evaluation_funcs - bidsbuilder 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -201,28 +201,39 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Getting Started</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="bidsbuilder.modules.html">bidsbuilder.modules</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of bidsbuilder.modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.agnostic_files.html">bidsbuilder.modules.agnostic_files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.dataset_core.html">bidsbuilder.modules.dataset_core</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.dataset_tree.html">bidsbuilder.modules.dataset_tree</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.directories.html">bidsbuilder.modules.directories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.filenames.html">bidsbuilder.modules.filenames</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.json_files.html">bidsbuilder.modules.json_files</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="bidsbuilder.schema.html">bidsbuilder.schema</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of bidsbuilder.schema</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3 current has-children"><a class="reference internal" href="bidsbuilder.schema.interpreter.html">bidsbuilder.schema.interpreter</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of bidsbuilder.schema.interpreter</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l4 current current-page"><a class="current reference internal" href="#">bidsbuilder.schema.interpreter.evaluation_funcs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.schema.interpreter.fields_funcs.html">bidsbuilder.schema.interpreter.fields_funcs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.schema.interpreter.operator_funcs.html">bidsbuilder.schema.interpreter.operator_funcs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.schema.interpreter.selectors.html">bidsbuilder.schema.interpreter.selectors</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.schema.schema.html">bidsbuilder.schema.schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.schema.schema_parsing.html">bidsbuilder.schema.schema_parsing</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="bidsbuilder.modules.html">bidsbuilder.modules</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of bidsbuilder.modules</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="bidsbuilder.modules.core.html">bidsbuilder.modules.core</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of bidsbuilder.modules.core</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.core.dataset_core.html">bidsbuilder.modules.core.dataset_core</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.core.dataset_tree.html">bidsbuilder.modules.core.dataset_tree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.core.filenames.html">bidsbuilder.modules.core.filenames</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="bidsbuilder.modules.file_bases.html">bidsbuilder.modules.file_bases</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of bidsbuilder.modules.file_bases</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.file_bases.agnostic_files.html">bidsbuilder.modules.file_bases.agnostic_files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.file_bases.directories.html">bidsbuilder.modules.file_bases.directories</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.file_bases.json_files.html">bidsbuilder.modules.file_bases.json_files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bidsbuilder.modules.file_bases.tabular_files.html">bidsbuilder.modules.file_bases.tabular_files</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.schema_objects.html">bidsbuilder.modules.schema_objects</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.modules.tabular_files.html">bidsbuilder.modules.tabular_files</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="bidsbuilder.interpreter.html">bidsbuilder.interpreter</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of bidsbuilder.interpreter</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.interpreter.evaluation_funcs.html">bidsbuilder.interpreter.evaluation_funcs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.interpreter.fields_funcs.html">bidsbuilder.interpreter.fields_funcs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.interpreter.operator_funcs.html">bidsbuilder.interpreter.operator_funcs</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">bidsbuilder.interpreter.selectors</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="bidsbuilder.util.html">bidsbuilder.util</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of bidsbuilder.util</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="bidsbuilder.util.html">bidsbuilder.util</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of bidsbuilder.util</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.callback_property.html">bidsbuilder.util.callback_property</a></li>
 <li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.categoryDict.html">bidsbuilder.util.categoryDict</a></li>
 <li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.io.html">bidsbuilder.util.io</a></li>
-<li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.schema.html">bidsbuilder.util.schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="bidsbuilder.util.util.html">bidsbuilder.util.util</a></li>
 </ul>
 </li>
@@ -248,7 +259,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/_autosummary/bidsbuilder.interpreter.selectors.rst.txt" title="View this page">
+  <a class="muted-link" href="../_sources/_autosummary/bidsbuilder.schema.interpreter.evaluation_funcs.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -268,23 +279,53 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="module-bidsbuilder.interpreter.selectors">
-<span id="bidsbuilder-interpreter-selectors"></span><h1>bidsbuilder.interpreter.selectors<a class="headerlink" href="#module-bidsbuilder.interpreter.selectors" title="Link to this heading">¶</a></h1>
-<p class="rubric">Classes</p>
+          <section id="module-bidsbuilder.schema.interpreter.evaluation_funcs">
+<span id="bidsbuilder-schema-interpreter-evaluation-funcs"></span><h1>bidsbuilder.schema.interpreter.evaluation_funcs<a class="headerlink" href="#module-bidsbuilder.schema.interpreter.evaluation_funcs" title="Link to this heading">¶</a></h1>
+<p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../bidsbuilder.interpreter.html#bidsbuilder.interpreter.selectors.SelectorParser" title="bidsbuilder.interpreter.selectors.SelectorParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SelectorParser</span></code></a>(tokens)</p></td>
-<td><p>Selector Parser is a recursive descent parser to interpret BIDS schema logic into executable python functions</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">allequal</span></code>(a, b)</p></td>
+<td><p>true if arrays have the same length and paired elements are equal</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../bidsbuilder.interpreter.html#bidsbuilder.interpreter.selectors.selectorFunc" title="bidsbuilder.interpreter.selectors.selectorFunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selectorFunc</span></code></a>(val[, args, requires_input, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">checkNone</span></code>(func)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../bidsbuilder.interpreter.html#bidsbuilder.interpreter.selectors.selectorHook" title="bidsbuilder.interpreter.selectors.selectorHook"><code class="xref py py-obj docutils literal notranslate"><span class="pre">selectorHook</span></code></a>(funcs, _original)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count</span></code>(arg, val)</p></td>
+<td><p>Number of elements in an array equal to val</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">exists</span></code>(core, arg, rule)</p></td>
+<td><p>NEEDS UPDATE, WILL COUNT &quot;GHOST&quot; FILES AS EXISTING - Initialised files with the _exists attribute set to False</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">index</span></code>(arg, val)</p></td>
+<td><p>Index of first element in an array equal to val, null if not found</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">intersects</span></code>(a, b)</p></td>
+<td><p>The intersection of arrays a and b, or false if there are no shared values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">length</span></code>(arg)</p></td>
+<td><p>Number of elements in an array</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">max</span></code>(arg)</p></td>
+<td><p>The largest non-n/a value in an array</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">min</span></code>(arg)</p></td>
+<td><p>The smallest non-n/a value in an array</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nMatch</span></code>(arg, pattern)</p></td>
+<td><p>true if arg matches the regular expression pattern (anywhere in string)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nType</span></code>(arg)</p></td>
+<td><p>The name of the type, including &quot;array&quot;, &quot;object&quot;, &quot;null&quot;</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">notImplemented</span></code>(*args, **kwargs)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../bidsbuilder.interpreter.html#bidsbuilder.interpreter.selectors.token" title="bidsbuilder.interpreter.selectors.token"><code class="xref py py-obj docutils literal notranslate"><span class="pre">token</span></code></a>(val, kind)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sorted</span></code>(arg, method)</p></td>
+<td><p>The sorted values of the input array; defaults to type-determined sort.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">substr</span></code>(arg, start, end)</p></td>
+<td><p>The portion of the input string spanning from start position to end position</p></td>
 </tr>
 </tbody>
 </table>
@@ -296,23 +337,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="bidsbuilder.util.html">
+          <a class="next-page" href="bidsbuilder.schema.interpreter.fields_funcs.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">bidsbuilder.util</div>
+                <div class="title">bidsbuilder.schema.interpreter.fields_funcs</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="bidsbuilder.interpreter.operator_funcs.html">
+          <a class="prev-page" href="bidsbuilder.schema.interpreter.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">bidsbuilder.interpreter.operator_funcs</div>
+                <div class="title">bidsbuilder.schema.interpreter</div>
                 
               </div>
             </a>

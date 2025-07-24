@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-bidsbuilder needs to be clone from the github repo before installing locally:
+bidsbuilder needs to be cloned from the github repo before installing locally:
 
 .. code-block:: bash
 

@@ -1,7 +1,7 @@
-bidsbuilder.modules.filenames
-=============================
+bidsbuilder.modules.core.filenames
+==================================
 
-.. automodule:: bidsbuilder.modules.filenames
+.. automodule:: bidsbuilder.modules.core.filenames
 
    
    .. rubric:: Classes

@@ -1,7 +1,7 @@
-bidsbuilder.util.schema
-=======================
+bidsbuilder.schema.schema
+=========================
 
-.. automodule:: bidsbuilder.util.schema
+.. automodule:: bidsbuilder.schema.schema
 
    
    .. rubric:: Functions
