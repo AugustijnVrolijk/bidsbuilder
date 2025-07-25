@@ -13,6 +13,15 @@ What I want to distinguish:
 
     Hooks enable a callback on the relevant schema, to re-evaluate if the parameter change now changes the valid metadata
 
+    One option to avoid hooks is: "freeze" the schema, i.e. schema is checked once, at the end once the objects
+    are instantiated, then can create a log report of errors...
+
+    This is an easy solution, but would once again be pushing responsibility back on the user to have to iteratively
+    check the error logs and try again.
+    It would also make it impossible for a less experienced coder to use tools such as jupyter notebook
+    to iteratively "explore" the building process, i.e. update something in a cell, followed by checking the current
+    required metadata, etc...
+
 Design choices of hooks:
     An attribute with callbacks, must remember: the object which depends on it 
 
@@ -64,3 +73,84 @@ this looks at the bigger question of when should the schema be evaluated and loo
 One last remark:
     treat agnostic files differently
     They should all be initialised before parsing, and adding callbacks. Lots of interconnected dependencies
+
+--------------------------------------------------------------------------------------
+                        EXAMPLE SNIPPETS - ADD TO TESTS TO CHECK THEY WORK
+--------------------------------------------------------------------------------------
+
+PETMRISequenceSpecifics:
+  selectors:
+    - modality == "mri"
+    - intersects(dataset.modalities, ["pet"])
+    - match(extension, "^\.nii(\.gz)?$")
+  fields:
+    NonlinearGradientCorrection: required
+
+SliceTimingASL:
+  selectors:
+    - datatype == "perf"
+    - intersects([suffix], ["asl", "m0scan"])
+    - sidecar.MRAcquisitionType == "2D"
+
+MicroscopyChunkTransformations:
+  selectors:
+    - datatype == "micr"
+    - suffix != "photo"
+    - '"chunk" in entities'
+
+MicroscopyChunkTransformationsMatrixAxis:
+  selectors:
+    - datatype == "micr"
+    - suffix != "photo"
+    - '"chunk" in entities'
+    - '"ChunkTransformationMatrix" in sidecar'
+
+--------------------------------------------------------------------------------------
+                        CURRENT SOLUTION - SOMEWHAT HARDCODED
+--------------------------------------------------------------------------------------
+
+RULE 1:
+    WHEN A FILE HAS METADATA CHANGED FOR ITSELF -> REGARDING ITS NAME, PATH/EXTENSION/ENTITY etc..
+    IT AND ALL ITS CHILDRENS GET CHECKED FOR THE SCHEMA
+    THIS INCLUDES THE FOLLOWING PROPERTIES:
+
+    path
+
+    entities
+
+    datatype
+
+    suffix
+
+    extension
+
+    modality: the file modality, determined by datatype
+
+
+
+schema: access to the schema itself
+
+dataset: attributes of the whole dataset
+
+subject: attributes of the current subject
+
+
+sidecar: the metadata values, accumulated by the inheritance principle
+
+associations: associated files, discovered by the inheritance principle
+
+columns: the columns in the current TSV file
+
+json: the contents of the current JSON file
+
+gzip: the contents of the current file GZIP header
+
+nifti_header: selected contents of the current NIfTI file’s header
+
+ome: the contents of the current OME-XML metadata
+
+tiff: the contents of the current TIFF file’s header
+
+--------------------------------------------------------------------------------------
+                        FUTURE OPTIMISATION
+--------------------------------------------------------------------------------------

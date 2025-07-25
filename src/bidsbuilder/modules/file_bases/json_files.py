@@ -41,8 +41,11 @@ class JSONfile(DatasetCore):
         return self._metadata[name]
     
     def  __setitem__(self, name:str, value:Any):
-        self._metadata[name] = value
-    
+        try:
+            self._metadata[name] = value
+        except KeyError:
+            self._removed_key[name] = value
+            
     def __contains__(self, key):
         return (key in self._metadata.keys())
 

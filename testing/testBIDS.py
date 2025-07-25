@@ -2,7 +2,7 @@ from bidsbuilder import *
 
 def main():
     test1 = BidsDataset(root=r"C:\Users\augus\BCI_Stuff\Aspen\test")
-    test1.dataset_description["Funding"] = "this is an example"
+    test1.dataset_description["Fundingasddas"] = "this is an example"
     hello = test1.addSubject("hello")
     hello.add_session("IEMU")
     tester2 = test1.addSubject("tester2")
@@ -22,6 +22,15 @@ def demo():
         print(t1._tree_link.name)
         t1.add_session("IEMU")
     myData.build(force=True)
+
+def myCode():
+    dataset = BidsDataset()
+    dataset.fetch("genetic_info.json").exists = False
+
+    dataset.build()
+
+
+
 
 if __name__ == "__main__":
     main()

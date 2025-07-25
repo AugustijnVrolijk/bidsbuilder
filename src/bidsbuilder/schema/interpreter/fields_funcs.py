@@ -50,8 +50,10 @@ def json(core:DatasetCore):
     WHICH TAKES INTO ACCOUNT THE INHERITANCE PRINCIPLE IN ORDER TO COLLECT ALL METADATA
     """
     from ...modules.file_bases.json_files import JSONfile
-    assert isinstance(core, JSONfile), f"given core: {core} was not a JSON\n update fields_funcs.json to use inheritance principle"
-    return core
+    if not isinstance(core, JSONfile):
+        return None
+    else:
+        return core
 
 def gzip():
     return notImplemented()

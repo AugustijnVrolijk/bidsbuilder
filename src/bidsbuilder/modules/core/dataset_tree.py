@@ -162,10 +162,18 @@ class FileCollection(FileEntry):
         for child in self.children.values():
             child._make(force)
 
-    def _iter_tree(self) -> Generator['FileEntry', None, None]:
+    def _iter_tree(self, depth:int=-1) -> Generator['FileEntry', None, None]:
+        """
+        depth paremeter tells us how far to descend, if -1 or lower then will fetch everything
+        if depth = 1 will only fetch it's immediate children, if 0 then only itself.. 
+        """
         yield self
+        if depth == 0:
+            return
+        
+        depth -= 1
         for child in self.children.values():
-            yield from child._iter_tree()
+            yield from child._iter_tree(depth)
 
 @define(slots=True)
 class Directory(FileCollection):
