@@ -1,41 +1,45 @@
 from bidsbuilder.schema.callback_property import CallbackField
+from attrs import define, field
+from typing import ClassVar
 
-def promote_to_callback(obj, attr_name):
-    val = getattr(obj, attr_name)
-    wrapper = CallbackField(val)
-    setattr(obj, attr_name, wrapper)
-    return wrapper
-    
+@define(slots=True)
 class demo_property():
-    number = CallbackField(1)
-    list1 = CallbackField([1,2])
+    number:ClassVar = CallbackField()
 
-def callback1(instance, val, old, new):
+    _number:int = field(alias="_number")
+
+def callback1():
     print("hello")
 
-def callback2(instance, val, old, new):
+def callback2():
     print("ihhii")
 
-t1 = demo_property()
+print("1")
+t1 = demo_property(10)
 #t1.number = CallbackField(t1.number)
 
-demo_property.number.add_callback(t1, callback1)
-demo_property.list1.add_callback(t1, callback2)
+print("2")
+
+demo_property.__getattribute__(demo_property, "number").add_callback(t1, callback1)
 print(t1.number)
 t1.number = 5
 print(t1.number)
 t1.number = 1
 print(t1.number)
 
-print(t1.list1)
-t1.list1 = [4,3]
-print(t1.list1)
-t1.list1.append(1)
-print(t1.list1)
+print("3")
 
 
 """
+going to use DESCRIPTORS.
+
+Need to double check usage with __slots__
+
+also ensure I use weakref.weakrefdictionary if I keep a copy of the instance as a key. Otherwise I need to use id(instance)
+
+
 REQUIREMENTS, THINK ABOUT SUPPORT FOR A LIST (.append)
+
 
 NEED TO TEST THE FOLLOWING:
     IF I CAN CALLBACK AN INSTANCE SPECIFIC METHOD,
