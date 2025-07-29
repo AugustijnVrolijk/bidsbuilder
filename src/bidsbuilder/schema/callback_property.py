@@ -1,11 +1,13 @@
 import weakref
 
 from attrs import define, field, fields
-from typing import Any, ClassVar, Callable
+from typing import Any, ClassVar, Callable, Generic, TypeVar
 from functools import partial
 
+T = TypeVar("T")
+
 @define(slots=True)
-class CallbackField():
+class CallbackField(Generic[T]):
     """
     Allows for properties to call on functions when changed. Used to hook onto selectors 
     which change allowed behaviour of certain files (Allowed metadata, columns, etc...)

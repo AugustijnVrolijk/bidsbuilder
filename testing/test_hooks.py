@@ -4,7 +4,7 @@ from typing import ClassVar
 
 @define(slots=True)
 class demo_property():
-    number:ClassVar = CallbackField()
+    number:ClassVar = CallbackField[int]()
     #number:ClassVar = schemaCallbackField(tag="number")
 
     _number:int = field(alias="_number")
@@ -14,7 +14,7 @@ class demo_property():
 
 @define(slots= True)
 class demo_list_property():
-    myItems:ClassVar = CallbackField()
+    myItems:ClassVar = CallbackField[list]()
 
     _myItems:list = field(factory=list,alias="_myItems")
 
@@ -29,7 +29,6 @@ class demo_smthElse():
         wrap_callback_fields(self)
 
     def my_callback1(self):
-        print("ellie is a very cool person!!")
         return print(self._value1 + 5)
 
     def my_callback2(self):
@@ -95,9 +94,8 @@ def check_deleted_callback():
 
 def check_list_callback():
     t1 = demo_list_property([10,4,2])
-    #t2 = demo_list_property([10000])
+
     smth1 = demo_smthElse(5)
-    #smth2 = demo_smthElse(1343)
     demo_list_property.__getattribute__(demo_list_property, "myItems").add_callback(t1, smth1.my_callback1)
 
     t1.myItems.append(4)
@@ -105,6 +103,13 @@ def check_list_callback():
 
 if __name__ == "__main__":
     
+
+    print("BEFORE")
+    myItems = [10, 4, 2]
+    myItems.append(4)
+    print(myItems)
+    print("after")
+
     check_list_callback()
     print("hello")
 
