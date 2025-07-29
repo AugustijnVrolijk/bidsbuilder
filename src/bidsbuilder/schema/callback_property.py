@@ -42,29 +42,29 @@ class CallbackField():
         """
         setattr(instance, self.name, value)
         instance_id = id(instance)
+        self._trigger_callback(instance_id)
+
+    def _trigger_callback(self, instance_id:str):
         callbacks = self._callbacks.get(instance_id, False)
         if callbacks:
-            self._trigger_callback(instance_id)
+            for i, cback in enumerate(callbacks):
+                method = cback()
+                if method:
+                    method()
+                else:
+                    self._remove_callback(instance_id, i)
 
-    def _trigger_callback(self, id_instance:str):
-        for i, cback in enumerate(self._callbacks.get(id_instance)):
-            method = cback()
-            if method:
-                method()
-            else:
-                print("hello, first time removing")
-                self._remove_callback(id_instance, i)
-
-    def _remove_callback(self,id_instance:str, index:int):
-        cbacks:list = self._callbacks.get(id_instance)
+    def _remove_callback(self,instance_id:str, index:int):
+        cbacks:list = self._callbacks.get(instance_id)
         cbacks.pop(index)
         if not cbacks:
-            self._callbacks.pop(id_instance)
+            self._remove(instance_id)
 
     def _remove(self, instance_id:str):
         self._callbacks.pop(instance_id)
-        self._finalizers.pop(instance_id)
-
+        cur_finaliser:weakref.finalize = self._finalizers.pop(instance_id)
+        cur_finaliser.detach()
+        
     def add_callback(self, instance:object, callback:Callable):
         """
         Adds a callback (a class method) for this attribute of the given instance
@@ -149,17 +149,18 @@ def wrap_callback_fields(instance:object):
         """
         check here and assign to callbackField
         """
-        if field.name.startswith("_"):
-            descriptor_name = field.name[1:]  # Try to find corresponding descriptor
+        name:str = field.name
+        if name.startswith("_"):
+            descriptor_name = name[1:]  # Try to find corresponding descriptor
             descriptor:CallbackField = cls.__dict__.get(descriptor_name, None) #(cls, descriptor_name)
-            if not isinstance(descriptor_name, CallbackField):
+            if not isinstance(descriptor, CallbackField):
                 continue
           
-        val = getattr(instance, field)
-        cBack = partial(descriptor._trigger_callback(id(instance)))
+        val = getattr(instance, name)
+        cBack = partial(descriptor._trigger_callback, id(instance))
         if isinstance(val, list):
             wrapped = ObservableList(val, callback=cBack)
-            setattr(instance, field, wrapped)
+            setattr(instance, name, wrapped)
         elif isinstance(val, dict):
             wrapped = ObservableDict(val, callback=cBack)
-            setattr(instance, field, wrapped)
+            setattr(instance, name, wrapped)
