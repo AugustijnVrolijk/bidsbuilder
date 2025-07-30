@@ -23,7 +23,6 @@ def _process_fields_add(fields:'Namespace') -> dict:
 def _process_fields_del(fields:'Namespace') -> dict:
     """convert the fields namespace into a list of keys to delete"""
     processed = fields.keys()
-    print(processed)
     return processed
 
 def JSON_check_schema(reference:'DatasetCore', schema:'Namespace', cur_labels:set=set(), add_callbacks:bool=False) -> Generator[tuple, None, None]:

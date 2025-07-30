@@ -43,8 +43,8 @@ class DatasetCore():
         raise NotImplementedError(f"__post_init__ not defined for class {type(self)}")
 
     @property
-    def filename(self):
-        return self._tree_link._file_link
+    def filename(self) -> 'filenameBase':
+        return self._tree_link._name_link
 
     def _write_BIDS(self, force:bool):
         if self._exists:

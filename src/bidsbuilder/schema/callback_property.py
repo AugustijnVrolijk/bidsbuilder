@@ -1,27 +1,26 @@
 import weakref
 
 from attrs import define, field, fields
-from typing import Any, ClassVar, Callable, Generic, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 from functools import partial
 
-def _do_nothing(instance:object, value:Any) -> True:
+def _do_nothing(*args, **kwargs) -> True:
     return True
 
 T = TypeVar("T")
 
 @define(slots=True)
-class CallbackField(Generic[T]):
+class CallbackBase(Generic[T]):
     """
-    Allows for properties to call on functions when changed. Used to hook onto selectors 
-    which change allowed behaviour of certain files (Allowed metadata, columns, etc...)
+    base descriptor class for callbacks
     """
 
     name:str = field(init=False)
-    _validator: Callable = field(default=_do_nothing, alias="_validator")
-    _callbacks:dict[str, list] = field(factory=dict, alias="_callbacks")
-    _finalizers:dict[str, Any] = field(factory=dict, alias="_finalizers")
 
     def __set_name__(self, owner, name):
+        """add underscore for instance variable. All classes are slotted so cannot use
+        __dict__. Consequently use '_' to denote the raw attribute and store it on the instance
+        also makes debugging easier as the instance owns its attributes"""
         self.name = f"_{name}"
 
     def __get__(self, instance, owner):
@@ -30,19 +29,37 @@ class CallbackField(Generic[T]):
         return getattr(instance, self.name)
 
     def __set__(self, instance, value):
+        setattr(instance, self.name, value)
+        self._trigger_callback(instance)
+
+    def _trigger_callback(self):
+        ...
+
+@define(slots=True)
+class CallbackField(CallbackBase, Generic[T]):
+    """
+    Allows for properties to call on functions when changed. Used to hook onto selectors 
+    which change allowed behaviour of certain files (Allowed metadata, columns, etc...)
+    """
+
+    validator: Callable = field(default=_do_nothing, alias="_validator")
+    callbacks:dict[str, list] = field(factory=dict, alias="_callbacks")
+    finalizers:dict[str, Any] = field(factory=dict, alias="_finalizers")
+
+    def __set__(self, instance, value):
         """
         no repeated check when setting attributes
         assume types are static, i.e. no changing attribute from int to a list or dict
         """
-        if not self._validator(instance, value):
+        if not self.validator(instance, value):
             return
         
         setattr(instance, self.name, value)
-        instance_id = id(instance)
-        self._trigger_callback(instance_id)
+        self._trigger_callback(instance)
 
-    def _trigger_callback(self, instance_id:str):
-        callbacks = self._callbacks.get(instance_id, False)
+    def _trigger_callback(self, instance:object):
+        instance_id = id(instance)
+        callbacks = self.callbacks.get(instance_id, False)
         if callbacks:
             for i, cback in enumerate(callbacks):
                 method = cback()
@@ -52,14 +69,14 @@ class CallbackField(Generic[T]):
                     self._remove_callback(instance_id, i)
 
     def _remove_callback(self,instance_id:str, index:int):
-        cbacks:list = self._callbacks.get(instance_id)
+        cbacks:list = self.callbacks.get(instance_id)
         cbacks.pop(index)
         if not cbacks:
             self._remove(instance_id)
 
     def _remove(self, instance_id:str):
-        self._callbacks.pop(instance_id)
-        cur_finaliser:weakref.finalize = self._finalizers.pop(instance_id)
+        self.callbacks.pop(instance_id)
+        cur_finaliser:weakref.finalize = self.finalizers.pop(instance_id)
         cur_finaliser.detach()
         
     def add_callback(self, instance:object, callback:Callable):
@@ -71,9 +88,22 @@ class CallbackField(Generic[T]):
         """
         weak_callback = weakref.WeakMethod(callback)
         instance_id = id(instance)
-        self._callbacks.setdefault(instance_id, []).append(weak_callback)
+        self.callbacks.setdefault(instance_id, []).append(weak_callback)
         _del_callback = partial(self._remove, instance_id)
-        self._finalizers[instance_id] = weakref.finalize(instance, _del_callback)
+        self.finalizers[instance_id] = weakref.finalize(instance, _del_callback)
+
+@define(slots=True)
+class singleCallbackField(CallbackBase, Generic[T]):
+    """
+    Allows for properties to call on functions when changed. Used to hook onto selectors 
+    which change allowed behaviour of certain files (Allowed metadata, columns, etc...)
+    """
+
+    #_validator: Callable = field(default=_do_nothing, alias="_validator")
+    callback: Callable = field()
+
+    def _trigger_callback(self, instance):
+        self.callback(instance)
 
 class ObservableList(list):
     def __init__(self, data:list, callback: Callable):
@@ -129,17 +159,6 @@ class ObservableDict(dict):
         self.frozen = False
         self._check_callback()
 
-@define(slots=True)
-class schemaCallbackField(CallbackField):
-    tag:str = field(init=True, kw_only=True)
-
-    def __set__(self, instance, value):
-        setattr(instance, self.name, value)
-        callbacks = self._callbacks.get(id(instance), False)
-        if callbacks:
-            for cback in callbacks:
-                cback(self.tag)
-
 def wrap_callback_fields(instance:object):
     cls = instance.__class__
     for field in fields(cls):
@@ -154,7 +173,7 @@ def wrap_callback_fields(instance:object):
                 continue
           
         val = getattr(instance, name)
-        cBack = partial(descriptor._trigger_callback, id(instance))
+        cBack = partial(descriptor._trigger_callback, weakref.ref(instance))
         if isinstance(val, list):
             wrapped = ObservableList(val, callback=cBack)
             setattr(instance, name, wrapped)

@@ -109,14 +109,19 @@ MicroscopyChunkTransformationsMatrixAxis:
                         CURRENT SOLUTION - SOMEWHAT HARDCODED
 --------------------------------------------------------------------------------------
 
-RULE 1:
+Two types of Descriptors:
+
+TYPE 1:
     WHEN A FILE HAS METADATA CHANGED FOR ITSELF -> REGARDING ITS NAME, PATH/EXTENSION/ENTITY etc..
     IT AND ALL ITS CHILDRENS GET CHECKED FOR THE SCHEMA
+    this can be done with a semi-static descriptor, which enables a single callback for any change
+    var change (the callback being checking all its children)
+    
     THIS INCLUDES THE FOLLOWING PROPERTIES:
 
-    path
+    path (by default, as this is computed from entities, datatype, suffix, extension)
 
-    entities
+    entities 
 
     datatype
 
@@ -126,6 +131,19 @@ RULE 1:
 
     modality: the file modality, determined by datatype
 
+TYPE 2:
+    Dynamic callbacks which hook onto the properties of "other" objects to be alerted when these change
+
+    THIS INCLUDES THE FOLLOWING PROPERTIES:
+
+    exists
+
+TYPE 3:
+    UNRESOLVED:
+
+    maybe merge of type 1 and 2?
+    i.e. for sidecar, which is built from parents etc... Have some recursion like type1, but then basically
+    alerts the type 2 hooks for each relevant json child...
 
 
 schema: access to the schema itself
@@ -154,3 +172,6 @@ tiff: the contents of the current TIFF file’s header
 --------------------------------------------------------------------------------------
                         FUTURE OPTIMISATION
 --------------------------------------------------------------------------------------
+
+Add "tags" for each selectorFunc. When an attribute is changed, it also sends its name (or tag)
+that way it can skip over selectorFunc which don't contain the right tag.

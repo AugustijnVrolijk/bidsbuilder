@@ -1,23 +1,25 @@
 from attrs import define, field
 from ..schema_objects import *
+from ...schema.callback_property import singleCallbackField, wrap_callback_fields
 
 from typing import Union, ClassVar, TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
-    from .dataset_tree import FileEntry
+    from .dataset_tree import FileEntry, FileCollection, Directory
 
 @define(slots=True)
 class filenameBase():
 
-    _tree_link:'FileEntry' = field(init=False, default=None, repr=False, alias="_tree_link")
+    _tree_link:Union['FileEntry', 'FileCollection', 'Directory'] = field(init=False, default=None, repr=False, alias="_tree_link")
 
     @property
     def name(self):
         raise NotImplementedError(f"Base class {type(self)} has no name")
 
     @property #could consider caching, but parent can change, so need to then reset the cache
-    def parent(self):
+    def parent(self) -> 'filenameBase':
         if self._tree_link:
             return self._tree_link.parent._name_link
         else: 
@@ -38,6 +40,16 @@ class agnosticFilename(filenameBase):
         assert val in self._valid_extensions, f"extension {val} is not valid for {self}, choose on of {self._valid_extensions}"
         self._cur_ext = val
 
+
+def _update_children_cback(instance:'CompositeFilename'):
+    """
+    Callback method which calls on self and all child instances to check their schema
+    """
+    
+    for child in instance._tree_link._iter_tree():
+        child._file_link._check_schema()
+    pass
+
 @define(slots=True)
 class CompositeFilename(filenameBase):
     """Base class for filename generation for files with entities
@@ -47,10 +59,15 @@ class CompositeFilename(filenameBase):
         name (str): Name of the current filename component
     """
     schema: ClassVar['list'] #should point to schema.rules.entities which is an ordered list
+    entities: ClassVar = singleCallbackField(_update_children_cback)
 
-    _entities: dict[Entity] = field(default=dict(), repr=True, alias="_entities")
+
+    _entities: dict[Entity] = field(factory=dict, repr=True, alias="_entities")
     _suffix: Union['Suffix', None] = field(default=None, repr=True, alias="_suffix")
     _datatype: Union['raw_Datatype', None] = field(default=None, repr=True, alias="_datatype")
+
+    def __attrs_post_init__(self):
+        wrap_callback_fields(self)
 
     @property
     def name(self) -> str:
@@ -70,13 +87,13 @@ class CompositeFilename(filenameBase):
         return entity_string
 
     @property
-    def entities(self) -> dict:
+    def all_entities(self) -> dict:
         if self.parent is None:
             cur_entities = dict()
         else:
-            cur_entities = self.parent.entities
+            cur_entities = self.parent.all_entities
         
-        cur_entities.update(self._entities) #overwrite parent values with cur values
+        cur_entities.update(self.entities) #overwrite parent values with cur values
         return cur_entities
     
     @property

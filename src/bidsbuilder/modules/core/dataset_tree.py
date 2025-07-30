@@ -157,7 +157,7 @@ class FileCollection(FileEntry):
     def path(self) -> str:
 
         if self.parent is None:
-            return self.name 
+            return self.name
 
         return posixpath.join(self.parent.path,f'{self.name}')
 

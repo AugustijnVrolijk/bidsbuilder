@@ -3,6 +3,7 @@ from pathlib import Path
 from mne.utils import logger
 
 def _write_JSON(path, data, overwrite = False):
+    print(path)
     fname = Path(path)
     if fname.exists() and not overwrite:
         raise FileExistsError(

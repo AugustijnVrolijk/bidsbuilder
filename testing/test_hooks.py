@@ -65,7 +65,7 @@ def check_basic_callbacks():
     print(f"third print: {t2.number}")
 
 def check_self_cleaning_callbacks():
-    cur_callbacks = getattr(demo_property, "number")._callbacks
+    cur_callbacks = getattr(demo_property, "number").callbacks
     print(f"Beginning before creation \n{cur_callbacks}\n")
     t1 = demo_property(10)
     t2 = demo_property(10000)
@@ -74,12 +74,12 @@ def check_self_cleaning_callbacks():
     getattr(demo_property, "number").add_callback(t1, smth1.my_callback1)
     getattr(demo_property, "number").add_callback(t2, smth2.my_callback2)
 
-    cur_callbacks = getattr(demo_property, "number")._callbacks
+    cur_callbacks = getattr(demo_property, "number").callbacks
     print(f"before t2 deletion \n{cur_callbacks}\n")
     del t2
     import gc
     gc.collect()
-    after_callbacks = getattr(demo_property, "number")._callbacks
+    after_callbacks = getattr(demo_property, "number").callbacks
     print(f"after deletion, weakref.finalizer should clean up descriptor reference \n{after_callbacks}") 
 
 def check_deleted_callback():

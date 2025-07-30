@@ -4,9 +4,10 @@ from ...modules.core.dataset_core import DatasetCore
 
 if TYPE_CHECKING:
     from ...main_module import BidsDataset
+    from bidsschematools.types.namespace import Namespace
 
-def schema(core:DatasetCore, add_callbacks:bool=False):
-    ...
+def schema(core:DatasetCore, add_callbacks:bool=False) -> 'Namespace':
+    return core._dataset.schema
 
 def dataset(core:DatasetCore, add_callbacks:bool=False) -> 'BidsDataset':
     return core._dataset
@@ -18,19 +19,19 @@ def path(core:DatasetCore, add_callbacks:bool=False) -> str:
     return core._tree_link.relative_path
 
 def entities(core:DatasetCore, add_callbacks:bool=False):
-    return
-    ...
+    try:
+        print(type(core._tree_link._name_link._entities))
+        print("\n\n\n WE ARE HERE \n\n\n")
+    except AttributeError:
+        ...
 
 def datatype(core:DatasetCore, add_callbacks:bool=False):
-    return
     ...
 
 def suffix(core:DatasetCore, add_callbacks:bool=False):
-    return
     ...
 
 def extension(core:DatasetCore, add_callbacks:bool=False):
-    return
     ...
 
 def modality(core:DatasetCore, add_callbacks:bool=False):
@@ -43,7 +44,6 @@ def associations(core:DatasetCore, add_callbacks:bool=False):
     ...
 
 def columns(core:DatasetCore, add_callbacks:bool=False):
-    
     ...
 
 def json(core:DatasetCore, add_callbacks:bool=False):
