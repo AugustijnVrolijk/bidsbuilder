@@ -64,7 +64,8 @@ def exists(core:'DatasetCore', arg:Union[str|list], rule:str, add_callbacks:bool
         raise ValueError(f"{rule} not a valid rules, please see https://bidsschematools.readthedocs.io/en/latest/description.html#the-exists-function")
     
     count = 0
-    for path in arg        obj = reference.fetch(path)
+    for path in arg:
+        obj = reference.fetch(path)
         if add_callbacks:
             cls = obj.__class__
             getattr(cls, "exists").add_callback(obj, core._check_schema)
