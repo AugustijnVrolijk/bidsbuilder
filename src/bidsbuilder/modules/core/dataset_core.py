@@ -13,7 +13,7 @@ def _validate_exists(instance:'DatasetCore', value:bool) -> bool:
     if not isinstance(value, bool):
         raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
 
-    if instance._level != "required":
+    if instance._level == "required":
         return False
     return True
 
