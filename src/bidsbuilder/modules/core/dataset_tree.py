@@ -85,7 +85,10 @@ class FileEntry:
     def _make(self, force:bool):
         self._file_link._write_BIDS(force)
 
-    def _iter_tree(self) -> Generator['FileEntry', None, None]:
+    def _iter_tree(self, depth) -> Generator['FileEntry', None, None]:
+        """
+        argument depth does nothing but needed for method to stay consistent during recursion
+        """
         yield self
 
 @define(slots=True)
@@ -173,7 +176,7 @@ class FileCollection(FileEntry):
         
         depth -= 1
         for child in self.children.values():
-            yield from child._iter_tree(depth)
+            yield from child._iter_tree(depth=depth)
 
 @define(slots=True)
 class Directory(FileCollection):

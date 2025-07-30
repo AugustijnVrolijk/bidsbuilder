@@ -12,14 +12,21 @@ class demo_property():
     def __attrs_post_init__(self):
         wrap_callback_fields(self)
 
+def _validate_myItems(instance, value):
+    print("hello this is me right now")
+    print(instance._myItems)
+
+    return True
+
 @define(slots= True)
 class demo_list_property():
-    myItems:ClassVar = CallbackField[list]()
+    myItems:ClassVar = CallbackField[list](_validator=_validate_myItems)
 
     _myItems:list = field(factory=list,alias="_myItems")
 
     def __attrs_post_init__(self):
         wrap_callback_fields(self)
+
 
 @define(slots=True)
 class demo_smthElse():
@@ -58,27 +65,27 @@ def check_basic_callbacks():
     print(f"third print: {t2.number}")
 
 def check_self_cleaning_callbacks():
-    cur_callbacks = demo_property.__getattribute__(demo_property, "number")._callbacks
+    cur_callbacks = getattr(demo_property, "number")._callbacks
     print(f"Beginning before creation \n{cur_callbacks}\n")
     t1 = demo_property(10)
     t2 = demo_property(10000)
     smth1 = demo_smthElse(5)
     smth2 = demo_smthElse(1343)
-    demo_property.__getattribute__(demo_property, "number").add_callback(t1, smth1.my_callback1)
-    demo_property.__getattribute__(demo_property, "number").add_callback(t2, smth2.my_callback2)
+    getattr(demo_property, "number").add_callback(t1, smth1.my_callback1)
+    getattr(demo_property, "number").add_callback(t2, smth2.my_callback2)
 
-    cur_callbacks = demo_property.__getattribute__(demo_property, "number")._callbacks
+    cur_callbacks = getattr(demo_property, "number")._callbacks
     print(f"before t2 deletion \n{cur_callbacks}\n")
     del t2
     import gc
     gc.collect()
-    after_callbacks = demo_property.__getattribute__(demo_property, "number")._callbacks
+    after_callbacks = getattr(demo_property, "number")._callbacks
     print(f"after deletion, weakref.finalizer should clean up descriptor reference \n{after_callbacks}") 
 
 def check_deleted_callback():
     t1 = demo_property(10)
     smth1 = demo_smthElse(5)
-    demo_property.__getattribute__(demo_property, "number").add_callback(t1, smth1.my_callback1)
+    getattr(demo_property, "number").add_callback(t1, smth1.my_callback1)
     print(f"first print/before assigning: {t1.number}")
     t1.number = 1
     print(f"after assigning")
@@ -96,9 +103,12 @@ def check_list_callback():
     t1 = demo_list_property([10,4,2])
 
     smth1 = demo_smthElse(5)
-    demo_list_property.__getattribute__(demo_list_property, "myItems").add_callback(t1, smth1.my_callback1)
+    
+    getattr(demo_list_property, "myItems").add_callback(t1, smth1.my_callback1)
 
     t1.myItems.append(4)
+    print(t1.myItems)
+    t1.myItems = [1, 2, 3, 4, 5]
     print(t1.myItems)
 
 if __name__ == "__main__":
@@ -112,6 +122,9 @@ if __name__ == "__main__":
 
     check_list_callback()
     print("hello")
+    check_basic_callbacks()
+    check_deleted_callback()
+    check_self_cleaning_callbacks()
 
 
 """

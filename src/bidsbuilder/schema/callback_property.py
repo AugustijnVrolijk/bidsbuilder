@@ -4,6 +4,9 @@ from attrs import define, field, fields
 from typing import Any, ClassVar, Callable, Generic, TypeVar
 from functools import partial
 
+def _do_nothing(instance:object, value:Any) -> True:
+    return True
+
 T = TypeVar("T")
 
 @define(slots=True)
@@ -14,27 +17,16 @@ class CallbackField(Generic[T]):
     """
 
     name:str = field(init=False)
+    _validator: Callable = field(default=_do_nothing, alias="_validator")
     _callbacks:dict[str, list] = field(factory=dict, alias="_callbacks")
     _finalizers:dict[str, Any] = field(factory=dict, alias="_finalizers")
 
     def __set_name__(self, owner, name):
         self.name = f"_{name}"
 
-    def __attrs_post_init__(self):
-        pass
-
     def __get__(self, instance, owner):
-        """
-        can add the following:
-         
         if instance is None:
             return self
-        
-        Useful when the you need the callbackField obj to add_callbacks to
-        at the moment the following works:
-
-        Class.__getattribute__(Class, "number")
-        """
         return getattr(instance, self.name)
 
     def __set__(self, instance, value):
@@ -42,6 +34,9 @@ class CallbackField(Generic[T]):
         no repeated check when setting attributes
         assume types are static, i.e. no changing attribute from int to a list or dict
         """
+        if not self._validator(instance, value):
+            return
+        
         setattr(instance, self.name, value)
         instance_id = id(instance)
         self._trigger_callback(instance_id)
@@ -153,8 +148,8 @@ def wrap_callback_fields(instance:object):
         """
         name:str = field.name
         if name.startswith("_"):
-            descriptor_name = name[1:]  # Try to find corresponding descriptor
-            descriptor:CallbackField = cls.__dict__.get(descriptor_name, None) #(cls, descriptor_name)
+            descriptor_name = name[1:] 
+            descriptor:CallbackField = getattr(cls, descriptor_name, None) #cls.__dict__.get(descriptor_name, None) 
             if not isinstance(descriptor, CallbackField):
                 continue
           

@@ -31,10 +31,8 @@ def count(arg:list, val:Any) -> int:
     return sum(1 for x in arg if x == val)
 
 @checkNone
-def exists(core:'DatasetCore', arg:Union[str|list], rule:str) -> int:
+def exists(core:'DatasetCore', arg:Union[str|list], rule:str, add_callbacks:bool=False) -> int:
     """
-    NEEDS UPDATE, WILL COUNT "GHOST" FILES AS EXISTING - Initialised files with the _exists attribute set to False
-
     Count of files in an array that exist in the dataset. String is array with length 1. See following section for the meanings of rules.
 
     exists(sidecar.IntendedFor, "subject")
@@ -66,8 +64,10 @@ def exists(core:'DatasetCore', arg:Union[str|list], rule:str) -> int:
         raise ValueError(f"{rule} not a valid rules, please see https://bidsschematools.readthedocs.io/en/latest/description.html#the-exists-function")
     
     count = 0
-    for path in arg:
-        obj = reference.fetch(path)
+    for path in arg        obj = reference.fetch(path)
+        if add_callbacks:
+            cls = obj.__class__
+            getattr(cls, "exists").add_callback(obj, core._check_schema)
         if obj:
             count += obj.exists
 

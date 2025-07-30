@@ -5,48 +5,48 @@ from ...modules.core.dataset_core import DatasetCore
 if TYPE_CHECKING:
     from ...main_module import BidsDataset
 
-def schema():
-    return notImplemented()
+def schema(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
-def dataset(core:'DatasetCore') -> 'BidsDataset':
+def dataset(core:DatasetCore, add_callbacks:bool=False) -> 'BidsDataset':
     return core._dataset
 
-def subject():
-    return notImplemented()
+def subject(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
-def path(core:DatasetCore) -> str:
+def path(core:DatasetCore, add_callbacks:bool=False) -> str:
     return core._tree_link.relative_path
 
-def entities(core:DatasetCore):
+def entities(core:DatasetCore, add_callbacks:bool=False):
     return
-    return notImplemented()
+    ...
 
-def datatype(core:DatasetCore):
+def datatype(core:DatasetCore, add_callbacks:bool=False):
     return
-    return notImplemented()
+    ...
 
-def suffix(core:DatasetCore):
+def suffix(core:DatasetCore, add_callbacks:bool=False):
     return
-    return notImplemented()
+    ...
 
-def extension(core:DatasetCore):
+def extension(core:DatasetCore, add_callbacks:bool=False):
     return
-    return notImplemented()
+    ...
 
-def modality():
-    return notImplemented()
+def modality(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
-def sidecar():
-    return notImplemented()
+def sidecar(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
-def associations():
-    return notImplemented()
+def associations(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
-def columns():
+def columns(core:DatasetCore, add_callbacks:bool=False):
     
-    return notImplemented()
+    ...
 
-def json(core:DatasetCore):
+def json(core:DatasetCore, add_callbacks:bool=False):
     """   NOT YET COMPLETED NEED TO MAKE A MORE ROBUST METHOD
     WHICH TAKES INTO ACCOUNT THE INHERITANCE PRINCIPLE IN ORDER TO COLLECT ALL METADATA
     """
@@ -56,17 +56,17 @@ def json(core:DatasetCore):
     else:
         return core
 
-def gzip():
-    return notImplemented()
+def gzip(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
-def nifti_header():
-    return notImplemented()
+def nifti_header(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
-def ome():
-    return notImplemented()
+def ome(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
-def tiff():
-    return notImplemented() 
+def tiff(core:DatasetCore, add_callbacks:bool=False):
+    ...
 
 __all__ = ["schema","dataset","subject","path","entities","datatype","suffix","extension","modality",
            "sidecar","associations","columns","json","gzip","nifti_header","ome","tiff"]

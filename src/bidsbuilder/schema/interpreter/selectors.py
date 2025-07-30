@@ -77,10 +77,14 @@ class selectorFunc:
             return True
         return False
 
-    def __call__(self, *args:'DatasetCore') -> Any:
+    def __call__(self, *args:'DatasetCore', **kwargs) -> Any:
         if not self.is_callable:
             return self.val
         
+        add_callbacks = kwargs.get("add_callbacks", False)
+
+        args_to_add = []
+
         if self.requires_input:
             final_args = list(args)
         else:
@@ -88,12 +92,15 @@ class selectorFunc:
  
         for arg in self.args:
             if isinstance(arg, selectorFunc):
-                final_args.append(arg(*args))
+                final_args.append(arg(*args, **kwargs))
             else:
                 final_args.append(arg)
 
-        return self.val(*final_args)
-
+        if self.requires_input:
+            return self.val(*final_args, add_callbacks=add_callbacks)
+        else:
+            return self.val(*final_args)
+        
 @dataclass
 class token():
     val: str

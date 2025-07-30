@@ -34,7 +34,7 @@ def JSON_check_schema(reference:'DatasetCore', schema:'Namespace', cur_labels:se
     """
     for label, _sub_schema in _recurse_schema_explore(schema):
         cur_selector:'selectorHook' = _sub_schema["selectors"]
-        is_true = cur_selector(reference)
+        is_true = cur_selector(reference, add_callbacks=add_callbacks)
         if is_true and (label not in cur_labels):
             metadata_dict = _process_fields_add(_sub_schema["fields"])
             yield ("add", label, metadata_dict)
