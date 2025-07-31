@@ -1,6 +1,6 @@
 import re
 import operator as op
-from typing import Any, TYPE_CHECKING, Callable
+from typing import Any, TYPE_CHECKING, Callable, Union
 
 from .evaluation_funcs import *
 from .fields_funcs import *
@@ -55,7 +55,7 @@ class selectorFunc:
     requires_input: bool = field(repr=False, default=False)     #Whether it needs the input datasetCore instance in the callable function
     is_callable: bool = field(repr=False, default=False) 
 
-    tags: set = field(init=False, repr=True, factory=set) # tags which "fields" this selector func has
+    tags: Union[set, None] = field(init=False, repr=True, default=None) # tags which "fields" this selector func has
     # allows for optimisation when checking schema later by skipping irrelevant selectors
 
     def __str__(self) -> str:
@@ -121,6 +121,7 @@ class SelectorParser():
     It includes a from_raw() method enabling tokenisation and parsing from the raw string expression
     """
     token_specification = [
+                ('FLOAT',    r'\d+\.\d+|\.\d+'),            # Float
                 ('NUMBER',   r'\d+'),                       # Integer
                 ('STRING',   r'"[^"]*"|\'[^\']*\''),        # String literals
                 ('EQ_OP',    r'==|!=|<=|>=|\bin\b|[<>]'),   # Equality operators
@@ -139,7 +140,8 @@ class SelectorParser():
                 ('MISMATCH', r'.'),                         # Any other character
             ]
     tok_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_specification)
-    tokenizer = re.compile(tok_regex).match    
+    tokenizer = re.compile(tok_regex).match  
+
     nanToken = token(None, 'NONE')
     
     @classmethod
@@ -368,10 +370,12 @@ class SelectorParser():
     def postfix_term(self):
         node = self.primary()
 
+        allowed_types = ["RBRACK","ID","RPAREN", "STRING"] # could maybe switch to: self.prev_token.kind != "SEP"
+
         #chained according to PEMDAS from left to right
-        while self.cur_token.val in self.POSTFIX_OPS.keys() and self.prev_token.kind == "ID":
-            cur = self.cur_token
-            if cur.val == ".":
+        while self.cur_token.val in self.POSTFIX_OPS.keys() and self.prev_token.kind in allowed_types:
+            val = self.cur_token.val
+            if val == "." and self.prev_token.kind == "ID":
                 self.match("DOT")
                 #INITIALLY TRIED right = self.primary() BUT:
                 #Some subfields have the same name as the functions, i.e.
@@ -379,14 +383,14 @@ class SelectorParser():
                 #Not the type() function
                 right = self.match("ID") 
 
-            else:
+            elif val == "[":
                 self.match("LBRACK")
                 right = self.primary()
                 self.match("RBRACK")
 
-            val = self.POSTFIX_OPS[cur.val]
+            f_val = self.POSTFIX_OPS[val]
 
-            node = selectorFunc(val=val, 
+            node = selectorFunc(val=f_val, 
                                 args=[node, right],
                                 requires_input=False,
                                 is_callable=True)
@@ -396,6 +400,10 @@ class SelectorParser():
     def number(self):
         val = self.match("NUMBER")
         return selectorFunc(val=int(val))
+
+    def p_float(self):
+        val = self.match("FLOAT")
+        return selectorFunc(val=float(val))
 
     def string(self):
         val = self.match("STRING")
@@ -461,7 +469,7 @@ class SelectorParser():
     "match":nMatch,
     "max":max,
     "min":min,
-    "sorted":sorted,
+    "sorted":nSorted,
     "substr":substr,
     "type":nType,
     }
@@ -515,6 +523,8 @@ class SelectorParser():
         cur = self.cur_token
         if cur.kind == "NUMBER":
             return self.number()
+        elif cur.kind == "FLOAT":
+            return self.p_float()
         elif cur.kind == "STRING":
             return self.string()
         elif cur.kind == "LPAREN":

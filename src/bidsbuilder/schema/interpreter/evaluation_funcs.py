@@ -1,11 +1,10 @@
 import re
+import numpy as np
 
-from typing import Any, Union, TYPE_CHECKING
+from typing import Any, Union
 from functools import wraps
 from ...modules.core.dataset_tree import FileEntry
-
-if TYPE_CHECKING:
-    from bidsbuilder.modules.core.dataset_core import DatasetCore
+from ...modules.core.dataset_core import DatasetCore
 
 
 def checkNone(func):
@@ -222,7 +221,7 @@ def min(arg:list) -> int:
 
     return min_val
 
-def sorted(arg:list, method:str) -> list:
+def nSorted(arg:list, method:str=None) -> list:
     """
     The sorted values of the input array; defaults to type-determined sort. If method is “lexical”, or “numeric” use lexical or numeric sort.
 
@@ -230,7 +229,59 @@ def sorted(arg:list, method:str) -> list:
 
     True if sidecar.VolumeTiming is sorted
     """
-    return notImplemented()
+    # checks
+    if not isinstance(arg, list):
+        raise TypeError("Input must be a list")
+    
+    # remove n/a
+    final_vals = list(arg)
+    na_indices = []
+
+    for i, x in enumerate(arg):
+        if str(x).lower() == "n/a":
+            na_indices.append(i)
+            final_vals.pop(i)
+    """
+    if confused about removing and re-inserting n/a, see schema.meta.expression_tests.yaml:
+    - expression: sorted(["1", "2", "n/a"], "numeric")
+    result: ["1", "2", "n/a"]
+    - expression: sorted(["n/a", "2", "1"], "numeric")
+    result: ["n/a", "1", "2"]
+    
+    as seen in version 1.10.0 (time of writing)"""
+
+    # cast to int if numeric is known
+    t_vals = list(final_vals)
+    if method == "numeric":
+        # to deal with sorted(["1","5","3","10"], numeric), try cast if numeric specified
+        for i, v in enumerate(final_vals):
+            if isinstance(v, (int, float)):
+                continue
+            try:
+                if '.' in v:
+                    t_vals[i] = float(v)
+                else:
+                    t_vals[i] = int(v)
+            except ValueError:
+                raise TypeError(f"Cannot convert value '{v}' to a number.")
+    elif method == "lexical":
+        for i, v in enumerate(final_vals):
+            t_vals[i] = str(v)
+        
+
+    # Get permutation indices using argsortä
+    sort_keys = np.array(t_vals)
+    sorted_order = np.argsort(sort_keys, kind='stable')  # stable sort
+
+    # Build full permutation including 'n/a' placeholders
+    sorted_list = [None] * len(sorted_order)
+    for i, x in enumerate(sorted_order):
+        sorted_list[i] = final_vals[x]
+
+    for x in na_indices:
+        sorted_list.insert(x, arg[x])
+
+    return sorted_list
 
 @checkNone
 def substr(arg:str, start:int, end:int) -> str:
@@ -257,8 +308,12 @@ def nType(arg:Any) -> str:
     """
     if isinstance(arg, list):
         return "array"
-    elif isinstance(arg, object):
+    elif isinstance(arg, DatasetCore):
         return "object"
+    elif isinstance(arg, bool):
+        return "boolean"
+    elif isinstance(arg, (int,float)):
+        return "number"
     elif arg is None:
         return "null"
     return notImplemented()
@@ -266,5 +321,5 @@ def nType(arg:Any) -> str:
 def notImplemented(*args, **kwargs):
     raise NotImplementedError()
 
-__all__ = ["count", "exists", "index", "intersects", "allequal", "length", "nMatch", "max", "min", "sorted", "substr", "nType"]
+__all__ = ["count", "exists", "index", "intersects", "allequal", "length", "nMatch", "max", "min", "nSorted", "substr", "nType"]
 

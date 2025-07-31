@@ -1,4 +1,4 @@
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 from .evaluation_funcs import checkNone
 
 if TYPE_CHECKING:
@@ -9,8 +9,8 @@ def get_property(core:'DatasetCore', prop:str):
     return core[prop] #should have a __getItem__ defined
 
 @checkNone
-def get_list_index(arr:list, idx:int) -> Any:
-    assert isinstance(arr, list), "arr needs to be of type list for get_list_index"
+def get_list_index(arr:Union[list, str], idx:int) -> Any:
+    assert isinstance(arr, (list,str)), "arr needs to be of type list for get_list_index"
     assert isinstance(idx, int), "idx needs to be of type int for get_list_index"
     assert idx <= len(arr), "index out of bounds"
 
@@ -24,11 +24,9 @@ def contains(val:str, ref:'DatasetCore') -> bool:
     #can use the __contains__ 
     return val in ref
 
-@checkNone
 def op_and(a, b):
     return a and b
 
-@checkNone
 def op_or(a, b):
     return a or b
 

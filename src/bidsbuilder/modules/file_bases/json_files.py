@@ -1,7 +1,7 @@
 from ...util.categoryDict import categoryDict
 from ...util.io import _write_JSON
 from ..core.dataset_core import DatasetCore
-from ...schema.schema_parsing import JSON_check_schema
+from ...schema.schema_checking import JSON_check_schema
 
 from attrs import define, field
 from typing import TYPE_CHECKING, ClassVar, Any, Generator
