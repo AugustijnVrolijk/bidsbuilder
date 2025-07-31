@@ -40,15 +40,14 @@ class agnosticFilename(filenameBase):
         assert val in self._valid_extensions, f"extension {val} is not valid for {self}, choose on of {self._valid_extensions}"
         self._cur_ext = val
 
-
-def _update_children_cback(instance:'CompositeFilename'):
+def _update_children_cback(instance:'CompositeFilename', tags:Union[str, list]=None):
     """
-    Callback method which calls on self and all child instances to check their schema
+    Callback method which calls on self and all child instances to check their schema 
+    add tags to specify which selectors to re-check
     """
-    
     for child in instance._tree_link._iter_tree():
-        child._file_link._check_schema()
-    pass
+        child._file_link._check_schema(tags=tags)
+    return
 
 @define(slots=True)
 class CompositeFilename(filenameBase):
@@ -59,8 +58,9 @@ class CompositeFilename(filenameBase):
         name (str): Name of the current filename component
     """
     schema: ClassVar['list'] #should point to schema.rules.entities which is an ordered list
-    entities: ClassVar = singleCallbackField(_update_children_cback)
-
+    entities: ClassVar = singleCallbackField(tags="entities",callback=_update_children_cback)
+    suffix: ClassVar = singleCallbackField(tags="suffix",callback=_update_children_cback)
+    datatype: ClassVar = singleCallbackField(tags="datatype",callback=_update_children_cback)
 
     _entities: dict[Entity] = field(factory=dict, repr=True, alias="_entities")
     _suffix: Union['Suffix', None] = field(default=None, repr=True, alias="_suffix")

@@ -1,12 +1,14 @@
 import weakref
 
 from attrs import define, field, fields
-from typing import Any, Callable, Generic, TypeVar
+from typing import Any, Callable, Generic, TypeVar, Union
 from functools import partial
 
 def _do_nothing(*args, **kwargs) -> True:
     return True
 
+def _def_get(descriptor, instance, owner):
+    return getattr(instance, descriptor.name)
 T = TypeVar("T")
 
 @define(slots=True)
@@ -14,8 +16,11 @@ class CallbackBase(Generic[T]):
     """
     base descriptor class for callbacks
     """
+    fget: Callable[[Any, Any, Any], T] = field(default=_def_get)
+    fvalidator: Callable[[T], T] = field(default=_do_nothing)
 
     name:str = field(init=False)
+    tags:Union[list, None] = field(default=None)
 
     def __set_name__(self, owner, name):
         """add underscore for instance variable. All classes are slotted so cannot use
@@ -26,9 +31,14 @@ class CallbackBase(Generic[T]):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return getattr(instance, self.name)
+        return self.fget(self, instance, owner)
 
     def __set__(self, instance, value):
+        """
+        no repeated check when setting attributes
+        assume types are static, i.e. no changing attribute from int to a list or dict
+        """
+        value = self.fvalidator(value)
         setattr(instance, self.name, value)
         self._trigger_callback(instance)
 
@@ -42,20 +52,8 @@ class CallbackField(CallbackBase, Generic[T]):
     which change allowed behaviour of certain files (Allowed metadata, columns, etc...)
     """
 
-    validator: Callable = field(default=_do_nothing, alias="_validator")
-    callbacks:dict[str, list] = field(factory=dict, alias="_callbacks")
-    finalizers:dict[str, Any] = field(factory=dict, alias="_finalizers")
-
-    def __set__(self, instance, value):
-        """
-        no repeated check when setting attributes
-        assume types are static, i.e. no changing attribute from int to a list or dict
-        """
-        if not self.validator(instance, value):
-            return
-        
-        setattr(instance, self.name, value)
-        self._trigger_callback(instance)
+    callbacks:dict[str, list] = field(factory=dict)
+    finalizers:dict[str, Any] = field(factory=dict)
 
     def _trigger_callback(self, instance:object):
         instance_id = id(instance)
@@ -63,18 +61,21 @@ class CallbackField(CallbackBase, Generic[T]):
         if callbacks:
             for i, cback in enumerate(callbacks):
                 method = cback()
+                # need to unpack it as the callback is a weakref.WeakMethod
+                # as such if the object that the method is linked to gets deleted (garbage collected)
+                # the WeakMethod returns None rather than a callable method 
                 if method:
-                    method()
+                    method(self.tags)
                 else:
                     self._remove_callback(instance_id, i)
 
-    def _remove_callback(self,instance_id:str, index:int):
+    def _remove_callback(self,instance_id:int, index:int):
         cbacks:list = self.callbacks.get(instance_id)
         cbacks.pop(index)
         if not cbacks:
             self._remove(instance_id)
 
-    def _remove(self, instance_id:str):
+    def _remove(self, instance_id:int):
         self.callbacks.pop(instance_id)
         cur_finaliser:weakref.finalize = self.finalizers.pop(instance_id)
         cur_finaliser.detach()

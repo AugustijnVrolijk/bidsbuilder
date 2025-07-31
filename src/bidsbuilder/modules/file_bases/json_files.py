@@ -4,7 +4,7 @@ from ..core.dataset_core import DatasetCore
 from ...schema.schema_checking import JSON_check_schema
 
 from attrs import define, field
-from typing import TYPE_CHECKING, ClassVar, Any, Generator
+from typing import TYPE_CHECKING, ClassVar, Any, Union
 
 
 if TYPE_CHECKING:
@@ -49,23 +49,26 @@ class JSONfile(DatasetCore):
     def __contains__(self, key):
         return (key in self._metadata.keys())
 
-    def _check_schema(self, add_callbacks:bool=False):
+    def _check_schema(self, add_callbacks:bool=False, tags:Union[list,str] = None):
         """
-        check 
+        check the schema for the given object. 
+        add_callbacks defines whether to add callbacks when checking the schema
+        tags defines which selectors to check, enables skipping of irrelevant selectors or those unchanged
         """
         # we use a generator (JSON_check_schema) in order to adhere to the top down logic
         # (schema assumes top down parsing)
-
-        for flag, label, items in JSON_check_schema(self, self._schema,self._cur_labels, add_callbacks):
-            
+        modified = False
+        for flag, label, items in JSON_check_schema(self, self._schema,self._cur_labels, add_callbacks, tags):
+            modified = True
             if flag == "add":
                 self._add_metadata_keys(items, label)
             elif flag == "del":
                 self._remove_metadata_keys(items, label)
             else:
                 raise RuntimeError(f"unknown flag: {flag} given in {self}._check_schema")
-            
-        self._check_removed()
+        
+        if modified:
+            self._check_removed()
 
     def _check_removed(self):
         for key, val in self._removed_key.items():

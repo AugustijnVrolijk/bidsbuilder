@@ -22,7 +22,6 @@ class DatasetCore():
     _dataset:ClassVar["BidsDataset"]
     exists:ClassVar = CallbackField[bool](_validator=_validate_exists)
 
-
     _tree_link: Union['FileEntry', None] = field(repr=True, init=False, default=None, alias="_tree_link")
     _exists:bool = field(repr=True, init=False, default=True, alias="_exists")
     _level:str = field(repr=True, default="optional", alias="_level")
@@ -67,9 +66,6 @@ class DatasetCore():
     
     def __contains__(self, key): #used for selector parsing "in", need it to point it to whatever is needed
         return
-
-
-
 
 def _set_dataset_core(dataset:'BidsDataset'):
     DatasetCore._dataset = dataset

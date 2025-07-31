@@ -16,14 +16,17 @@ def subject(core:DatasetCore, add_callbacks:bool=False):
     ...
 
 def path(core:DatasetCore, add_callbacks:bool=False) -> str:
+    """
+    no need to add callbacks, this is done by default as path is calculated from entities and other attributes
+    """
     return core._tree_link.relative_path
 
 def entities(core:DatasetCore, add_callbacks:bool=False):
+    "no need to add callbacks, entitites get a default callback to update children"
     try:
-        print(type(core._tree_link._name_link._entities))
-        print("\n\n\n WE ARE HERE \n\n\n")
+        return core._tree_link._name_link.all_entities
     except AttributeError:
-        ...
+        return None
 
 def datatype(core:DatasetCore, add_callbacks:bool=False):
     ...

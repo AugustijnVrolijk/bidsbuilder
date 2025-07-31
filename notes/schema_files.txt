@@ -169,9 +169,34 @@ ome: the contents of the current OME-XML metadata
 
 tiff: the contents of the current TIFF file’s header
 
+
+
+
 --------------------------------------------------------------------------------------
                         FUTURE OPTIMISATION
 --------------------------------------------------------------------------------------
 
 Add "tags" for each selectorFunc. When an attribute is changed, it also sends its name (or tag)
 that way it can skip over selectorFunc which don't contain the right tag.
+
+This had been implemented! 
+valid tags are:
+    "schema"
+    "dataset"
+    "subject"
+    "path"
+    "entities"
+    "datatype"
+    "suffix"
+    "extension"
+    "modality"
+    "sidecar"
+    "associations"
+    "columns"
+    "json"
+    "gzip"
+    "nifti_header"
+    "ome"
+    "tiff"
+    "count"
+    "exists"

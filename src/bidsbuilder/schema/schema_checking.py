@@ -55,7 +55,7 @@ def JSON_check_schema(reference:'DatasetCore',
             yield ("del", label, labels_list)
     return
 
-def check_tags(selHook:'selectorHook', tags:Union[str, list]) -> bool:
+def check_tags(selHook:'selectorHook', tags:Union[str, list]=None) -> bool:
     if isinstance(tags, str):
         tags:list = [tags]
 
