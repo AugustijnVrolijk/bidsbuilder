@@ -58,9 +58,9 @@ class CompositeFilename(filenameBase):
         name (str): Name of the current filename component
     """
     schema: ClassVar['list'] #should point to schema.rules.entities which is an ordered list
-    entities: ClassVar = singleCallbackField(tags="entities",callback=_update_children_cback)
-    suffix: ClassVar = singleCallbackField(tags="suffix",callback=_update_children_cback)
-    datatype: ClassVar = singleCallbackField(tags="datatype",callback=_update_children_cback)
+    entities: ClassVar[dict]
+    suffix: ClassVar[Union[Suffix, None]]
+    datatype: ClassVar[Union[raw_Datatype, None]]
 
     _entities: dict[Entity] = field(factory=dict, repr=True, alias="_entities")
     _suffix: Union['Suffix', None] = field(default=None, repr=True, alias="_suffix")
@@ -86,34 +86,30 @@ class CompositeFilename(filenameBase):
 
         return entity_string
 
-    @property
-    def all_entities(self) -> dict:
-        if self.parent is None:
+    @staticmethod
+    def _entities_getter(instance:'CompositeFilename', descriptor:singleCallbackField, owner:'CompositeFilename') -> dict:
+        if instance.parent is None:
             cur_entities = dict()
         else:
-            cur_entities = self.parent.all_entities
+            cur_entities = instance.parent.entities
         
-        cur_entities.update(self.entities) #overwrite parent values with cur values
+        cur_entities.update(instance.entities) #overwrite parent values with cur values
         return cur_entities
     
-    @property
-    def suffix(self) -> Union[Suffix, None]:
-        
-        if self._suffix is not None:
-            return self._suffix
-        elif self.parent is not None:
-            return self.parent.suffix
+    entities: ClassVar[dict] = singleCallbackField(fget=_entities_getter,tags="entities",callback=_update_children_cback)
+
+    @staticmethod
+    def _suffix_datatype_getter(instance:'CompositeFilename', descriptor:singleCallbackField, owner:'CompositeFilename') -> Union[Suffix, raw_Datatype,None]:
+        cur_val = getattr(instance, descriptor.name)
+        if cur_val is not None:
+            return cur_val
+        elif instance.parent is not None:
+            return getattr(instance.parent, descriptor.name[1:])
         else:
             return None
 
-    @property
-    def datatype(self) -> Union[raw_Datatype, None]:
-        if self._datatype is not None:
-            return self._datatype
-        elif self.parent is not None:
-            return self.parent._datatype
-        else:
-            return None
+    suffix: ClassVar = singleCallbackField(fget=_suffix_datatype_getter, tags="suffix",callback=_update_children_cback)
+    datatype: ClassVar = singleCallbackField(fget=_suffix_datatype_getter, tags="datatype",callback=_update_children_cback)
     
     def update(self, key:str, val:str):
         #local entities only

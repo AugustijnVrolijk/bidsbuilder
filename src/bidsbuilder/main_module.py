@@ -82,7 +82,8 @@ class BidsDataset():
         path = Path(self.root)
         path.mkdir(parents=False, exist_ok=force)
 
-    def _check_schema(self, add_callbacks:bool):
+    def _check_schema(self, *args, **kwargs):
+        """placeholder used when tree recursively calls for files to check schema"""
         return
 
     def read(self, path:str = None):

@@ -9,18 +9,10 @@ if TYPE_CHECKING:
     from .dataset_tree import FileEntry
     from .filenames import filenameBase
 
-def _validate_exists(instance:'DatasetCore', value:bool) -> bool:
-    if not isinstance(value, bool):
-        raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
-
-    if instance._level == "required":
-        return False
-    return True
-
 @define(slots=True)
 class DatasetCore():
     _dataset:ClassVar["BidsDataset"]
-    exists:ClassVar = CallbackField[bool](_validator=_validate_exists)
+    exists:ClassVar[bool]
 
     _tree_link: Union['FileEntry', None] = field(repr=True, init=False, default=None, alias="_tree_link")
     _exists:bool = field(repr=True, init=False, default=True, alias="_exists")
@@ -36,6 +28,17 @@ class DatasetCore():
         """
         if not self._dataset._frozen:
             self._check_schema(add_callbacks)
+
+    @staticmethod
+    def _validate_exists(instance:'DatasetCore', value:bool) -> bool:
+        if not isinstance(value, bool):
+            raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
+
+        if instance._level == "required":
+            return True # must exists for files which are required
+        return value
+
+    exists:ClassVar[bool] = CallbackField[bool](fval=_validate_exists)
 
     def _check_schema(self, *args, **kwargs):
         return

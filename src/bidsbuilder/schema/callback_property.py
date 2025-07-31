@@ -4,11 +4,12 @@ from attrs import define, field, fields
 from typing import Any, Callable, Generic, TypeVar, Union
 from functools import partial
 
-def _do_nothing(*args, **kwargs) -> True:
-    return True
+def _do_nothing(instance: object, value:Any, *args, **kwargs) -> Any:
+    return value
 
-def _def_get(descriptor, instance, owner):
+def _def_get(instance, descriptor, owner):
     return getattr(instance, descriptor.name)
+
 T = TypeVar("T")
 
 @define(slots=True)
@@ -17,10 +18,10 @@ class CallbackBase(Generic[T]):
     base descriptor class for callbacks
     """
     fget: Callable[[Any, Any, Any], T] = field(default=_def_get)
-    fvalidator: Callable[[T], T] = field(default=_do_nothing)
+    fval: Callable[[T], T] = field(default=_do_nothing) #default validator/converter
+    tags:Union[list, None] = field(default=None)
 
     name:str = field(init=False)
-    tags:Union[list, None] = field(default=None)
 
     def __set_name__(self, owner, name):
         """add underscore for instance variable. All classes are slotted so cannot use
@@ -31,14 +32,14 @@ class CallbackBase(Generic[T]):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return self.fget(self, instance, owner)
+        return self.fget(instance, self, owner)
 
     def __set__(self, instance, value):
         """
         no repeated check when setting attributes
         assume types are static, i.e. no changing attribute from int to a list or dict
         """
-        value = self.fvalidator(value)
+        value = self.fval(instance, value)
         setattr(instance, self.name, value)
         self._trigger_callback(instance)
 
@@ -101,7 +102,7 @@ class singleCallbackField(CallbackBase, Generic[T]):
     """
 
     #_validator: Callable = field(default=_do_nothing, alias="_validator")
-    callback: Callable = field()
+    callback: Callable = field(kw_only=True)
 
     def _trigger_callback(self, instance):
         self.callback(instance)
