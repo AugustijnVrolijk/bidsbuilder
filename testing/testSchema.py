@@ -21,7 +21,8 @@ for i, pair in enumerate(tests):
             passed += 1
         else:
             print("test failed")
-            print(func)
+            print(f"intrepreted result: {func}")
+            print(f"true result:        {t_result}")
             failed += 1
     except Exception as e:
         print("test exception")

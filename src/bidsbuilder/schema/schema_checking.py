@@ -1,7 +1,7 @@
 from ..modules.schema_objects import Metadata
 from ..modules.core.dataset_core import DatasetCore
 
-from typing import TYPE_CHECKING, Generator
+from typing import TYPE_CHECKING, Generator, Union
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -25,14 +25,27 @@ def _process_fields_del(fields:'Namespace') -> dict:
     processed = fields.keys()
     return processed
 
-def JSON_check_schema(reference:'DatasetCore', schema:'Namespace', cur_labels:set=set(), add_callbacks:bool=False) -> Generator[tuple, None, None]:
+def JSON_check_schema(reference:'DatasetCore',
+                       schema:'Namespace', 
+                       cur_labels:set=set(), 
+                       add_callbacks:bool=False, 
+                       tags:Union[str, list] = []) -> Generator[tuple, None, None]:
     """
-    generator, which when given schema, a list of current labels yields tuples of the format: 
+    generator, which when given: a JSON object to check,
+                                a schema,
+                                Optionally: a list of current labels
+                                            a bool to add callbacks,
+                                            a list of tags to check
+                                            
+    yields tuples of the format: 
     ("add"/"del", label, fields)
     the first variable tells whether to add or remove the given fields
     """
     for label, _sub_schema in _recurse_schema_explore(schema):
         cur_selector:'selectorHook' = _sub_schema["selectors"]
+        if not check_tags(cur_selector, tags):
+            continue
+
         is_true = cur_selector(reference, add_callbacks=add_callbacks)
         if is_true and (label not in cur_labels):
             metadata_dict = _process_fields_add(_sub_schema["fields"])
@@ -41,6 +54,18 @@ def JSON_check_schema(reference:'DatasetCore', schema:'Namespace', cur_labels:se
             labels_list = _process_fields_del(_sub_schema["fields"])
             yield ("del", label, labels_list)
     return
+
+def check_tags(selHook:'selectorHook', tags:Union[str, list]) -> bool:
+    if isinstance(tags, str):
+        tags:list = [tags]
+
+    if not tags:  # no tags defined, check all
+        return True
+
+    for tag in tags:
+        if tag in selHook.tags:
+            return True        
+    return False
 
 def _recurse_schema_explore(schema:'Namespace') -> Generator:
     """

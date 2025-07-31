@@ -14,11 +14,12 @@ if TYPE_CHECKING:
 @define(slots=True, repr=True)
 class selectorHook():
     funcs: list[Callable] = field(repr=False)
-    _original: list[str] = field(repr=True, alias="_original")
+    original: list[str] = field(repr=True)
+    tags: set[str] = field(factory=set)
 
     def __str__(self) -> str:
         msg = ""
-        for i, val in enumerate(self._original):
+        for i, val in enumerate(self.original):
             msg += f"orig: '{val}'\nfunc: {str(self.funcs[i])}"
 
         return msg
@@ -29,16 +30,20 @@ class selectorHook():
             r_selector = [r_selector]
 
         funcs = []
+        tags = set()
         for selector in r_selector:
             sel_function = SelectorParser.from_raw(selector)
+            tags = set.union(tags, sel_function.tags)
             funcs.append(sel_function)
 
-        return cls(funcs, r_selector)
+        selHook = cls(funcs, r_selector)
+        selHook.tags = tags
+        return selHook
     
     def __call__(self, *args, **kwargs):
-
         #all(func(*args, **kwargs) for func in self.funcs) can be slower
-        for func in self.funcs:
+        
+        for func in self.funcs:            
             if not func(*args, **kwargs):
                 return False
         return True
@@ -49,6 +54,9 @@ class selectorFunc:
     args: list[Any] = field(repr=False, factory=list)            #in the case it is a callable, defines the arguments to give it
     requires_input: bool = field(repr=False, default=False)     #Whether it needs the input datasetCore instance in the callable function
     is_callable: bool = field(repr=False, default=False) 
+
+    tags: set = field(init=False, repr=True, factory=set) # tags which "fields" this selector func has
+    # allows for optimisation when checking schema later by skipping irrelevant selectors
 
     def __str__(self) -> str:
         if self.is_callable:
@@ -113,22 +121,22 @@ class SelectorParser():
     It includes a from_raw() method enabling tokenisation and parsing from the raw string expression
     """
     token_specification = [
-                ('NUMBER',   r'\d+'),                               # Integer
-                ('STRING',   r'"[^"]*"|\'[^\']*\''),                # String literals
-                ('EQ_OP',    r'==|!=|<=|>=|\bin\b|[<>]'),           # Equality operators
-                ('ADD_OP',   r'[+\-]'),                             # Additive operators
-                ('MULT_OP',  r'[*/]'),                              # Multiplicative operators
-                ('LOGIC_OP', r'&&|\|\|'),                           # logic Operators
-                ('BOOL',     r'false|true'),                               # Bool values
-                ('ID',       r'[A-Za-z_]\w*'),                      # Identifiers
-                ('LPAREN',   r'\('),                                # Left paren
-                ('RPAREN',   r'\)'),                                # Right paren
-                ('LBRACK',   r'\['),                                # Left bracket
-                ('RBRACK',   r'\]'),                                # Right bracket
-                ('SEP',      r'[, \t]+'),                           # Seperator - need to keep it so I can seperate brackets from indexing lists, to list definitions
-                ('UNARY',    r'!'),                                 # Unary ops - placed below OP so that != can be matched first
-                ('DOT',      r'\.'),                                # Subscription operator
-                ('MISMATCH', r'.'),                                 # Any other character
+                ('NUMBER',   r'\d+'),                       # Integer
+                ('STRING',   r'"[^"]*"|\'[^\']*\''),        # String literals
+                ('EQ_OP',    r'==|!=|<=|>=|\bin\b|[<>]'),   # Equality operators
+                ('ADD_OP',   r'[+\-]'),                     # Additive operators
+                ('MULT_OP',  r'[*/]'),                      # Multiplicative operators
+                ('LOGIC_OP', r'&&|\|\|'),                   # logic Operators
+                ('BOOL',     r'false|true'),                # Bool values
+                ('ID',       r'[A-Za-z_]\w*'),              # Identifiers
+                ('LPAREN',   r'\('),                        # Left paren
+                ('RPAREN',   r'\)'),                        # Right paren
+                ('LBRACK',   r'\['),                        # Left bracket
+                ('RBRACK',   r'\]'),                        # Right bracket
+                ('SEP',      r'[, \t]+'),                   # Seperator - need to keep it so I can seperate brackets from indexing lists, to list definitions
+                ('UNARY',    r'!'),                         # Unary ops - placed below OP so that != can be matched first
+                ('DOT',      r'\.'),                        # Subscription operator
+                ('MISMATCH', r'.'),                         # Any other character
             ]
     tok_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in token_specification)
     tokenizer = re.compile(tok_regex).match    
@@ -153,7 +161,7 @@ class SelectorParser():
         assert isinstance(selector, str), "from_raw needs a string as input"
 
         pos = 0
-        tokens = []
+        tokens = [] #tokenised format of input string
         mo = cls.tokenizer(selector)
         while mo:
             kind = mo.lastgroup
@@ -165,6 +173,7 @@ class SelectorParser():
             pos = mo.end()
             mo = cls.tokenizer(selector, pos)
         
+
         ret_func = cls(tokens).parse()
         ret_func.evaluate_static_nodes()
         # need to do this on seperate lines, eval_static_nodes returns a boolean of whether it is reduced
@@ -175,6 +184,7 @@ class SelectorParser():
         self.tokens:list = tokens
         self.position:int = 0
         self.total:int = len(tokens)
+        self.tags:set = set()
 
     @property
     def cur_token(self) -> token:
@@ -201,8 +211,8 @@ class SelectorParser():
 
     def advance(self):
         self.position += 1
-        if self.cur_token.kind == 'SEP':
-            self.advance()
+        while self.cur_token.kind == 'SEP':
+            self.position += 1
 
     def parse(self) -> selectorFunc:
 
@@ -214,11 +224,15 @@ class SelectorParser():
         if self.position != self.total:
             raise IndexError("Wasn't able to fully parse input expression")
 
+        if "entity" in self.tags:
+            raise RuntimeError("INCONSISTENT SCHEMA")
+        
+        syntax_tree.tags = self.tags #add corresponding tags
         return syntax_tree
     
     LOGIC_OPS = {
-        "&&":op_and, #possibly look at defining a small function, as currently 
-        "||":op_or,  #calling .__name__ on the handle returns <lambda>
+        "&&":op_and, # use small functions rather than quick lambda
+        "||":op_or,  # so .__name__ returns relevant operation
     }
 
     def logic_term(self):
@@ -363,7 +377,7 @@ class SelectorParser():
                 #Some subfields have the same name as the functions, i.e.
                 #columns.type, where type refers to a parameter of the columns object,
                 #Not the type() function
-                right = self.match("ID")
+                right = self.match("ID") 
 
             else:
                 self.match("LBRACK")
@@ -378,6 +392,43 @@ class SelectorParser():
                                 is_callable=True)
         
         return node
+
+    def number(self):
+        val = self.match("NUMBER")
+        return selectorFunc(val=int(val))
+
+    def string(self):
+        val = self.match("STRING")
+        #need to trim outer " " or ' '
+        return selectorFunc(val=val[1:-1])
+
+    def parentheses(self):
+        self.match("LPAREN")
+        node = self.logic_term()
+        self.match("RPAREN")
+        return node
+
+    def brackets(self):
+        assert self.prev_token.kind != "ID", f"parsing logic thinks {self.cur_token} is a list, but context suggests it's an index"
+        args = []
+        self.match("LBRACK")
+        #can have multiple items
+        while self.cur_token.val and (self.cur_token.kind != "RBRACK"):
+            args.append(self.additive_term())
+        self.match("RBRACK")
+        return selectorFunc(val=wrap_list, # list is wrong, this will break as the arguments will be passed in as list(arg1, arg2, ...)
+                            #need to change it to a custom function which builds a list from a series of inputs
+                            #can't wrap the args in another [] as need to recurse through the arguments to see if they need to be executed
+                            args=args,  
+                            requires_input=False,
+                            is_callable=True)
+
+    def boolean(self):
+        val = self.match("BOOL")
+        if val == "true":
+            return selectorFunc(val=True)
+        elif val == "false":
+            return selectorFunc(val=False)
 
     FIELDS_MAP = {
     "schema": schema,
@@ -415,75 +466,64 @@ class SelectorParser():
     "type":nType,
     }
 
-    def primary(self):
-        cur = self.cur_token
+    def identifier(self):
+        """
+        identifier is a bit special as it adds "tags"
 
-        if cur.kind == "NUMBER":
-            val = self.match("NUMBER")
-            return selectorFunc(val=int(val))
-        
-        elif cur.kind == "STRING":
-            val = self.match("STRING")
-            #need to trim outer " " or ' '
-            return selectorFunc(val=val[1:-1])
-        
-        elif cur.kind == "LPAREN":
+        identifier holds the predefined bids vocabulary of interpreted functions and fields
+
+        Each field and the function "exists()" is considered a tag (these are attributes belonging to a file
+        which can be hooked and allow to re-check the schema if these attributes change)
+        """
+        val = self.match("ID")
+        if val in self.FIELDS_MAP.keys():
+            self.tags.add(val) #add field to tags
+            return selectorFunc(val=self.FIELDS_MAP[val],
+                                requires_input=True,
+                                is_callable=True)
+                
+        elif val in self.EVAL_FUNCS.keys():
             self.match("LPAREN")
-            node = self.logic_term()
-            self.match("RPAREN")
-            return node
-        
-        elif cur.kind == "LBRACK":
-            assert self.prev_token.kind != "ID", f"parsing logic thinks {cur} is a list, but context suggests it's an index"
             args = []
-            self.match("LBRACK")
-            #can have multiple items
-            while self.cur_token.val and (self.cur_token.kind != "RBRACK"):
+
+            #can have multiple arguments
+            while self.cur_token.val and (self.cur_token.kind != "RPAREN"):
                 args.append(self.additive_term())
-            self.match("RBRACK")
-            return selectorFunc(val=wrap_list, # list is wrong, this will break as the arguments will be passed in as list(arg1, arg2, ...)
-                                #need to change it to a custom function which builds a list from a series of inputs
-                                #can't wrap the args in another [] as need to recurse through the arguments to see if they need to be executed
-                                args=args,  
+
+            self.match("RPAREN")
+            if val == "exists":
+
+                self.tags.add(val) #add exists to tag
+                return selectorFunc(val=self.EVAL_FUNCS[val],
+                                args=args,
+                                requires_input=True,
+                                is_callable=True)
+            
+            return selectorFunc(val=self.EVAL_FUNCS[val],
+                                args=args,
                                 requires_input=False,
                                 is_callable=True)
         
+        elif val == "null":           
+            return selectorFunc(val=None)
+        else:
+            raise ValueError(f"unrecognised identifier for {val}")
+
+    def primary(self):
+        """lowest level priority. These are all considered 
+        terminal and just return the interpreted value"""
+        cur = self.cur_token
+        if cur.kind == "NUMBER":
+            return self.number()
+        elif cur.kind == "STRING":
+            return self.string()
+        elif cur.kind == "LPAREN":
+            return self.parentheses()
+        elif cur.kind == "LBRACK":
+            return self.brackets()
         elif cur.kind == "BOOL":
-            self.match("BOOL")
-            if cur.val == "true":
-                return selectorFunc(val=True)
-            elif cur.val == "false":
-                return selectorFunc(val=False)
-            
+            return self.boolean()
         elif cur.kind == "ID":
-            self.match("ID")
-            if cur.val in self.FIELDS_MAP.keys():
-                return selectorFunc(val=self.FIELDS_MAP[cur.val],
-                                    requires_input=True,
-                                    is_callable=True)
-                 
-            elif cur.val in self.EVAL_FUNCS.keys():
-                self.match("LPAREN")
-                args = []
-                #can have multiple arguments
-                while self.cur_token.val and (self.cur_token.kind != "RPAREN"):
-                    args.append(self.additive_term())
-                self.match("RPAREN")
-                if cur.val == "exists":
-                    return selectorFunc(val=self.EVAL_FUNCS[cur.val],
-                                    args=args,
-                                    requires_input=True,
-                                    is_callable=True)
-                
-                return selectorFunc(val=self.EVAL_FUNCS[cur.val],
-                                    args=args,
-                                    requires_input=False,
-                                    is_callable=True)
-            
-            elif cur.val == "null":           
-                return selectorFunc(val=None)
-            else:
-                raise ValueError(f"unrecognised identifier for {cur.val}")
-        
+            return self.identifier()    
         else:
             raise TypeError(f"Unable to match token {cur}")

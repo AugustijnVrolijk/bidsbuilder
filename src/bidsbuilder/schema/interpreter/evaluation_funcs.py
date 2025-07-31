@@ -255,6 +255,12 @@ def nType(arg:Any) -> str:
 
     Returns "array"
     """
+    if isinstance(arg, list):
+        return "array"
+    elif isinstance(arg, object):
+        return "object"
+    elif arg is None:
+        return "null"
     return notImplemented()
 
 def notImplemented(*args, **kwargs):
