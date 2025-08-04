@@ -93,6 +93,9 @@ class CallbackField(CallbackBase, Generic[T]):
         _del_callback = partial(self._remove, instance_id)
         self.finalizers[instance_id] = weakref.finalize(instance, _del_callback)
 
+class CallbackContainer(CallbackBase, Generic[T]):
+    pass
+
 @define(slots=True)
 class singleCallbackField(CallbackBase, Generic[T]):
     """

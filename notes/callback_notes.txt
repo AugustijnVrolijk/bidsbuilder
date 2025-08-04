@@ -1,0 +1,19 @@
+add builder
+ 
+At the moment of writing this: 04/8/2025
+I want the following 4 types:
+    CallbackField
+    CallbackContainer
+        where I can attach specific callbacks to specific instances. (for none child callbacks)
+    SingleCallbackField
+    SingleCallbackContainer 
+        where a single predefined callback is applied to every instance (for callbacks being affect children)
+
+rather than make the myself distinguish
+
+use mixins or a metaclass to dynamically create these
+
+i.e. 
+attribute = callback(container=(true/false), single=(true/false), fget, fval, etc....)
+
+Need to look at an effecient way of doing this.
