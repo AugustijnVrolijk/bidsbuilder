@@ -226,9 +226,6 @@ class SelectorParser():
         if self.position != self.total:
             raise IndexError("Wasn't able to fully parse input expression")
 
-        if "entity" in self.tags:
-            raise RuntimeError("INCONSISTENT SCHEMA")
-        
         syntax_tree.tags = self.tags #add corresponding tags
         return syntax_tree
     
@@ -444,7 +441,6 @@ class SelectorParser():
     "subject": subject,
     "path": path,
     "entities": entities,
-    "entity": entities, #there are some inconsistencies in the schema, using entity. instead of entities.
     "datatype": datatype,
     "suffix": suffix,
     "extension": extension,

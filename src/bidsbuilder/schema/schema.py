@@ -1,18 +1,22 @@
 from functools import lru_cache
-from bidsschematools.types import Namespace
-from bidsschematools.schema import dereference, flatten_enums, _get_bids_version, _get_schema_version, _find
-from bidsschematools.utils import get_bundled_schema_path
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from bidsschematools.types import Namespace
+
+import bidsschematools as bst
+
+from bidsschematools.schema import _find
 from .interpreter.selectors import selectorHook
 
-def filter_schema(schema:Namespace):
+def filter_schema(schema:'Namespace'):
     del schema["meta"]
     del schema.rules["checks"]
     del schema.rules.files["deriv"]
     del schema.rules.sidecars["derivatives"]
     del schema.rules.tabular_data["derivatives"]
 
-def interpret_schema(schema:Namespace):
+def interpret_schema(schema:'Namespace'):
     
     #IMPORTANT, CAN ONLY SET BY DOING schema["KEY"] = , setting by doing schema.key = DOES NOT WORK
 
@@ -44,7 +48,7 @@ def recursive_interpret(rec_n, schema):
     return schema
 
 @lru_cache
-def parse_load_schema(schema_path=None, debug=False) -> Namespace:
+def parse_load_schema(schema_path=None, debug=False) -> 'Namespace':
     """Load and Parse the schema into a dictionary.
 
     This function allows the schema, like BIDS itself, to be specified in
@@ -68,20 +72,7 @@ def parse_load_schema(schema_path=None, debug=False) -> Namespace:
     -----
         This function is cached, so it will only be called once per schema path.
     """
-    if schema_path is None:
-        schema_path = get_bundled_schema_path()
-        #lgr.info("No schema path specified, defaulting to the bundled schema, `%s`.", schema_path)
-    schema = Namespace.from_directory(schema_path)
-    if not schema.objects:
-        raise ValueError(f"objects subdirectory path not found in {schema_path}")
-    if not schema.rules:
-        raise ValueError(f"rules subdirectory path not found in {schema_path}")
-    
-    dereference(schema)
-    flatten_enums(schema)
-    
-    schema["bids_version"] = _get_bids_version(schema_path)
-    schema["schema_version"] = _get_schema_version(schema_path)
+    schema = bst.schema.load_schema(schema_path)
 
     if not debug:
         filter_schema(schema)

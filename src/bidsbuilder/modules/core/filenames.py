@@ -93,7 +93,7 @@ class CompositeFilename(filenameBase):
         else:
             cur_entities = instance.parent.entities
         
-        cur_entities.update(instance.entities) #overwrite parent values with cur values
+        cur_entities.update(instance._entities) #overwrite parent values with cur values
         return cur_entities
     
     entities: ClassVar[dict] = singleCallbackField(fget=_entities_getter,tags="entities",callback=_update_children_cback)
