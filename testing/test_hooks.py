@@ -1,4 +1,4 @@
-from bidsbuilder.util.reactive.callback_property import CallbackField, wrap_callback_fields
+from bidsbuilder.util.reactive import CallbackField, wrap_callback_fields
 from attrs import define, field
 from typing import ClassVar
 
