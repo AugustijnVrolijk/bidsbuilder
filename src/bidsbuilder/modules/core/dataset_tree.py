@@ -200,7 +200,7 @@ class Directory(FileCollection):
         }
         ret_class:FileEntry = child_type[type_flag.lower()]
         
-        relpath:Path = Path(name_ref.name)
+        relpath:Path = Path(name_ref.local_name)
         parts = relpath.parts
         if relpath.root:
             parts = parts[1:]

@@ -1,6 +1,6 @@
 from attrs import define, field
-from ..schema_objects import *
-from ...schema.callback_property import singleCallbackField, wrap_callback_fields
+from ..schema_objects import Entity, raw_Datatype, Suffix
+from ...util.reactive import singleCallbackField, wrap_callback_fields
 
 from typing import Union, ClassVar, TYPE_CHECKING
 
@@ -20,10 +20,16 @@ class filenameBase():
 
     @property #could consider caching, but parent can change, so need to then reset the cache
     def parent(self) -> 'filenameBase':
-        if self._tree_link:
+        if self._tree_link.parent:
             return self._tree_link.parent._name_link
         else: 
             None
+
+    def __setitem__(self):
+        ...
+
+    def __getitem__(self):
+        ...
 
 @define(slots=True)
 class agnosticFilename(filenameBase):
@@ -45,6 +51,7 @@ def _update_children_cback(instance:'CompositeFilename', tags:Union[str, list]=N
     Callback method which calls on self and all child instances to check their schema 
     add tags to specify which selectors to re-check
     """
+    instance._tree_link.name = instance.local_name
     for child in instance._tree_link._iter_tree():
         child._file_link._check_schema(tags=tags)
     return
@@ -63,26 +70,58 @@ class CompositeFilename(filenameBase):
     datatype: ClassVar[Union[raw_Datatype, None]]
 
     _entities: dict[Entity] = field(factory=dict, repr=True, alias="_entities")
-    _suffix: Union['Suffix', None] = field(default=None, repr=True, alias="_suffix")
-    _datatype: Union['raw_Datatype', None] = field(default=None, repr=True, alias="_datatype")
+    _suffix: Union[Suffix, None] = field(default=None, repr=True, alias="_suffix")
+    _datatype: Union[raw_Datatype, None] = field(default=None, repr=True, alias="_datatype")
 
     def __attrs_post_init__(self):
         wrap_callback_fields(self)
 
+    @classmethod
+    def create(cls, entities:Union[dict, None]=None, suffix:Union[str, None]=None, datatype:Union[str, None]=None):
+        
+        if entities:
+            for key, val in entities.items():
+                to_add = Entity(key, val)
+                entities[key] = to_add
+
+        if suffix:
+            suffix = Suffix(suffix)
+
+        if datatype:
+            datatype = raw_Datatype(datatype)
+
+        return cls(_entities=entities, _suffix=suffix, _datatype=datatype)
+
     @property
     def name(self) -> str:
         """Construct the full filename by combining parent names and current name."""
-        cur_entities:dict[Entity] = self.entities
+        return self._construct_name(self.entities, self.suffix, self.datatype)
+    
+    @property
+    def local_name(self) -> str:
+        """construct instance name from attributes unique to the instance."""
+        return self._construct_name(self._entities, self._suffix, self._datatype)
+
+    @classmethod
+    def _construct_name(cls, n_entities:dict={}, n_suffix:Suffix=None, n_datatype:raw_Datatype=None, extension:str=None) -> str:
         
         ret_pairs = []
-        for pos_entity in self.schema:
-            t_entity:Entity = cur_entities.get(pos_entity, False)
-            if t_entity:
+        for pos_entity in cls.schema:
+            if (t_entity := n_entities.get(pos_entity, False)):
                 ret_pairs.append(f"{t_entity.str_name}-{t_entity.val}") #str name is the correct display name for bids filenames
-        
         entity_string = '_'.join(ret_pairs)
-        if self.suffix is not None:
-            entity_string += f"_{self.suffix.name}"
+
+        if n_suffix is not None:
+            entity_string += f"_{n_suffix.name}"
+        elif n_datatype is not None:
+            if entity_string:
+                entity_string += f"_{n_datatype.name}"
+            else:
+                # for datatype folders, which are just the datatype
+                entity_string = n_datatype.name
+
+        if extension:
+            entity_string += extension
 
         return entity_string
 
@@ -95,7 +134,16 @@ class CompositeFilename(filenameBase):
         
         cur_entities.update(instance._entities) #overwrite parent values with cur values
         return cur_entities
-    
+
+    @staticmethod
+    def _entities_validator(instance:'CompositeFilename', descriptor:singleCallbackField, value:Union[str, Entity]) -> Entity:
+        if isinstance(value, Entity):
+            return value
+        elif isinstance(value, str):
+            return Entity(value)
+        else:
+            raise TypeError(f"changing entities for {instance} requires either a string or Entity object") 
+
     entities: ClassVar[dict] = singleCallbackField(fget=_entities_getter,tags="entities",callback=_update_children_cback)
 
     @staticmethod
@@ -108,9 +156,10 @@ class CompositeFilename(filenameBase):
         else:
             return None
 
-    suffix: ClassVar = singleCallbackField(fget=_suffix_datatype_getter, tags="suffix",callback=_update_children_cback)
+    suffix: ClassVar = singleCallbackField(fget=_suffix_datatype_getter,fval=Suffix,tags="suffix",callback=_update_children_cback)
     datatype: ClassVar = singleCallbackField(fget=_suffix_datatype_getter, tags="datatype",callback=_update_children_cback)
     
+    """
     def update(self, key:str, val:str):
         #local entities only
         
@@ -123,7 +172,8 @@ class CompositeFilename(filenameBase):
             self.datatype.name = val
         else:
             raise KeyError(f"key: {key} was not found for {self}")
-        
+    """
+    
 def _set_filenames_schema(schema:'Namespace'):
     CompositeFilename.schema = schema.rules.entities
 

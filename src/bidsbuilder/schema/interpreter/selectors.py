@@ -152,6 +152,10 @@ class SelectorParser():
         """
         #bidsschematools already parses some statements? i think...
         #makes this more annoying as you can't just parse everything, you have to check it all...
+        
+        # 04/08/2025
+        # in actuality I believe it is the yaml library, which when ingesting the raw yaml files into dictionaries
+        # in bidsschematools.load_schema that then already parses basic expressions (one term) into python
         if not isinstance(selector, str):
             #do more error checking here idk
             if isinstance(selector, selectorFunc):

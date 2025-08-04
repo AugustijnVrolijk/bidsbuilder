@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Union, ClassVar
 from attrs import define, field
 from pathlib import Path
 
-from ...schema.callback_property import CallbackField
+from ...util.reactive import CallbackField
 
 if TYPE_CHECKING:
     from ...main_module import BidsDataset
@@ -30,7 +30,7 @@ class DatasetCore():
             self._check_schema(add_callbacks)
 
     @staticmethod
-    def _validate_exists(instance:'DatasetCore', value:bool) -> bool:
+    def _validate_exists(instance:'DatasetCore', descriptor:CallbackField, value:bool) -> bool:
         if not isinstance(value, bool):
             raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
 

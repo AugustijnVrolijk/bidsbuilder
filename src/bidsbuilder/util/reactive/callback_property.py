@@ -4,7 +4,7 @@ from attrs import define, field, fields
 from typing import Any, Callable, Generic, TypeVar, Union
 from functools import partial
 
-def _do_nothing(instance: object, value:Any, *args, **kwargs) -> Any:
+def _do_nothing(instance: object, descriptor:'CallbackBase', value:Any, *args, **kwargs) -> Any:
     return value
 
 def _def_get(instance, descriptor, owner):
@@ -39,7 +39,7 @@ class CallbackBase(Generic[T]):
         no repeated check when setting attributes
         assume types are static, i.e. no changing attribute from int to a list or dict
         """
-        value = self.fval(instance, value)
+        value = self.fval(instance, self, value)
         setattr(instance, self.name, value)
         self._trigger_callback(instance)
 
@@ -58,8 +58,7 @@ class CallbackField(CallbackBase, Generic[T]):
 
     def _trigger_callback(self, instance:object):
         instance_id = id(instance)
-        callbacks = self.callbacks.get(instance_id, False)
-        if callbacks:
+        if (callbacks := self.callbacks.get(instance_id, False)):
             for i, cback in enumerate(callbacks):
                 method = cback()
                 # need to unpack it as the callback is a weakref.WeakMethod
