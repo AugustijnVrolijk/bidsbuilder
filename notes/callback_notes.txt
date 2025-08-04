@@ -16,4 +16,13 @@ use mixins or a metaclass to dynamically create these
 i.e. 
 attribute = callback(container=(true/false), single=(true/false), fget, fval, etc....)
 
-Need to look at an effecient way of doing this.
+Need to look at an efficient way of doing this.
+
+differentiating container and field is important. As the validator used by __set__ and __setitem__ (for lists/dicts)
+should be different! 
+    i.e. for entities, the __set__ should ensure the type is an observable dicts
+                   and the __setitem__ should ensure the type is Entity (and cast strings up to it)
+
+This would also then make sure I don't need to call wrap_callable_fields() in __attrs_post_init__
+as the __set__ validator could do this automatically! 
+Bosh!
