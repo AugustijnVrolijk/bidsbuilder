@@ -136,15 +136,26 @@ class CompositeFilename(filenameBase):
         return cur_entities
 
     @staticmethod
-    def _entities_validator(instance:'CompositeFilename', descriptor:singleCallbackField, value:Union[str, Entity]) -> Entity:
-        if isinstance(value, Entity):
+    def _name_validator(instance:'CompositeFilename', descriptor:singleCallbackField, value:Union[str, Entity]) -> Entity:
+        
+        match descriptor.tags:
+            case "entities":
+                cur_type = Entity
+            case "suffix":
+                cur_type = Suffix
+            case "datatype":
+                cur_type = raw_Datatype
+            case _:
+                raise RuntimeError("unrecognised entity for entities name validator")
+        
+        if isinstance(value, cur_type):
             return value
         elif isinstance(value, str):
-            return Entity(value)
+            return cur_type(value)
         else:
-            raise TypeError(f"changing entities for {instance} requires either a string or Entity object") 
-
-    entities: ClassVar[dict] = singleCallbackField(fget=_entities_getter,tags="entities",callback=_update_children_cback)
+            raise TypeError(f"changing entities for {instance} requires either a string or {type(cur_type)} object") 
+        
+    entities: ClassVar[dict] = singleCallbackField(fget=_entities_getter,fval=_name_validator,tags="entities",callback=_update_children_cback)
 
     @staticmethod
     def _suffix_datatype_getter(instance:'CompositeFilename', descriptor:singleCallbackField, owner:'CompositeFilename') -> Union[Suffix, raw_Datatype,None]:
@@ -156,8 +167,8 @@ class CompositeFilename(filenameBase):
         else:
             return None
 
-    suffix: ClassVar = singleCallbackField(fget=_suffix_datatype_getter,fval=Suffix,tags="suffix",callback=_update_children_cback)
-    datatype: ClassVar = singleCallbackField(fget=_suffix_datatype_getter, tags="datatype",callback=_update_children_cback)
+    suffix: ClassVar = singleCallbackField(fget=_suffix_datatype_getter,fval=_name_validator,tags="suffix",callback=_update_children_cback)
+    datatype: ClassVar = singleCallbackField(fget=_suffix_datatype_getter,fval=_name_validator,tags="datatype",callback=_update_children_cback)
     
     """
     def update(self, key:str, val:str):
