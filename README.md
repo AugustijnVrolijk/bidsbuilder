@@ -34,14 +34,16 @@ Next features in order:
     * ~~support for container types, dynamic upgrading to observable types~~
     * ~~dynamic descriptor classes to combine features (single/multi callback),(container/normal), etc..~~
     * metaclass support to decorate observability on any container
-* callbacks on selectors
-    * Finish metadata class
+* full schema object support
+    * Finish metadata class - recursive metadata containerisation (when metadata stores more metadata)
+    * Finish val setters for all types (suffix, datatype, entity, etc..)
+    * Finish columns class
+    * Add support to lookup info for value terms (modalities, etc..)
 * fix dataset data folders
     * Fix subject/session/datatype class
     * Integrate subject with dataset files (participants.tsv, etc..)
     * Add support for folder level files (scans.tsv, sessions.tsv)
 * tabular file support
-    * Finish columns class
     * Create tabular file class
     * Integrate seperate TSV-sidecar-JSON class with tabular
 * support for data adding
