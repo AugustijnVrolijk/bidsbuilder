@@ -16,7 +16,12 @@ def _def_get(instance, descriptor, owner):
 T = TypeVar("T")
 
 class CallbackGetterMixin():
+    """
+    Mixin for descriptors that have a custom getter method which is given as a parameter
 
+    i.e. for Suffix, Entity, or Datatype, where the custom getter can search parent instances
+    if the current instance does not have the value set
+    """
     def __init__(self, *, fget:Callable[[Any, Any, Any], T], tags:Union[list, None]=None, **kwargs):
         self.fget:Callable[[Any, Any, Any], T] = fget
         self.tags:Union[list, None] = tags
@@ -34,7 +39,9 @@ class CallbackGetterMixin():
         return self.fget(instance, self, owner)
     
 class CallbackNoGetterMixin():
-
+    """
+    Mixin for descriptors that do not have a getter method, i.e. they use the default getter
+    """
     def __init__(self, *, tags:Union[list, None]=None, **kwargs):
         self.tags:Union[list, None] = tags
         super().__init__(**kwargs)
@@ -52,10 +59,11 @@ class CallbackNoGetterMixin():
 
 class PerInstanceCallbackMixin():
     """
-    Allows for properties to call on functions when changed. Used to hook onto selectors 
-    which change allowed behaviour of certain files (Allowed metadata, columns, etc...)
-    """
+    Mixin for per-instance callbacks, i.e. each instance of the descriptor can have its own callback/callbacks
 
+    Useful for attributes such as exists, enabling callback checking for other objects which depend on their 
+    exists value. I.e. dataset_description is dependent on genetic_info existing.
+    """
     def __init__(self, **kwargs):
         self.callbacks:dict[str, list] = {}
         self.finalizers:dict[str, Any] = {}
@@ -100,8 +108,12 @@ class PerInstanceCallbackMixin():
 
 class SingleCallbackMixin():
     """
-    Allows for properties to call on functions when changed. Used to hook onto selectors 
-    which change allowed behaviour of certain files (Allowed metadata, columns, etc...)
+    Mixin for single callbacks, i.e. only one callback can be registered for this field 
+    and is applied to all instances of the descriptor
+
+    at the time of writing, this is used for the callbacks of "parent" attributes.
+    i.e. Entity, Suffix, or datatype, where the single callback is defined to make each "child"
+    and the parent itself check their schema / update their tree name reference
     """
     def __init__(self, *, callback:Callable, **kwargs):
         self.callback:Callable = callback
@@ -111,33 +123,42 @@ class SingleCallbackMixin():
         self.callback(instance)
 
 def _make_container_mixin(_base_getter_cls):
+    """
+    Create a mixin for descriptors that wrap a container type (list or dict)
 
+    takes _base_getter_cls which defines whether the descriptor has a getter method or not
+    """
     class ContainerMixin(_base_getter_cls):
 
         _observable_types:dict = {
-            type(list): ObservableList,
-            type(dict): ObservableDict
+            type(list()): ObservableList,
+            type(dict()): ObservableDict,
         }
+        _is_wrapped:set = set()
 
         def __init__(self, *, fval: Callable[[T], T] = _do_nothing, **kwargs):
             self.fval: Callable[[T], T] = fval
             super().__init__(**kwargs)
 
         def _wrap_container_field(self, instance:object):
+            if id(instance) in self._is_wrapped:
+                return
+            
             val = getattr(instance, self.name)
-            if val not in self._observable_types.keys():
+            if type(val) not in self._observable_types:
                 return
             
             cBack = partial(self._trigger_callback, weakref.ref(instance))
             ObservableType = self._observable_types[type(val)]
             wrapped = ObservableType(val, callback=cBack)
             setattr(instance, self.name, wrapped)
+            self._is_wrapped.add(id(instance))
 
         def __get__(self, instance, owner):
             if instance is None:
                 return self
             self._wrap_container_field(instance)
-            return super().__get__(instance, owner)
+            return _base_getter_cls.__get__(self, instance, owner)
 
         def __set__(self, instance, value):
             """
@@ -151,7 +172,9 @@ def _make_container_mixin(_base_getter_cls):
     return ContainerMixin
 
 class PlainValMixin():
-    
+    """
+    mixin for descriptors who's value is a plain value, i.e. str, or int, or float.
+    """
     def __init__(self, *, fval: Callable[[T], T] = _do_nothing, **kwargs):
         self.fval: Callable[[T], T] = fval
         super().__init__(**kwargs)
@@ -167,56 +190,68 @@ class PlainValMixin():
 
 _callback_types = {}
 
-def callback(container:bool=False, 
-             single:bool=False, 
-             #fget:Union[Callable, None]=None, 
-             **kwargs
-             ) -> Generic[T]:
-    
-    """
-    fval:Union[Callable, None]=None,
-    tags:Union[str,list]=None
-    """
-    if kwargs.get("fget", False):
-        getter=True
-    else: 
-        getter=False
+class callbackFactory():
+
+    @staticmethod
+    def _dynamic_callback_type(container:bool=False, single:bool=False, getter:bool=False):
+        assert isinstance(container, bool), f"container must be a boolean, got {type(container)}"
+        assert isinstance(single, bool), f"single must be a boolean, got {type(single)}"
+        assert isinstance(getter, bool), f"getter must be a boolean, got {type(getter)}"
+
+        key = (container, single, getter)
+        if key in _callback_types:
+            return _callback_types[key]
+
+        else:
+            bases = [Generic[T]]
+            name = f"{'Single' if single else 'Multi'}Callback{'Container' if container else 'Field'}{'Getter' if getter else ''}"
+
+            if single:
+                bases.append(SingleCallbackMixin)
+            else:
+                bases.append(PerInstanceCallbackMixin)
+
+            if getter:
+                getter = CallbackGetterMixin
+            else:
+                getter = CallbackNoGetterMixin
+
+            if container:
+                bases.append(_make_container_mixin(getter))
+            else:
+                bases.append(PlainValMixin)
+                bases.append(getter)
+            # {"__module__": __name__}
+            # it gives me an error if I try pass them as kwds={}...
+            # so I just define it after...
+            ret_callback_type = types.new_class(name, tuple(bases),kwds={})
+            ret_callback_type.__module__ = __name__
+            _callback_types[key] = ret_callback_type
+            return ret_callback_type
+
+    @staticmethod
+    def _make_callback_instance(type_hint:TypeVar, 
+                                container:bool=False, 
+                                single:bool=False, 
+                                **kwargs) -> Generic[T]:
+        """
+        fget: Callable[[Any, Any, Any], T] = None,
+        fval:Union[Callable, None]=None,
+        tags:Union[str,list]=None
+        """
+        if kwargs.get("fget", False):
+            getter=True
+        else: 
+            getter=False
+            
+        cback_obj = callback._dynamic_callback_type(container=container, single=single, getter=getter)
+
+        return cback_obj[type_hint](**kwargs)
+
+    def __class_getitem__(cls, type_hint) -> Generic[T]:
+        def constructor(**kwargs):
+            return cls._make_callback_instance(type_hint=type_hint, **kwargs)
         
-    cback_obj = _dynamic_callback_type(container=container, single=single, getter=getter)
-
-    return cback_obj(**kwargs)
-
-def _dynamic_callback_type(container:bool=False, single:bool=False, getter:bool=False):
-    assert isinstance(container, bool), f"container must be a boolean, got {type(container)}"
-    assert isinstance(single, bool), f"single must be a boolean, got {type(single)}"
-    assert isinstance(getter, bool), f"getter must be a boolean, got {type(getter)}"
-
-    key = (container, single, getter)
-    if key in _callback_types:
-        return _callback_types[key]
-
-    else:
-        bases = []
-        name = f"{'Single' if single else 'Multi'}Callback{'Container' if container else 'Field'}{'Getter' if getter else ''}"
-
-        if single:
-            bases.append(SingleCallbackMixin)
-        else:
-            bases.append(PerInstanceCallbackMixin)
-
-        if getter:
-            getter = CallbackGetterMixin
-        else:
-            getter = CallbackNoGetterMixin
-
-        if container:
-            bases.append(_make_container_mixin(getter))
-        else:
-            bases.append(PlainValMixin)
-            bases.append(getter)
-        # {"__module__": __name__}
-        ret_callback_type = types.new_class(name, tuple(bases),{})
-        ret_callback_type.__module__ = __name__
-        _callback_types[key] = ret_callback_type
-        return ret_callback_type
+        return constructor
     
+callback = callbackFactory
