@@ -25,16 +25,25 @@ Possible future features:
 ## ROADMAP ##
 
 Next features in order:
+* ~~final schema interpreter features~~
+    * ~~create tests comparing to meta.expression_tests to align interpreter~~
+    * ~~add tag system to speedup callback calling speed~~
+* Dynamic descriptor classes for callback and field support
+    * ~~base descriptor classes~~
+    * ~~adding custom getters, input validators~~
+    * ~~support for container types, dynamic upgrading to observable types~~
+    * ~~dynamic descriptor classes to combine features (single/multi callback),(container/normal), etc..~~
+    * metaclass support to decorate observability on any container
 * callbacks on selectors
     * Finish metadata class
-* tabular file support
-    * Finish columns class
-    * Create tabular file class
-    * Integrate seperate TSV-sidecar-JSON class with tabular
 * fix dataset data folders
     * Fix subject/session/datatype class
     * Integrate subject with dataset files (participants.tsv, etc..)
     * Add support for folder level files (scans.tsv, sessions.tsv)
+* tabular file support
+    * Finish columns class
+    * Create tabular file class
+    * Integrate seperate TSV-sidecar-JSON class with tabular
 * support for data adding
     * Update data_collections class
     * Add support for all possible sidecar files (tabular and json, i.e. coordsystem.json)
