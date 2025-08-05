@@ -148,9 +148,7 @@ def test_list_callback():
     t1.myItems.append(4)
     _mock1.assert_has_calls([105, 105])
     assert t1.myItems == [10,4,2,4]
-
     
-
 def test_custom_getter_callback():
     t1 = demo_property_getter("yes")
     print(f"first print: {t1.myStr}")

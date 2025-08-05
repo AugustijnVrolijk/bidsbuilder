@@ -1,4 +1,19 @@
-from .descriptors import singleCallbackField, CallbackField
-from .containers import wrap_callback_fields
+from .descriptors import callback
 
-__all__ = ['singleCallbackField','CallbackField','wrap_callback_fields']
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
+
+class CallbackField(Generic[T]):
+    def __init__(self, *args, **kwargs):
+        return
+
+class singleCallbackField(Generic[T]):
+    def __init__(self, *args, **kwargs):
+        return
+
+def wrap_callback_fields(*args, **kwargs):
+    return
+
+
+__all__ = ["callback", "singleCallbackField", "wrap_callback_fields"]

@@ -4,8 +4,6 @@ from attrs import define, field, fields
 from typing import Any, Callable, Generic, TypeVar, Union
 from functools import partial
 
-from .descriptors import CallbackBase
-
 class ObservableList(list):
     def __init__(self, data:list, callback: Callable):
         super().__init__(data)
@@ -60,12 +58,13 @@ class ObservableDict(dict):
         self.frozen = False
         self._check_callback()
 
+"""
 def wrap_callback_fields(instance:object):
     cls = instance.__class__
     for field in fields(cls):
-        """
-        check here and assign to CallbackBase
-        """
+        
+        # check here and assign to CallbackBase
+        
         name:str = field.name
         if name.startswith("_"):
             descriptor_name = name[1:] 
@@ -81,3 +80,4 @@ def wrap_callback_fields(instance:object):
         elif isinstance(val, dict):
             wrapped = ObservableDict(val, callback=cBack)
             setattr(instance, name, wrapped)
+"""
