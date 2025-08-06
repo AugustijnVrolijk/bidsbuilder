@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Union, ClassVar
 from attrs import define, field
 from pathlib import Path
-
+from abc import ABC, abstractmethod
 from ...util.reactive import CallbackField
 
 if TYPE_CHECKING:
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .filenames import filenameBase
 
 @define(slots=True)
-class DatasetCore():
+class DatasetCore(ABC):
     _dataset:ClassVar["BidsDataset"]
     exists:ClassVar[bool]
 
@@ -40,10 +40,10 @@ class DatasetCore():
 
     exists:ClassVar[bool] = CallbackField[bool](fval=_validate_exists)
 
+    @abstractmethod
     def _check_schema(self, *args, **kwargs):
-        return
-        raise NotImplementedError(f"__post_init__ not defined for class {type(self)}")
-
+        pass
+    
     @property
     def filename(self) -> 'filenameBase':
         return self._tree_link._name_link
