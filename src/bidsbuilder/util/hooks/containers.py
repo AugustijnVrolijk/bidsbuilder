@@ -1,15 +1,26 @@
 
-from typing import Callable
+from typing import Any, TYPE_CHECKING
+from weakref import ReferenceType
 
-class ObservableList(list):
-    def __init__(self, data:list, callback: Callable):
-        super().__init__(data)
-        self._callback = callback
-        self._frozen = False
+if TYPE_CHECKING:
+    from .descriptors import DescriptorProtocol
+
+
+class ObservableType():
+    def __init__(self, descriptor:'DescriptorProtocol', weakref:ReferenceType):
+        self._descriptor:'DescriptorProtocol' = descriptor
+        self._ref:ReferenceType = weakref 
+        self._frozen:bool = False
 
     def _check_callback(self):
         if not self._frozen:
-            self._callback()
+            self._descriptor._trigger_callback(self._ref()) # weak reference so need to call it to access it
+
+class ObservableList(list, ObservableType):
+
+    def __init__(self, data:list, descriptor:'DescriptorProtocol', weakref:ReferenceType):
+        list.__init__(self, data)
+        ObservableType.__init__(self, descriptor, weakref)
 
     def append(self, item):
         super().append(item)
@@ -29,15 +40,11 @@ class ObservableList(list):
         super().__delitem__(index)
         self._check_callback()
 
-class ObservableDict(dict):
-    def __init__(self, data:dict, callback:Callable):
-        super().__init__(data)
-        self._callback = callback
-        self._frozen = False
+class ObservableDict(ObservableType, dict):
 
-    def _check_callback(self):
-        if not self._frozen:
-            self._callback()
+    def __init__(self, data:dict, descriptor:'DescriptorProtocol', weakref:ReferenceType):
+        dict.__init__(self, data)
+        ObservableType.__init__(self, descriptor, weakref)
 
     def __setitem__(self, key, value):
         super().__setitem__(key, value)

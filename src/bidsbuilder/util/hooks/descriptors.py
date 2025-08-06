@@ -4,7 +4,7 @@ import types
 
 from typing import Any, Callable, Generic, TypeVar, Union, overload, Self, TypedDict, Unpack
 from functools import partial
-from .containers import ObservableList, ObservableDict
+from .containers import ObservableList, ObservableDict, ObservableType
 
 VAL = TypeVar("VAL")
 CBACK = TypeVar("Descriptor", bound="DescriptorProtocol")
@@ -23,6 +23,7 @@ class DescriptorProtocol(Generic[VAL]):
     def __get__(self:Self, instance:INSTANCE, owner:OWNER) -> VAL: ...
     def __get__(self:Self, instance:None, owner:OWNER) -> Self: ...
     def __set__(self:Self, instance:INSTANCE, value:VAL) -> None: ...
+    def _trigger_callback(self:Self, instance:INSTANCE) -> None: ...
 
 class CallbackBase(Generic[VAL]): # generic base class to enable dynamic type hinting
     """
@@ -81,6 +82,7 @@ class PerInstanceCallbackMixin():
     def _trigger_callback(self, instance:INSTANCE) -> None:
         instance_id = id(instance)
         if (callbacks := self.callbacks.get(instance_id, False)):
+            to_del = []
             for i, cback in enumerate(callbacks):
                 method = cback()
                 # need to unpack it as the callback is a weakref.WeakMethod
@@ -89,11 +91,17 @@ class PerInstanceCallbackMixin():
                 if method:
                     method(self.tags)
                 else:
-                    self._remove_callback(instance_id, i)
+                    to_del.append(i)
+            self._remove_callback(instance_id, to_del)
 
-    def _remove_callback(self, instance_id:int, index:int) -> None:
+    def _remove_callback(self, instance_id:int, indices:list[int]) -> None:
+        if not indices:
+            return
+        indices = sorted(indices, reverse=True) 
         cbacks:list = self.callbacks.get(instance_id)
-        cbacks.pop(index)
+        for i in indices:
+            cbacks.pop(i)
+
         if not cbacks:
             self._remove(instance_id)
 
@@ -113,7 +121,8 @@ class PerInstanceCallbackMixin():
         instance_id = id(instance)
         self.callbacks.setdefault(instance_id, []).append(weak_callback)
         _del_callback = partial(self._remove, instance_id)
-        self.finalizers[instance_id] = weakref.finalize(instance, _del_callback)
+        if instance_id not in self.finalizers: # only needs to happen once, otherwise it may create duplicates if multiple callbacks are added
+            self.finalizers[instance_id] = weakref.finalize(instance, _del_callback)
 
 class SingleCallbackMixin():
     """
@@ -131,7 +140,7 @@ class SingleCallbackMixin():
     def _trigger_callback(self, instance:INSTANCE) -> None:
         self.callback(instance, self.tags)
 
-_observable_types:dict = {
+_observable_types:dict[type, ObservableType] = {
     type(list()): ObservableList,
     type(dict()): ObservableDict,
     }
@@ -144,26 +153,26 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
     as well as whether it has a validator method or not
     """
     class ContainerMixin(_base_getter_cls):
-        _is_wrapped:set = set()
+        def __init__(self, **kwargs):
+            self._is_wrapped:set = set()
+            super().__init__(**kwargs)
 
         def _wrap_container_field(self, instance:INSTANCE) -> None:
-            if (id(instance), id(self)) in self._is_wrapped:
-                return
             
             val = getattr(instance, self.name)
             if type(val) not in _observable_types:
                 return
             
-            cBack = partial(self._trigger_callback, weakref.ref(instance))
-            ObservableType = _observable_types.get(type(val))
-            wrapped = ObservableType(val, callback=cBack)
+            _observable_obj:ObservableType = _observable_types.get(type(val))
+            wrapped = _observable_obj(val, self, weakref.ref(instance))
             setattr(instance, self.name, wrapped)
-            self._is_wrapped.add((id(instance), id(self)))
+            self._is_wrapped.add(id(instance))
 
         def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
             if instance is None:
                 return self
-            self._wrap_container_field(instance)
+            if id(instance) not in self._is_wrapped:
+                self._wrap_container_field(instance)
             return _base_getter_cls.__get__(self, instance, owner)
 
         def __set__(self, instance:INSTANCE, value:VAL) -> None:

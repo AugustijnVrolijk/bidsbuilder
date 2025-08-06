@@ -52,6 +52,7 @@ class DatasetCore(ABC):
         if self._exists:
             self._make_file(force)
 
+    @abstractmethod
     def _make_file(self, force:bool):
         filename = Path(self._tree_link.path)  # or .json, .tsv, etc.
         if self._tree_link.is_dir:
