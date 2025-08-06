@@ -1,6 +1,6 @@
 from attrs import define, field
 from ..schema_objects import Entity, raw_Datatype, Suffix
-from ...util.reactive import singleCallbackField, wrap_callback_fields
+from ...util.hooks import *
 
 from typing import Union, ClassVar, TYPE_CHECKING
 
@@ -64,7 +64,7 @@ class CompositeFilename(filenameBase):
         parent (Union[filenameBase, None]): Parent filename object to inherit from
         name (str): Name of the current filename component
     """
-    schema: ClassVar['list'] #should point to schema.rules.entities which is an ordered list
+    schema: ClassVar[list] #should point to schema.rules.entities which is an ordered list
     entities: ClassVar[dict]
     suffix: ClassVar[Union[Suffix, None]]
     datatype: ClassVar[Union[raw_Datatype, None]]
@@ -72,9 +72,6 @@ class CompositeFilename(filenameBase):
     _entities: dict[Entity] = field(factory=dict, repr=True, alias="_entities")
     _suffix: Union[Suffix, None] = field(default=None, repr=True, alias="_suffix")
     _datatype: Union[raw_Datatype, None] = field(default=None, repr=True, alias="_datatype")
-
-    def __attrs_post_init__(self):
-        wrap_callback_fields(self)
 
     @classmethod
     def create(cls, entities:Union[dict, None]=None, suffix:Union[str, None]=None, datatype:Union[str, None]=None):
@@ -126,7 +123,7 @@ class CompositeFilename(filenameBase):
         return entity_string
 
     @staticmethod
-    def _entities_getter(instance:'CompositeFilename', descriptor:singleCallbackField, owner:'CompositeFilename') -> dict:
+    def _entities_getter(instance:'CompositeFilename', descriptor:'DescriptorProtocol', owner:'CompositeFilename') -> dict:
         if instance.parent is None:
             cur_entities = dict()
         else:
@@ -136,7 +133,7 @@ class CompositeFilename(filenameBase):
         return cur_entities
 
     @staticmethod
-    def _name_validator(instance:'CompositeFilename', descriptor:singleCallbackField, value:Union[str, Entity]) -> Entity:
+    def _name_validator(instance:'CompositeFilename', descriptor:'DescriptorProtocol', value:Union[str, Entity]) -> Entity:
         
         match descriptor.tags:
             case "entities":
@@ -155,10 +152,10 @@ class CompositeFilename(filenameBase):
         else:
             raise TypeError(f"changing entities for {instance} requires either a string or {type(cur_type)} object") 
         
-    entities: ClassVar[dict] = singleCallbackField(fget=_entities_getter,fval=_name_validator,tags="entities",callback=_update_children_cback)
+    entities: ClassVar[dict] = HookedDescriptor(dict, fget=_entities_getter,fval=_name_validator,tags="entities",callback=_update_children_cback)
 
     @staticmethod
-    def _suffix_datatype_getter(instance:'CompositeFilename', descriptor:singleCallbackField, owner:'CompositeFilename') -> Union[Suffix, raw_Datatype,None]:
+    def _suffix_datatype_getter(instance:'CompositeFilename', descriptor:'DescriptorProtocol', owner:'CompositeFilename') -> Union[Suffix, raw_Datatype,None]:
         cur_val = getattr(instance, descriptor.name)
         if cur_val is not None:
             return cur_val
@@ -167,8 +164,8 @@ class CompositeFilename(filenameBase):
         else:
             return None
 
-    suffix: ClassVar = singleCallbackField(fget=_suffix_datatype_getter,fval=_name_validator,tags="suffix",callback=_update_children_cback)
-    datatype: ClassVar = singleCallbackField(fget=_suffix_datatype_getter,fval=_name_validator,tags="datatype",callback=_update_children_cback)
+    suffix: ClassVar = HookedDescriptor(Suffix, fget=_suffix_datatype_getter,fval=_name_validator,tags="suffix",callback=_update_children_cback)
+    datatype: ClassVar = HookedDescriptor(raw_Datatype, fget=_suffix_datatype_getter,fval=_name_validator,tags="datatype",callback=_update_children_cback)
     
     """
     def update(self, key:str, val:str):

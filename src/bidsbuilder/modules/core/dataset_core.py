@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Union, ClassVar
 from attrs import define, field
 from pathlib import Path
 from abc import ABC, abstractmethod
-from ...util.reactive import CallbackField
+from ...util.hooks import *
 
 if TYPE_CHECKING:
     from ...main_module import BidsDataset
@@ -30,7 +30,7 @@ class DatasetCore(ABC):
             self._check_schema(add_callbacks)
 
     @staticmethod
-    def _validate_exists(instance:'DatasetCore', descriptor:CallbackField, value:bool) -> bool:
+    def _validate_exists(instance:'DatasetCore', descriptor:'DescriptorProtocol', value:bool) -> bool:
         if not isinstance(value, bool):
             raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
 
@@ -38,7 +38,7 @@ class DatasetCore(ABC):
             return True # must exists for files which are required
         return value
 
-    exists:ClassVar[bool] = CallbackField[bool](fval=_validate_exists)
+    exists:ClassVar[bool] = HookedDescriptor(bool, fval=_validate_exists)
 
     @abstractmethod
     def _check_schema(self, *args, **kwargs):

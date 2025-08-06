@@ -1,4 +1,4 @@
-from bidsbuilder.util.reactive import CallbackField, wrap_callback_fields
+from bidsbuilder.util.hooks import HookedDescriptor, DescriptorProtocol
 from attrs import define, field
 from typing import ClassVar
 
@@ -6,13 +6,9 @@ from unittest.mock import Mock
 
 @define(slots=True)
 class demo_property():
-    number:ClassVar = CallbackField[int]()
-    #number:ClassVar = schemaCallbackField(tag="number")
+    number:ClassVar = HookedDescriptor(int)
 
     _number:int = field(alias="_number")
-
-    def __attrs_post_init__(self):
-        wrap_callback_fields(self)
 
 @define(slots=True)
 class demo_property_getter():
@@ -28,16 +24,13 @@ class demo_property_getter():
     def _static_number_getter(instance, descriptor, owner):
         return instance._myStr + descriptor.tags
 
-    myStr:ClassVar[str] = CallbackField[str](fget=_static_number_getter, tags=" woohoo")
+    myStr:ClassVar[str] = HookedDescriptor(str, fget=_static_number_getter, tags=" woohoo")
 
     def _number_getter(self, descriptor, owner):
         
         return self._myStr + descriptor.tags
 
-    myStr:ClassVar[str] = CallbackField[str](fget=_number_getter, tags=" woohoo")
-
-    def __attrs_post_init__(self):
-        wrap_callback_fields(self)
+    myStr:ClassVar[str] = HookedDescriptor(str, fget=_number_getter, tags=" woohoo")
 
 @define(slots= True)
 class demo_list_validator_property():
@@ -45,15 +38,12 @@ class demo_list_validator_property():
 
     _myItems:list = field(factory=list,alias="_myItems")
 
-    def __attrs_post_init__(self):
-        wrap_callback_fields(self)
-
     @staticmethod
     def _validate_myItems(instance, descriptor, value):
         value += 5
         return value
 
-    myItems:ClassVar = CallbackField[list](fval=_validate_myItems)
+    myItems:ClassVar = HookedDescriptor(list, fval=_validate_myItems)
 
 @define(slots=True)
 class demo_smthElse():
