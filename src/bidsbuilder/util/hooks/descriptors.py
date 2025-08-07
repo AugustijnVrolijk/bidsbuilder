@@ -49,8 +49,8 @@ class CallbackGetterMixin():
     i.e. for Suffix, Entity, or Datatype, where the custom getter can search parent instances
     if the current instance does not have the value set
     """
-    def __init__(self, *, fget:Callable[[CBACK, INSTANCE, OWNER], VAL], **kwargs) -> None:
-        self.fget:Callable[[CBACK, INSTANCE, OWNER], VAL] = fget
+    def __init__(self, *, fget:Callable[[INSTANCE, CBACK, OWNER], VAL], **kwargs) -> None:
+        self.fget:Callable[[INSTANCE, CBACK, OWNER], VAL] = fget
         super().__init__(**kwargs)
 
     def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
@@ -156,8 +156,9 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
     class ContainerMixin(_base_getter_cls):
         TYPEIDX:ClassVar[int] = 0
 
-        def __init__(self, **kwargs):
+        def __init__(self, type_hint:type, **kwargs):
             self._is_wrapped:set = set()
+            self.type_hint:type = type_hint
             super().__init__(**kwargs)
 
         def _wrap_container_field(self, instance:INSTANCE) -> None:
@@ -176,16 +177,19 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
                 return self
             if id(instance) not in self._is_wrapped:
                 self._wrap_container_field(instance)
-            return _base_getter_cls.__get__(self, instance, owner)
+            return _base_getter_cls.__get__(self, instance, owner) # must return the observable type
+            # if _base_getter_cls.__get__(self, instance, owner)._data then it won't trigger callbacks, as _data is the 
+            # raw un-Observable datatype
 
         def __set__(self, instance:INSTANCE, value:VAL) -> None:
             """
             no repeated check when setting attributes
             assume types are static, i.e. no changing attribute from int to a list or dict
             """
+            assert type(value) == self.type_hint, f"When setting {instance}.{self.tags}, it must be a container of type {self.type_hint}"
             setattr(instance, self.name, value)
             self._wrap_container_field(instance)
-            self._trigger_callback(instance)
+            #self._trigger_callback(instance)   no need to trigger callback, once the new value is wrapped, it will trigger a callback
 
     class ContainerValidatorMixin(ContainerMixin):
         TYPEIDX:ClassVar[int] = 1
@@ -262,7 +266,7 @@ def _dynamic_callback_type(container:bool=False, single:bool=False, getter:bool=
 
 # Define the callback kwargs type for type checking
 class callbackKwargs(TypedDict, total=False):
-    fget: Callable[[CBACK, INSTANCE, OWNER], VAL]
+    fget: Callable[[INSTANCE, CBACK, OWNER], VAL]
     fval: Callable[[INSTANCE, CBACK, Any], VAL]
     tags: Union[list, str, None]
     callback: Callable[[INSTANCE, Union[list, str, None]], Any]
@@ -274,6 +278,8 @@ def HookedDescriptor(type_hint:type[VAL], **kwargs:Unpack[callbackKwargs]) -> De
     getter = "fget" in kwargs
     validator = "fval" in kwargs
     container = type_hint in _observable_types
+    if container:
+        kwargs["type_hint"] = type_hint
 
     cback_obj = _dynamic_callback_type(container=container, single=single, getter=getter,validator=validator)
 

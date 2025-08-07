@@ -1,0 +1,23 @@
+The object people will actually interact with is the dataset_core
+
+
+Should I modify the __getattr__ to basically be:
+So one could "access" and modify stuff like suffix, datatype etc.. directly from the dataset_core.
+
+
+def __getattr__(self, key):
+    try:
+        super().__getattr__(self, key)
+    except AttributeNotFound()
+        getattr(self._name_link, key)
+
+
+More interestingly for stuff like sidecar. which inherits all the relevant metadata
+Should I basically make it a quasi-object.
+Not actually stored anywhere but made when requested, and it enables modifying of any relevant metadata.
+
+
+I.e. it's __setitem__ loops over all the actual json objects it represents and tries to assign it in each one.
+
+Starting from most specific to least, i.e. first trying in the actual sidecar json file. Then trying the more general datatype json file
+then trying the subject json file. Finally trying dataset_metadata.

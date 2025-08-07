@@ -30,17 +30,39 @@ class demo_property_getter():
         
         return self._myStr + descriptor.tags
 
-@define(slots= True)
-class demo_list_validator_property():
-    myItems:ClassVar[list]
+@define(slots=True)
+class demo_list_property():
+
     _myItems:list = field(factory=list,alias="_myItems")
+    myItems:ClassVar[list] = HookedDescriptor(list, tags="myItems")
+
+
+@define(slots= True)
+class demo_validator_property():
+    myItems:ClassVar[dict]
+    myName:ClassVar[str]
+
 
     @staticmethod
     def _validate_myItems(instance, descriptor, value):
         value += 5
         return value
+    
+    _myItems:dict = field(factory=dict,alias="_myItems")
+    myItems:ClassVar[dict] = HookedDescriptor(dict, fval=_validate_myItems)
 
-    myItems:ClassVar[list] = HookedDescriptor(list, fval=_validate_myItems)
+    @staticmethod
+    def _myName_getter(self, descriptor, Owner):
+        to_add = descriptor.tags
+        return f"{self._myName}{to_add}"
+
+    @staticmethod
+    def _validate_myName(self, descriptor, value):
+        return f"Name: {value}"
+    
+    _myName:ClassVar[str] = field(default="nothing",alias="_myName")
+    myName:ClassVar[str] = HookedDescriptor(str, fget=_myName_getter, fval=_validate_myName, tags=" hehe")
+
 
 @define(slots=True)
 class demo_smthElse():
@@ -133,18 +155,40 @@ def test_deleted_callback():
     _mock1.assert_has_calls([call(10), call(10), call(1348), call(1348)])
 
 def test_list_callback():
-    t1 = demo_list_validator_property([10,4,2])
+    t1 = demo_list_property([10,4,2])
     _mock1 = Mock()
     smth1 = demo_smthElse(100, _mock1)
 
     t1.myItems = [1, 2, 3, 4, 5]
     _mock1.assert_not_called()
 
-    getattr(demo_list_validator_property, "myItems").add_callback(t1, smth1.my_callback)
+    getattr(demo_list_property, "myItems").add_callback(t1, smth1.my_callback)
 
     t1.myItems = [1, 2, 1, 4, 5]
     _mock1.assert_called_once_with(105)
     assert t1.myItems == [1, 2, 1, 4, 5]
+    assert [1,2,1,4,5] == t1.myItems
+
+    assert t1.myItems != [1, 2, 3]
+    assert [1, 2, 3] != t1.myItems
+
+    assert [1, 2, 1, 4, 4] < t1.myItems    # 5 > 4 at last element
+    assert t1.myItems < [1, 2, 1, 4, 6]    # 5 < 6 at last element
+
+    # <=
+    assert [1, 2, 1, 4, 5] <= t1.myItems
+    assert t1.myItems <= [1, 2, 1, 4, 5]
+    assert t1.myItems <= [1, 2, 1, 4, 6]
+
+    # >
+    assert [1, 2, 1, 4, 6] > t1.myItems
+    assert t1.myItems > [1, 2, 1, 4, 4]
+
+    # >=
+    assert [1, 2, 1, 4, 5] >= t1.myItems
+    assert t1.myItems >= [1, 2, 1, 4, 5]
+    assert t1.myItems >= [1, 2, 1, 4, 4]
+
 
     t1.myItems.append(4)
     _mock1.assert_has_calls([call(105), call(105)])
@@ -169,7 +213,36 @@ def test_custom_getter():
     assert not isinstance(instance.__class__.myStr.__get__(None, instance.__class__), str)
 
 def test_validator():
-    ...
+    t1 = demo_validator_property()
+
+    # --- Test validator for myName (string) ---
+    # Setting should trigger _validate_myName and prefix the value
+    t1.myName = "Alice"
+    assert t1._myName == "Name: Alice" # includes validator "Name: "
+    assert t1.myName == "Name: Alice hehe"  # includes fget tag " hehe"
+
+    # --- Test validator for myItems (dict) ---
+    # The _validate_myItems adds 5 to the value being assigned, so a setitem on dict should go through that
+
+    # Initial dict should be empty
+    assert isinstance(t1.myItems._data, dict)
+    assert t1.myItems == {}
+
+    # Assign new dictionary directly
+    t1.myItems = {'a': 10, 'b': 20}
+    assert isinstance(t1.myItems._data, dict)
+    # Validator returns value + 5 → but this doesn’t apply when setting a full dict in your current code
+    # unless you have custom logic in HookedDescriptor to do this. Let's assume you do.
+    assert t1.myItems == {'a': 15, 'b': 25}
+
+    # Test assignment to a key, which should trigger the validator
+    t1.myItems['x'] = 100  # should become 105
+    assert t1.myItems['x'] == 105
+
+    # Test updating multiple values
+    t1.myItems.update({'y': 200, 'z': 300})
+    assert t1.myItems['y'] == 205
+    assert t1.myItems['z'] == 305
 
 def test_correct_callback_inputs():
     ...

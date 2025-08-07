@@ -1,5 +1,5 @@
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from weakref import ReferenceType
 
 from collections.abc import MutableMapping, MutableSequence, MutableSet
@@ -17,6 +17,7 @@ will use collections.abc mutable types in order to ensure all higher order metho
 class ObservableType():
     def __init__(self, descriptor:'DescriptorProtocol', weakref:ReferenceType):
         super().__init__()
+        self._data:Union[set,list,dict]
         self._descriptor:'DescriptorProtocol' = descriptor
         self._ref:ReferenceType = weakref 
         self._frozen:bool = False
@@ -25,12 +26,36 @@ class ObservableType():
         if not self._frozen:
             self._descriptor._trigger_callback(self._ref()) # weak reference so need to call it to access it
 
+    def __repr__(self):
+        return repr(self._data)
+
+    def __str__(self):
+        return str(self._data)
+    
+    def __eq__(self, other):
+        return self._data == getattr(other, '_data', other)
+
+    def __ne__(self, other):
+        return self._data != getattr(other, '_data', other)
+
+    def __lt__(self, other):
+        return self._data < getattr(other, '_data', other)
+
+    def __le__(self, other):
+        return self._data <= getattr(other, '_data', other)
+
+    def __gt__(self, other):
+        return self._data > getattr(other, '_data', other)
+
+    def __ge__(self, other):
+        return self._data >= getattr(other, '_data', other)
+
 class ObservableList(MutableSequence, ObservableType):
 
     def __init__(self, data:list, descriptor:'DescriptorProtocol', weakref:ReferenceType):
         ObservableType.__init__(self, descriptor, weakref)
         self._data = []
-        self.extend(data)        
+        self.extend(data)
 
     def __getitem__(self, index):
         return self._data[index]
@@ -48,6 +73,7 @@ class ObservableList(MutableSequence, ObservableType):
 
     def insert(self, index, value):
         self._data.insert(index, value)
+        self._check_callback()
 
     def extend(self, iterable):
         self._frozen = True
@@ -86,6 +112,9 @@ class ObservableDict(MutableMapping, ObservableType):
         del self._data[key]
         self._check_callback()
 
+    def __len__(self):
+        return len(self._data)
+
     def update(self, *args, **kwargs):
         self.frozen = True
         super().update(*args, **kwargs)
@@ -94,9 +123,6 @@ class ObservableDict(MutableMapping, ObservableType):
 
     def __iter__(self):
         return iter(self._data)
-
-    def __len__(self):
-        return len(self._data)
 
 class ObservableValidatorDict(ObservableDict):
 
@@ -120,9 +146,6 @@ class ObservableSet(MutableSet, ObservableType):
     def __iter__(self):
         return iter(self._data)
 
-    def __len__(self):
-        return len(self._data)
-
     def add(self, value):
         self._data.add(value)
         self._check_callback()
@@ -130,6 +153,9 @@ class ObservableSet(MutableSet, ObservableType):
     def discard(self, value):
         self._data.discard(value)
         self._check_callback()
+
+    def __len__(self):
+        return len(self._data)
 
     def update(self, data:set):
         self._frozen = True
