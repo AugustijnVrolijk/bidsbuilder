@@ -42,7 +42,7 @@ class DatasetCore(ABC):
 
     @abstractmethod
     def _check_schema(self, *args, **kwargs):
-        pass
+        ...
     
     @property
     def filename(self) -> 'filenameBase':
@@ -54,13 +54,7 @@ class DatasetCore(ABC):
 
     @abstractmethod
     def _make_file(self, force:bool):
-        filename = Path(self._tree_link.path)  # or .json, .tsv, etc.
-        if self._tree_link.is_dir:
-            filename.mkdir(parents=False,exist_ok=force)
-        else:
-            with open(filename, 'w') as f:
-                pass  # creates the file, nothing is written
-        #raise NotImplementedError(f"no _make_file defined for {self}")
+        ...
 
     def _read_BIDS(self):
         pass
@@ -70,6 +64,18 @@ class DatasetCore(ABC):
     
     def __contains__(self, key): #used for selector parsing "in", need it to point it to whatever is needed
         return
+
+class UnknownFile(DatasetCore):
+    def _check_schema(self, *args, **kwargs):
+        pass
+    
+    def _make_file(self, force:bool):
+        filename = Path(self._tree_link.path)  # or .json, .tsv, etc.
+        if self._tree_link.is_dir:
+            filename.mkdir(parents=False,exist_ok=force)
+        else:
+            with open(filename, 'w') as f:
+                pass  # creates the file, nothing is written
 
 def _set_dataset_core(dataset:'BidsDataset'):
     DatasetCore._dataset = dataset

@@ -58,6 +58,14 @@ class folderBase(DatasetCore):
 
         return new_val
     """
+    def _check_schema(self, *args, **kwargs):
+        """
+        Consider adding specifics in Subject, Session.
+
+        I.e. link it to create the subject or session related folders, i.e. scans.tsv etc..
+        
+        """
+        ...
 
     def _make_file(self, force:bool):
         path = Path(self._tree_link.path)

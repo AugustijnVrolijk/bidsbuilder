@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import os
-import posixpath
+import posixpath 
+
 
 from attrs import define, field
 from typing import Union, TYPE_CHECKING, Generator
@@ -109,7 +110,7 @@ class FileCollection(FileEntry):
 
     def add_child(self, name_ref: 'filenameBase', file_ref: 'DatasetCore') -> 'FileEntry':
         
-        relpath:Path = Path(name_ref.name)
+        relpath:Path = Path(name_ref.local_name)
         parts = relpath.parts
         if relpath.root:
             parts = parts[1:]
@@ -277,3 +278,5 @@ class Directory(FileCollection):
         self._file_link._write_BIDS(force)
         for child in self.children.values():
             child._make(force)
+
+__all__ = ["Directory","FileCollection","FileEntry"]

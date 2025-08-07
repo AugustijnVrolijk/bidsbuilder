@@ -66,7 +66,9 @@ class ValueBase():
     
     @classmethod
     def validate_object(cls, to_validate:str) -> str:
-
+        """
+        validate name, if it can't be found as a key tries against display name and value
+        """
         to_validate = str(to_validate)
         try:
             cls._cached_fetch_object(to_validate)
@@ -81,7 +83,7 @@ class ValueBase():
             for key, val in cls.schema.items():
                 if name == val.value.lower():
                     return key
-            raise ValueError(f"Val: {val} is not a valid value for {cls.__name__}")
+            raise ValueError(f"Val: {to_validate} is not a valid value for {cls.__name__}")
 
     @classmethod
     @lru_cache(maxsize=32)
@@ -127,6 +129,32 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
         """Public getter for the entity value."""
         return self._val
     
+    @val.setter
+    def val(self, new_val:str):
+        """Validate and set a new entity value
+
+        Args:
+            new_val (str): New value to assign entitiy
+
+        Raises:
+            ValueError: If the value cannot be cast to int if format is index
+            AssertionError: If the value is not among allowed enum values
+            RuntimeError: If the entity format is not index or label
+        """
+        info = self._cached_fetch_object(self._name)
+        cur_overrides = self._override.get(self, {})
+        info.update(cur_overrides)
+
+        if c_format:=info.get("format", False):
+            if not formats.check_pattern(c_format, new_val):
+                raise ValueError(f"val: {new_val} is not of required format: {info.format}")
+       
+        if enums := info.get("enum", None):
+            assert new_val in enums, f"val for {self} must be one of {enums} not {new_val}"
+
+        self._val = new_val
+
+    
     @property
     def type(self):
         """Type of the entity from schema."""
@@ -160,6 +188,15 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
 @define(slots=True)
 class formats():
     schema:ClassVar['Namespace']
+
+    valid_types:ClassVar = {
+        "integer":int,
+        "string":str,
+        "number":float,
+        "array":list,
+        "object":dict,
+
+    }
 
     @classmethod
     @lru_cache(maxsize=32)
@@ -212,8 +249,7 @@ class Entity(nameValueBase):
         if not formats.check_pattern(info['format'], new_val):
             raise ValueError(f"val: {new_val} is not of required format: {info.format}")
        
-        enums = info.get("enum", None)
-        if enums:
+        if enums := info.get("enum", None):
             assert new_val in enums, f"val for {self} must be one of {enums} not {new_val}"
 
         self._val = new_val
@@ -239,10 +275,18 @@ class Metadata(nameValueBase):
 
     """
     _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary()
-
+    
     @nameValueBase.val.setter
     def val(self, new_val):
         self._val = new_val
+
+        info:Namespace = self._cached_fetch_object(self._name)
+        cur_overrides = self._override.get(self, {})
+        info.update(cur_overrides)
+        
+        if c_format:=info.get("format", False):
+
+
 
     @classmethod
     @lru_cache(maxsize=256) #many different values so allow for larger cache for this

@@ -2,6 +2,7 @@ from attrs import define, field
 from ..schema_objects import Entity, raw_Datatype, Suffix
 from ...util.hooks import *
 
+from abc import ABC, abstractmethod
 from typing import Union, ClassVar, TYPE_CHECKING
 
 
@@ -10,13 +11,19 @@ if TYPE_CHECKING:
     from .dataset_tree import FileEntry, FileCollection, Directory
 
 @define(slots=True)
-class filenameBase():
+class filenameBase(ABC):
 
     _tree_link:Union['FileEntry', 'FileCollection', 'Directory'] = field(init=False, default=None, repr=False, alias="_tree_link")
 
     @property
+    @abstractmethod
     def name(self):
-        raise NotImplementedError(f"Base class {type(self)} has no name")
+        pass
+
+    @property
+    @abstractmethod
+    def local_name(self):
+        pass
 
     @property #could consider caching, but parent can change, so need to then reset the cache
     def parent(self) -> 'filenameBase':
@@ -42,6 +49,10 @@ class agnosticFilename(filenameBase):
     def name(self):
         return self._stem + self._cur_ext
     
+    @property
+    def local_name(self):
+        return self.name
+
     def _change_ext(self, val:str):
         assert val in self._valid_extensions, f"extension {val} is not valid for {self}, choose on of {self._valid_extensions}"
         self._cur_ext = val
@@ -185,6 +196,4 @@ class CompositeFilename(filenameBase):
 def _set_filenames_schema(schema:'Namespace'):
     CompositeFilename.schema = schema.rules.entities
 
-
-
-
+__all__ = ["agnosticFilename", "CompositeFilename"]

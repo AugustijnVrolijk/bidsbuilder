@@ -1,6 +1,5 @@
-from ...util.categoryDict import categoryDict
 from ..schema_objects import Metadata
-from ..core.dataset_core import DatasetCore
+from ..core.dataset_core import UnknownFile
 from .json_files import JSONfile
 
 from attrs import define, field
@@ -10,7 +9,7 @@ if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
 @define(slots=True)
-class tabularFile(DatasetCore):
+class tabularFile(UnknownFile):
     
     pass
 

@@ -26,9 +26,9 @@ class BidsDataset():
     def __init__(self, root:str, minimal:bool=False):
         
         self._frozen = True
-        self.root = root
+        self.root = Path(root).as_posix()
         self.schema:'Namespace' = parse_load_schema()
-        self._tree_reference:Directory = Directory(_name=root, _file_link=self, _name_link=None, parent=None)
+        self._tree_reference:Directory = Directory(_name=self.root, _file_link=self, _name_link=None, parent=None)
         from .modules import set_all_schema_
         set_all_schema_(self, self.schema)
         from .modules.file_bases.agnostic_files import _make_skeletonBIDS

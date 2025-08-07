@@ -7,7 +7,7 @@ from ..core.filenames import agnosticFilename
 from ..core.dataset_tree import Directory, FileCollection, FileEntry
 from .json_files import agnostic_JSONfile
 from .tabular_files import tabularJSONFile, tabularFile
-from ..core.dataset_core import DatasetCore
+from ..core.dataset_core import UnknownFile
 
 if TYPE_CHECKING:
     from bidsschematools.types import Namespace
@@ -94,7 +94,7 @@ def _resolve_class_type(file_info:dict[str, Any], is_dir:bool=False) -> Callable
 def _process_folder(file_info:dict[str, Any], tree:'Directory', minimal:bool=False) -> Directory:
     assert file_info["extensions"] == []
     filename = agnosticFilename(file_info["stem"])
-    file = DatasetCore(_level=file_info["level"])
+    file = UnknownFile(_level=file_info["level"])
     if minimal:
         file.exists = False
     tree.add_child(filename,file,type_flag="directory")
@@ -133,7 +133,7 @@ def _process_UNKNOWN(file_info:dict[str, Any], tree:'Directory', minimal:bool=Fa
     else:
         cur_ext = file_info["extensions"][0]
     filename = agnosticFilename(file_info["stem"], file_info["extensions"], cur_ext)
-    file = DatasetCore(_level=file_info["level"])
+    file = UnknownFile(_level=file_info["level"])
     tree.add_child(filename, file, "file")
     #no need to assign links, as creating a FileEntry does this
     if minimal:
