@@ -2,9 +2,9 @@ import weakref
 
 import types
 
-from typing import Any, Callable, Generic, TypeVar, Union, overload, Self, TypedDict, Unpack
+from typing import Any, Callable, Generic, TypeVar, Union, overload, Self, TypedDict, Unpack, ClassVar
 from functools import partial
-from .containers import ObservableList, ObservableDict, ObservableType
+from .containers import *
 
 VAL = TypeVar("VAL")
 CBACK = TypeVar("Descriptor", bound="DescriptorProtocol")
@@ -141,8 +141,9 @@ class SingleCallbackMixin():
         self.callback(instance, self.tags)
 
 _observable_types:dict[type, ObservableType] = {
-    type(list()): ObservableList,
-    type(dict()): ObservableDict,
+    type(list()): (ObservableList, ObservableValidatorList),
+    type(dict()): (ObservableDict, ObservableValidatorDict),
+    type(set()): (ObservableSet, ObservableValidatorSet)
     }
 
 def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, CallbackGetterMixin], validator:bool) -> type:
@@ -153,6 +154,8 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
     as well as whether it has a validator method or not
     """
     class ContainerMixin(_base_getter_cls):
+        TYPEIDX:ClassVar[int] = 0
+
         def __init__(self, **kwargs):
             self._is_wrapped:set = set()
             super().__init__(**kwargs)
@@ -163,7 +166,7 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             if type(val) not in _observable_types:
                 return
             
-            _observable_obj:ObservableType = _observable_types.get(type(val))
+            _observable_obj:ObservableType = _observable_types.get(type(val))[self.TYPEIDX]
             wrapped = _observable_obj(val, self, weakref.ref(instance))
             setattr(instance, self.name, wrapped)
             self._is_wrapped.add(id(instance))
@@ -185,6 +188,8 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             self._trigger_callback(instance)
 
     class ContainerValidatorMixin(ContainerMixin):
+        TYPEIDX:ClassVar[int] = 1
+
         def __init__(self, *, fval:Callable[[INSTANCE, CBACK, Any], VAL], **kwargs):
             self.fval:Callable[[INSTANCE, CBACK, Any], VAL] = fval
             super().__init__(**kwargs)

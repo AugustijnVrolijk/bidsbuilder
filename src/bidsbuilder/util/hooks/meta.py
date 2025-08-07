@@ -3,6 +3,18 @@ from functools import wraps
 from types import MethodType
 from functools import wraps
 
+
+"""
+
+possibly used in the future to dynamically create observable containers
+
+i.e. for list /dict, set or even custom types..
+
+May be useful to create both validator and non validator observable types
+
+
+"""
+
 def make_observable_type(base_cls, mutating_methods=None):
     """
     Dynamically creates a subclass of `base_cls` that triggers a callback and applies a validator.

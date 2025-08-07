@@ -1,13 +1,22 @@
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from weakref import ReferenceType
+
+from collections.abc import MutableMapping, MutableSequence, MutableSet
 
 if TYPE_CHECKING:
     from .descriptors import DescriptorProtocol
 
+"""trying to avoid needing to re-implement every function. Ideally I only want to need to customise __setitem__ 
+and __delitem__... but the assumption that .update calls on setitem in a loop is wrong, similarly .pop doesn't call
+__delitem__... https://treyhunner.com/2019/04/why-you-shouldnt-inherit-from-list-and-dict-in-python/#:~:text=When%20inheriting%20from%20dict%20to,you%20might%20expect%20they%20would.
+
+will use collections.abc mutable types in order to ensure all higher order methods are directed via the base methods.
+"""
 
 class ObservableType():
     def __init__(self, descriptor:'DescriptorProtocol', weakref:ReferenceType):
+        super().__init__()
         self._descriptor:'DescriptorProtocol' = descriptor
         self._ref:ReferenceType = weakref 
         self._frozen:bool = False
@@ -16,15 +25,29 @@ class ObservableType():
         if not self._frozen:
             self._descriptor._trigger_callback(self._ref()) # weak reference so need to call it to access it
 
-class ObservableList(list, ObservableType):
+class ObservableList(MutableSequence, ObservableType):
 
     def __init__(self, data:list, descriptor:'DescriptorProtocol', weakref:ReferenceType):
-        list.__init__(self, data)
         ObservableType.__init__(self, descriptor, weakref)
+        self._data = []
+        self.extend(data)        
 
-    def append(self, item):
-        super().append(item)
+    def __getitem__(self, index):
+        return self._data[index]
+
+    def __setitem__(self, index, value):
+        self._data[index] = value
         self._check_callback()
+
+    def __delitem__(self, index):
+        del self._data[index]
+        self._check_callback()
+
+    def __len__(self):
+        return len(self._data)
+
+    def insert(self, index, value):
+        self._data.insert(index, value)
 
     def extend(self, iterable):
         self._frozen = True
@@ -32,26 +55,35 @@ class ObservableList(list, ObservableType):
         self._frozen = False
         self._check_callback()
 
-    def __setitem__(self, index, value):
-        super().__setitem__(index, value)
-        self._check_callback()
+class ObservableValidatorList(ObservableList):
 
-    def __delitem__(self, index):
-        super().__delitem__(index)
-        self._check_callback()
-
-class ObservableDict(ObservableType, dict):
-
-    def __init__(self, data:dict, descriptor:'DescriptorProtocol', weakref:ReferenceType):
-        dict.__init__(self, data)
-        ObservableType.__init__(self, descriptor, weakref)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def __setitem__(self, key, value):
+        value = self._descriptor.fval(self._ref(), self._descriptor, value)
         super().__setitem__(key, value)
+
+    def insert(self, index, value):
+        value = self._descriptor.fval(self._ref(), self._descriptor, value)
+        self._data.insert(index, value)
+
+class ObservableDict(MutableMapping, ObservableType):
+
+    def __init__(self, data:dict, descriptor:'DescriptorProtocol', weakref:ReferenceType):
+        ObservableType.__init__(self, descriptor, weakref)
+        self._data = {}
+        self.update(data)
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        self._data[key] = value
         self._check_callback()
 
     def __delitem__(self, key):
-        super().__delitem__(key)
+        del self._data[key]
         self._check_callback()
 
     def update(self, *args, **kwargs):
@@ -59,3 +91,59 @@ class ObservableDict(ObservableType, dict):
         super().update(*args, **kwargs)
         self.frozen = False
         self._check_callback()
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+class ObservableValidatorDict(ObservableDict):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __setitem__(self, key, value):
+        value = self._descriptor.fval(self._ref(), self._descriptor, value)
+        super().__setitem__(key, value)
+
+class ObservableSet(MutableSet, ObservableType):
+
+    def __init__(self, data:set, descriptor:'DescriptorProtocol', weakref:ReferenceType):
+        ObservableType.__init__(self, descriptor, weakref)
+        self._data = set()
+        self.update()
+
+    def __contains__(self, value):
+        return value in self._data
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def add(self, value):
+        self._data.add(value)
+        self._check_callback()
+
+    def discard(self, value):
+        self._data.discard(value)
+        self._check_callback()
+
+    def update(self, data:set):
+        self._frozen = True
+        for v in data:
+            self.add(v)
+        self._frozen = False
+        self._check_callback()
+
+class ObservableValidatorSet(ObservableSet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def add(self, value):
+        value = self._descriptor.fval(self._ref(), self._descriptor, value)
+        super().add(value)
+
+__all__ = ["ObservableValidatorSet","ObservableSet","ObservableValidatorDict","ObservableDict","ObservableValidatorList","ObservableList", "ObservableType"]

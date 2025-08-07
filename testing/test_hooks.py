@@ -43,14 +43,6 @@ class demo_list_validator_property():
     myItems:ClassVar[list] = HookedDescriptor(list, fval=_validate_myItems)
 
 @define(slots=True)
-class demo_to_del():
-
-    _value1 = field()
-
-    def my_callback(self, *args, **kwargs):
-        to_input = self._value1 + 5
-
-@define(slots=True)
 class demo_smthElse():
 
     _value1 = field()
@@ -140,10 +132,6 @@ def test_deleted_callback():
     assert len(demo_property.number.callbacks) == 0
     _mock1.assert_has_calls([call(10), call(10), call(1348), call(1348)])
 
-
-def test_correct_callback_inputs():
-    pass
-
 def test_list_callback():
     t1 = demo_list_validator_property([10,4,2])
     _mock1 = Mock()
@@ -183,6 +171,9 @@ def test_custom_getter():
 def test_validator():
     ...
 
+def test_correct_callback_inputs():
+    ...
+
 if __name__ == "__main__":
     print("Testing hooks 0")
     test_basic_instance_callbacks()
@@ -195,4 +186,8 @@ if __name__ == "__main__":
     print("Testing hooks 4")
     test_custom_getter()
     print("Testing hooks 5")
+
+    # the following are not finished tests
+
     test_validator()
+    test_correct_callback_inputs()
