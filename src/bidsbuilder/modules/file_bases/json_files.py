@@ -2,10 +2,10 @@ from ...util.categoryDict import categoryDict
 from ...util.io import _write_JSON
 from ..core.dataset_core import DatasetCore
 from ...schema.schema_checking import JSON_check_schema
-
+from ...util.hooks import HookedDescriptor
 from attrs import define, field
 from typing import TYPE_CHECKING, ClassVar, Any, Union
-
+from ..schema_objects import Metadata
 
 if TYPE_CHECKING:
     from ...schema.interpreter.selectors import selectorHook
@@ -15,36 +15,43 @@ if TYPE_CHECKING:
 class JSONfile(DatasetCore):
     
     _schema:ClassVar['Namespace']
+    metadata:ClassVar[dict[str, 'Metadata']] = HookedDescriptor(dict)
 
-    _metadata:categoryDict = field(init=False, factory=categoryDict)
-    _removed_key:dict = field(init=False, factory=dict) #for overflow values passed to json which doesn't have a valid key representing it
+    _metadata:dict[str, 'Metadata'] = field(init=False, factory=dict)
+    _removed_key:dict[str, Any] = field(init=False, factory=dict) #for overflow values passed to json which doesn't have a valid key representing it
     _cur_labels:set = field(init=False, factory=set)
+    
 
     def _make_file(self, force:bool):
         final_json = {}
-        for key, val in self._metadata.items():
-            cat, val = val
-            if val.val is None:
+        for key, value in self.metadata.items():
+            cat, val = value.level, value.val
+            if val is None:
                 match cat:
                     case "required":
                         final_json[key] = "MISSING"
-                        pass
                     case "recommended":
                         pass
                     case "optional":
                         pass
             else:
-                final_json[key] = val.val
+                final_json[key] = val
+
         _write_JSON(self._tree_link.path, final_json, force)
 
-    def __getitem__(self, name:str):
-        return self._metadata[name]
+    def __getitem__(self, key:str):
+        return self._metadata[key].val
     
-    def  __setitem__(self, name:str, value:Any):
-        try:
-            self._metadata[name] = value
-        except KeyError:
-            self._removed_key[name] = value
+    def  __setitem__(self, key:str, value:Any):
+        """
+        Keys cannot be set using setitem. This ensures keys have been set via _add_metadata_keys enforcing categories to be specified
+        """
+        if key in self.metadata: 
+            self.metadata[key].val = value
+        else:
+            if isinstance(value, Metadata):
+                value = value.val
+            self._removed_key[key] = value
             
     def __contains__(self, key):
         return (key in self._metadata.keys())
@@ -72,21 +79,19 @@ class JSONfile(DatasetCore):
 
     def _check_removed(self):
         for key, val in self._removed_key.items():
-            if key in self._metadata:
-                if isinstance(val, tuple):
-                    _, val = val
-                self._metadata[key] = val
+            if key in self.metadata:
+                self.metadata[key].val = val
 
     def _add_metadata_keys(self, to_add:dict, label:str):
-        self._metadata._populate_dict(to_add)
+        self.metadata.update(to_add)
         self._cur_labels.add(label)
 
     def _remove_metadata_keys(self, to_remove:list, label:str):
         self._cur_labels.remove(label)
 
         for key in to_remove:
-            removed = self._metadata.pop(key)
-            self._removed_key[key] = removed
+            removed = self.metadata.pop(key)
+            self._removed_key[key] = removed.val
 
 @define(slots=True)
 class sidecar_JSONfile(JSONfile):

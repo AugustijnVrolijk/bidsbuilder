@@ -9,7 +9,7 @@ def main():
     #ses_iemu = tester2.add_session("IEMU")
     #test1.addSubject("ASDASHDC138/(3)")
     #test1.addSubject("hello")
-    test1.tree.fetch("genetic_info.json").exists = False
+    test1.tree.fetch("genetic_info.json").exists = True
     test1.build(True)
 
 

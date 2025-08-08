@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 @define(slots=True)
 class folderBase(DatasetCore):
-    _cur_entity: ClassVar[str] = None
+    _cur_entity: ClassVar[str] = (None, None)
 
     _val:str = field(repr=True, default=None, alias="_val")
 
@@ -25,8 +25,9 @@ class folderBase(DatasetCore):
 
     @classmethod
     def create(cls, name, tree:Directory):
-        final_entity = Entity(cls._cur_entity, name) # entity format check
-        foldername = CompositeFilename(_entities={cls._cur_entity:final_entity})
+        final_entity = Entity(cls._cur_entity[0], cls._cur_entity[1]) # entity format check
+        final_entity.val = name
+        foldername = CompositeFilename(_entities={cls._cur_entity[0]:final_entity})
         instance = cls(_val=final_entity.val)
         tree.add_child(foldername, instance, type_flag="directory")
         return instance
@@ -195,14 +196,6 @@ class Session(folderBase):
         #if created from a subject, it will reassign the parent later
         pass
 
-    @classmethod
-    def create(cls, name, tree:Directory) -> 'Session':
-        final_entity = Entity(cls._cur_entity, name) # entity format check
-        foldername = CompositeFilename(_entities={cls._cur_entity:final_entity})
-        session = cls(_val=final_entity.val)
-        tree.add_child(foldername, session, type_flag="directory")
-        return session
-
     def add_datatype(self, val):
         to_add = Datatype(val)
         to_add.foldername.parent = self.foldername
@@ -223,8 +216,8 @@ class Datatype(folderBase):
     
 def _set_folder_schemas():
     #schema:'Namespace'
-    Session._cur_entity = "session"
-    Subject._cur_entity = "subject"
-    Datatype._cur_entity = "datatype"
+    Session._cur_entity = ("session", "recommended")
+    Subject._cur_entity = ("subject", "required")
+    Datatype._cur_entity = ("datatype", "required")
 
 __all__ = ["Subject", "Session"]

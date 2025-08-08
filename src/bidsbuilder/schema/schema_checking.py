@@ -11,13 +11,13 @@ def _process_fields_add(fields:'Namespace') -> dict:
     """convert the fields namespace into a metadata dict"""
     processed = {}
     for key in fields.keys():
-        if isinstance(fields[key], str): #the value is a requirement
-            processed[key] = (fields[key], Metadata(key, None))
+        if isinstance(fields[key], str): # the value is a requirement
+            processed[key] = Metadata(key, fields[key])
         else:
             level = fields[key].pop("level")
-            met_instance = Metadata(key, None)
+            met_instance = Metadata(key, level)
             Metadata._override[met_instance] = fields[key]
-            processed[key] = (level, met_instance)
+            processed[key] = met_instance
     return processed
 
 def _process_fields_del(fields:'Namespace') -> dict:

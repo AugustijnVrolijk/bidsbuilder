@@ -118,7 +118,7 @@ class nameValueBase(ValueBase):
     _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary()
 
     # ---- instance fields ----
-    _val:str = field(init=False, repr=True, alias="_val") 
+    _val:str = field(init=False, default=None, repr=True, alias="_val") 
     level:str = field(repr=True)
 
     def __attrs_post_init__(self):
@@ -239,7 +239,7 @@ class nameValueBase(ValueBase):
         # annoyingly 
         # will leave this as is for the moment
         # hopefully future bids will make properties able to be recursive.
-        
+
         return (is_correct, error_msg)
 
     def _validate_new_val(self, new_val:Any, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
@@ -277,7 +277,6 @@ class nameValueBase(ValueBase):
             raise RuntimeError(f"No type for {self}\nRules: {rules}")
 
         return (is_correct, error_msg)    
-
 
     @val.setter
     def val(self, new_val:str):
