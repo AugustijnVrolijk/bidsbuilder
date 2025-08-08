@@ -31,7 +31,13 @@ def myCode():
     dataset.build()
 
 
+"""
+data = addData()
 
+data.sidecar[]
+
+
+"""
 
 if __name__ == "__main__":
     main()

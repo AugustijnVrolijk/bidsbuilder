@@ -1,7 +1,7 @@
 import re
 
 from attrs import define, field
-from typing import Union, ClassVar, TYPE_CHECKING
+from typing import Union, ClassVar, TYPE_CHECKING, Any
 from functools import lru_cache
 from weakref import WeakKeyDictionary
 
@@ -106,20 +106,48 @@ class ValueBase():
         return obj
 
 @define(slots=True)
-class nameValueBase(ValueBase): #must beware of the hash = false, as "different" instances will hash to the same in sets and dictionaries
+class nameValueBase(ValueBase):
     """Entity wrapper
 
     Attributes:
         val (str): The value of the entity
 
     """
+    
+
+    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary()
+
     # ---- instance fields ----
-    _val:str = field(repr=True, alias="_val") 
+    _val:str = field(init=False, repr=True, alias="_val") 
+    level:str = field(repr=True)
 
     def __attrs_post_init__(self):
         super().__attrs_post_init__()
-        self.val = self._val # Validate and set the initial value
+        #self.val = self._val # as of 08/08/2025: Users will not interact with any schema_objects themselves.
+        # bidsbuilder will initiliase them as necessary as empty holders of necessary value / type (i.e. for entities or metadata)
+        # with no val. Instead users will then assign 
         
+    @level.validator
+    def _check_level(self, attribute, value):
+        level_types = ["required", "recommended", "optional"]
+        if value not in level_types:
+            raise ValueError(f"Value must be one of: {level_types}")
+
+    valid_types:ClassVar = {
+        "integer":int,
+        "string":str,
+        "number":float,
+        "array":list,
+        "object":dict,
+    }
+
+    @classmethod
+    def _check_type(cls, inp_type:str, val:Any) -> bool:
+        if (cor_type := cls.valid_types.get(inp_type, False)):
+            return isinstance(val, cor_type)
+        else:
+            raise RuntimeError(f"given type: {inp_type} is not supported. Valid types include: {cls.valid_types.keys()}")
+
     @property
     def str_name(self):
         return self._cached_fetch_object(self._name).name
@@ -129,6 +157,128 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
         """Public getter for the entity value."""
         return self._val
     
+    @staticmethod
+    def _validate_number(is_correct:bool, new_val:Union[float, int], rules:'Namespace', error_msg:str) -> tuple[bool, str]:
+
+        if max := rules.get("maximum", False):
+            if not new_val <= max:
+                is_correct = False
+                error_msg += f"must be lesser than or equal to {max}\n"
+
+        """ # I believe max and min value are only for suffix
+        if max:=rules.get("maxValue", False):
+            if not new_val <= max:
+                is_correct = False
+                error_msg += f"must be lesser than or equal to {max}\n"
+
+        if min:=rules.get("minValue", False):
+            if not new_val >= min:
+                is_correct = False
+                error_msg += f"must be greater than or equal to {min}\n"
+        """
+
+        if min:=rules.get("minimum", False):
+            if not new_val >= min:
+                is_correct = False
+                error_msg += f"must be greater than or equal to {min}\n"
+
+        if min:=rules.get("exclusiveMinimum", False):
+            if not new_val > min:
+                is_correct = False
+                error_msg += f"must be greater than {min}\n"
+
+        return (is_correct, error_msg)
+    
+    @staticmethod
+    def _validate_string(is_correct:bool, new_val:str, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
+
+        if enums := rules.get("enum", None):
+            if new_val not in enums:
+                is_correct = False
+                error_msg += f"must be one of {enums}\n"
+
+        return (is_correct, error_msg)
+
+    @staticmethod
+    def _validate_array(is_correct:bool, new_val:list, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
+        
+        if max:=rules.get("maxItems", False):
+            if not len(new_val) <= max:
+                is_correct = False
+                error_msg += f"must have fewer items than {max}\n"
+
+        if min:=rules.get("minItems", False):
+            if not len(new_val) >= min:
+                is_correct = False
+                error_msg += f"must have more items than {min}\n"
+
+        if item_rules := rules.get("items", False):
+            error_msgs = set() # To ensure if we have large lists, that we don't get massive error messages printed
+            # this will still have some duplicates, i.e. if item rules has multiple rules and one val failed 1, and the other failed
+            # 2, including the one the first failed. But I can't be bothered to change the way error messages are propogated atm.
+            is_sub_val_correct = True
+            for val in new_val:
+                t_is_correct, sub_val_error_msg = nameValueBase._validate_new_val(val, item_rules, error_msg="")
+                is_sub_val_correct = (t_is_correct and is_sub_val_correct)
+                error_msgs.add(sub_val_error_msg)
+
+            if not is_sub_val_correct:
+                error_msg += f"One or more items didn't adhere to:\n"
+                for msg in error_msgs:
+                    error_msg += msg
+
+            is_correct = (is_correct and is_sub_val_correct)
+            
+        return (is_correct, error_msg)
+    
+    def _validate_object(self, is_correct:bool, new_val:dict, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
+        """
+        keys include recommended, required, properties, and additionalProperties, previously had recommended_fields but this should be removed.         
+        """
+        # at the moment ignore recommended? Don't throw an error if they are left out... Should in the future edit to throw warnings
+        # annoyingly 
+        # will leave this as is for the moment
+        # hopefully future bids will make properties able to be recursive.
+        
+        return (is_correct, error_msg)
+
+    def _validate_new_val(self, new_val:Any, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
+
+        """handle anyOf recursion"""
+        if all_rules := rules.get("anyOf", False):
+            for ruleset in all_rules:
+                is_correct, error_msg = self._validate_new_val(new_val, ruleset, error_msg=error_msg)
+                if is_correct:
+                    return (is_correct, error_msg)
+                error_msg += "  OR  \n"
+            return (False, error_msg[:-6]) #trim final OR
+
+        is_correct = True
+        if c_format:=rules.get("format", False):
+            if not formats.check_pattern(c_format, new_val):
+                error_msg += f"Incorrect format, should be: format.{c_format}\n"
+                is_correct = False
+
+        if c_type:=rules.get("type", False):
+            if not self._check_type(c_type, new_val):
+                error_msg += f"Incorrect Type. Should be: {c_type}\n"
+                return False, error_msg # to protect against methods assuming correct type and throwing an error down the line
+                                        # enables people to wrap setting value in a single try: ... except ValueError as e:
+
+            if c_type in ["integer", "number"]:
+                is_correct, error_msg = self._validate_number(is_correct, new_val, rules, error_msg)  
+            elif c_type == "string":
+                is_correct, error_msg = self._validate_string(is_correct, new_val, rules, error_msg)  
+            elif c_type == "array":
+                is_correct, error_msg = self._validate_array(is_correct, new_val, rules, error_msg)  
+            elif c_type == "object":
+                is_correct, error_msg = self._validate_object(is_correct, new_val, rules, error_msg)  
+        else:
+            raise RuntimeError(f"No type for {self}\nRules: {rules}")
+
+        return (is_correct, error_msg)    
+
+
     @val.setter
     def val(self, new_val:str):
         """Validate and set a new entity value
@@ -145,16 +295,18 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
         cur_overrides = self._override.get(self, {})
         info.update(cur_overrides)
 
-        if c_format:=info.get("format", False):
-            if not formats.check_pattern(c_format, new_val):
-                raise ValueError(f"val: {new_val} is not of required format: {info.format}")
-       
-        if enums := info.get("enum", None):
-            assert new_val in enums, f"val for {self} must be one of {enums} not {new_val}"
+        orig_msg = f"Value: {new_val} for {self.name} is not valid:\n"
+        is_correct, error_msg = self._validate_new_val(new_val, info, orig_msg)
 
-        self._val = new_val
+        if not is_correct:
+            raise ValueError(error_msg)
+        else:
+            self._val = new_val
 
-    
+    def __getitem__(self, key):
+        assert isinstance(self._val, dict)
+        return self._val[key]
+
     @property
     def type(self):
         """Type of the entity from schema."""
@@ -189,15 +341,6 @@ class nameValueBase(ValueBase): #must beware of the hash = false, as "different"
 class formats():
     schema:ClassVar['Namespace']
 
-    valid_types:ClassVar = {
-        "integer":int,
-        "string":str,
-        "number":float,
-        "array":list,
-        "object":dict,
-
-    }
-
     @classmethod
     @lru_cache(maxsize=32)
     def get_pattern(cls, key):
@@ -228,7 +371,6 @@ class formats():
 @define(slots=True, weakref_slot=True, hash=True)
 class Entity(nameValueBase):
 
-    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary()
 
     @nameValueBase.val.setter
     def val(self, new_val:str):
@@ -262,36 +404,31 @@ class Column(nameValueBase):
         pass
 
     @classmethod
-    @lru_cache(maxsize=128) #many different values so allow for larger cache for this
+    @lru_cache(maxsize=256) #many different values so allow for larger cache for this
     def _cached_fetch_object(cls, name: str):
         # Optionally delegate back to Base method if logic identical
         return super()._cached_fetch_object.__wrapped__(cls, name)
 
 @define(slots=True, weakref_slot=True, hash=True)
 class Metadata(nameValueBase):
-    """Metadata is quite unique, mainly due to the 'items' attribute
+    """Metadata is quite unique, mainly due to the 'items'/'properties' attribute 
     
     This basically allows for the value of one metadata field, to be an array, or dictionary of other metadata fields
 
     """
-    _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary()
     
     @nameValueBase.val.setter
     def val(self, new_val):
         self._val = new_val
 
-        info:Namespace = self._cached_fetch_object(self._name)
+        info:'Namespace' = self._cached_fetch_object(self._name)
         cur_overrides = self._override.get(self, {})
         info.update(cur_overrides)
-        
-        if c_format:=info.get("format", False):
-
-
 
     @classmethod
-    @lru_cache(maxsize=256) #many different values so allow for larger cache for this
+    @lru_cache(maxsize=256) # many different values so allow for larger cache for this
     def _cached_fetch_object(cls, name: str):
-        obj = cls.schema.get(name)
+        obj = cls.schema.get(name) # admittedly don't really need a cache as Namespace.get is already hashed and fast...
         if obj is None:
             raise KeyError(f"no object found for key {name} in {cls.__name__}")
         
@@ -309,6 +446,9 @@ class Modalitiy():
 class raw_Datatype(ValueBase):
     pass
 
+@define(slots=True)
+class extensions(ValueBase):
+    pass
 
 def _set_object_schemas(schema:'Namespace'):
     Entity.schema = schema.objects.entities
@@ -316,6 +456,8 @@ def _set_object_schemas(schema:'Namespace'):
     Suffix.schema = schema.objects.suffixes
     Metadata.schema = schema.objects.metadata
     formats.schema = schema.objects.formats
+    extensions.schema = schema.objects.extensions
+
     return
 
 __all__ = ["Entity", "Column", "Metadata", "Suffix", "_set_object_schemas", "raw_Datatype"]
