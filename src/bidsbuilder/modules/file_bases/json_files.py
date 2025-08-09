@@ -2,9 +2,9 @@ from ...util.categoryDict import categoryDict
 from ...util.io import _write_JSON
 from ..core.dataset_core import DatasetCore
 from ...schema.schema_checking import JSON_check_schema
-from ...util.hooks import HookedDescriptor
+from ...util.hooks import HookedDescriptor, DescriptorProtocol
 from attrs import define, field
-from typing import TYPE_CHECKING, ClassVar, Any, Union
+from typing import TYPE_CHECKING, ClassVar, Any, Union, Self
 from ..schema_objects import Metadata
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class JSONfile(DatasetCore):
     
     _schema:ClassVar['Namespace']
-    metadata:ClassVar[dict[str, 'Metadata']] = HookedDescriptor(dict)
+    metadata:ClassVar[dict[str, 'Metadata']]
 
     _metadata:dict[str, 'Metadata'] = field(init=False, factory=dict)
     _removed_key:dict[str, Any] = field(init=False, factory=dict) #for overflow values passed to json which doesn't have a valid key representing it
@@ -23,36 +23,61 @@ class JSONfile(DatasetCore):
     
 
     def _make_file(self, force:bool):
+        _write_JSON(self._tree_link.path, self.rawMetadata, force)
+
+    def __getitem__(self, key:str):
+        return self._metadata[key].val
+
+    def  __setitem__(self, key:str, value:Any):
+        """
+        Keys cannot be set using setitem. This ensures keys have been set via _add_metadata_keys enforcing categories to be specified
+        """
+        if isinstance(value, Metadata):
+            value = value.val
+
+        try:
+            self.metadata[key].val = value
+        except KeyError:
+            self._removed_key[key] = value
+    
+    @property
+    def rawMetadata(self):
         final_json = {}
         for key, value in self.metadata.items():
             cat, val = value.level, value.val
             if val is None:
                 match cat:
                     case "required":
-                        final_json[key] = "MISSING"
+                        final_json[key] = None
                     case "recommended":
                         pass
                     case "optional":
                         pass
             else:
                 final_json[key] = val
+        return final_json
 
-        _write_JSON(self._tree_link.path, final_json, force)
+    @staticmethod
+    def _metadata_validator(self:Self, descriptor:DescriptorProtocol, value:tuple[str, Any]):
+        key, val = value
+        """
+        Keys cannot be set using setitem. This ensures keys have been set via _add_metadata_keys enforcing only correct metadata
+        """
+        if key not in getattr(self, descriptor.name):
+            raise KeyError(f"key: {key} not found in metadata dict: {getattr(self, descriptor.name)}")
 
-    def __getitem__(self, key:str):
-        return self._metadata[key].val
+        return val
     
-    def  __setitem__(self, key:str, value:Any):
-        """
-        Keys cannot be set using setitem. This ensures keys have been set via _add_metadata_keys enforcing categories to be specified
-        """
-        if key in self.metadata: 
-            self.metadata[key].val = value
-        else:
-            if isinstance(value, Metadata):
-                value = value.val
-            self._removed_key[key] = value
-            
+    """
+    change the setitem logic to be a validator for metadata
+    then just need to update _add_metadata_keys to directly insert into the 
+    _metadata._data sub dict. Before then calling trigger_callback
+    """
+
+    metadata:ClassVar[dict[str, 'Metadata']] = HookedDescriptor(dict, fval=_metadata_validator) # considered making rawMetadata the getter
+    # but this leads to all sorts of confusion if people did something like myJson.metadata[key] = value. As it would then not
+    # actually modify the structure, but the "raw" dict spat out by rawMetadata
+
     def __contains__(self, key):
         return (key in self._metadata.keys())
 

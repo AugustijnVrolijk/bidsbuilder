@@ -12,7 +12,6 @@ def main():
     test1.tree.fetch("genetic_info.json").exists = True
     test1.build(True)
 
-
 def demo():
     folderPath = r"C:\Users\augus\BCI_Stuff\Aspen\demo2"
     myData = BidsDataset(folderPath, minimal=True)
@@ -30,8 +29,12 @@ def myCode():
 
     dataset.build()
 
-
 """
+THERE IS A BUG AT THE MOMENT MAIN CREATES A dataset_description with a missing "required" field.
+i.e. the hooks are not working since I updated them; need to look into it.
+
+
+
 data = addData()
 
 data.sidecar[]

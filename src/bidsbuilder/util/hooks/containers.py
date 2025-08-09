@@ -87,7 +87,7 @@ class ObservableValidatorList(ObservableList):
         super().__init__(*args, **kwargs)
 
     def __setitem__(self, key, value):
-        value = self._descriptor.fval(self._ref(), self._descriptor, value)
+        value = self._descriptor.fval(self._ref(), self._descriptor,  value)
         super().__setitem__(key, value)
 
     def insert(self, index, value):
@@ -130,7 +130,7 @@ class ObservableValidatorDict(ObservableDict):
         super().__init__(*args, **kwargs)
 
     def __setitem__(self, key, value):
-        value = self._descriptor.fval(self._ref(), self._descriptor, value)
+        value = self._descriptor.fval(self._ref(), self._descriptor, (key, value))
         super().__setitem__(key, value)
 
 class ObservableSet(MutableSet, ObservableType):
