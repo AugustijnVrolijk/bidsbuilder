@@ -1,22 +1,20 @@
-# bidsbuilder is a library facilitating the creation of BIDS approved datasets via schema-driven pythonic objects of all required files and metadata. #
+# bidsbuilder provieds a schema-driven pythonic object representation of all BIDS components. #
 
 bidsbuilder interprets the bids schema (https://github.com/bids-standard/bids-specification/tree/master/src/schema) using the bidsschematools library and a bids-language interpreter.
 
-The interpreted schema enables quick retrieval of required metadata when adding data, bidsbuilder complements this by adding a system of hooks based on schema selectors and checks, enabling dynamic changing of required metadata linked to schema dependencies.
+The interpreted schema precisely declares naming convention, file metadata, file types and more. bidsbuilder has base classes representing every possible type of BIDS components, from metadata json files to the entities that make up a filename. This object representation is complemented by adding a dependency-tracking hook system that attaches schema-driven validation to relevant files and attributes, providing real-time feedback and ensuring that metadata and file naming conventions are dynamically validated throughout the dataset creation process.
 
-Base classes are added to support core functions such as json sidecars, tabular data files, paths from entities and more.
-
-All features can be reached via the use of a BidsDataset object, which integrates all other modules to allow for an easily modifiable and customisable dataset wrapper.
+This dynamic feedback loop enhances robustness, fault tolerance, and flexibility by providing users with direct, real-time feedback whenever mistakes are made, without disrupting their entire workflow. Unlike traditional static checkers, which halt progress when a single error is found, this system allows users to build their dataset with whatever correct data is available, ensuring that no progress is lost. Even if certain metadata or names are incorrect, users can still see and work with the valid portions of their dataset, making it possible to address issues incrementally rather than restarting from scratch.
 
 Currently features:
 * Tree representation of folder for retrieval of objects via their paths
 * Interpreter for schema selectors and checks
-* Base classes for common files
+* Dependancy-tracking hooks
+* Base classes for BIDS components
 
 Future features:
-* Base classes for data files
 * Configuration for auto-completing metadata
-* Advanced tools for bulk completion of metadata parameters
+* Tools for bulk completion of metadata parameters
 * Conversion of raw data to bids-approved formats
 
 Possible future features:
@@ -35,8 +33,8 @@ Next features in order:
     * ~~dynamic descriptor classes to combine features (single/multi callback),(container/normal), etc..~~
     * metaclass support to decorate observability on any container
 * full schema object support
-    * Finish metadata class - recursive metadata containerisation (when metadata stores more metadata)
-    * Finish val setters for all types (suffix, datatype, entity, etc..)
+    * ~~Finish metadata class - recursive metadata containerisation (when metadata stores more metadata)~~
+    * ~~Finish val setters for all types (suffix, datatype, entity, etc..)~~
     * Finish columns class
     * Add support to lookup info for value terms (modalities, etc..)
 * fix dataset data folders
