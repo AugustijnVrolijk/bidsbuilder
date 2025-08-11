@@ -439,7 +439,9 @@ class SelectorParser():
         elif val == "false":
             return selectorFunc(val=False)
 
-    FIELDS_MAP = {
+    FIELDS_MAP = {  # BE CAREFUL CHANGING THE NAMES OF THE FIELDS: THEY LINK TO THE TAG SYSTEM
+        # IF THE VALUE HERE IS CHANGED MAKE SURE TO CHANGE THE APPROPRIATE HookedDescriptor Tag, i.e. for entities
+        # in core.filenames for CompositeFilenames the entities descriptor's tag
     "schema": schema,
     "dataset": dataset,
     "subject": subject,
@@ -459,7 +461,7 @@ class SelectorParser():
     "tiff": tiff,
     }
 
-    EVAL_FUNCS = {
+    EVAL_FUNCS = { # SIMILAR AS ABOVE, BUT ATM 09/08/2025 ONLY "exists" has a tag. Seen in core.dataset_core exists descriptor
     "count":count,
     "exists":exists,
     "index":index,

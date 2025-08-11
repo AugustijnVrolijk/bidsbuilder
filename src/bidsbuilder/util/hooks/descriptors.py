@@ -89,7 +89,7 @@ class PerInstanceCallbackMixin():
                 # as such if the object that the method is linked to gets deleted (garbage collected)
                 # the WeakMethod returns None rather than a callable method 
                 if method:
-                    method(self.tags)
+                    method(tags=self.tags)
                 else:
                     to_del.append(i)
             self._remove_callback(instance_id, to_del)

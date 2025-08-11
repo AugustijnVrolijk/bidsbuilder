@@ -38,7 +38,7 @@ class DatasetCore(ABC):
             return True # must exists for files which are required
         return value
 
-    exists:ClassVar[bool] = HookedDescriptor(bool, fval=_validate_exists)
+    exists:ClassVar[bool] = HookedDescriptor(bool, fval=_validate_exists, tags="exists")
 
     @abstractmethod
     def _check_schema(self, *args, **kwargs):

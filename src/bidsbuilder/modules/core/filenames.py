@@ -4,7 +4,7 @@ from ...util.hooks import *
 
 from abc import ABC, abstractmethod
 from typing import Union, ClassVar, TYPE_CHECKING
-
+from functools import lru_cache
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -76,7 +76,7 @@ class CompositeFilename(filenameBase):
         name (str): Name of the current filename component
     """
     schema: ClassVar[list] #should point to schema.rules.entities which is an ordered list
-    entities: ClassVar[dict]
+    entities: ClassVar[dict[str, Entity]]
     suffix: ClassVar[Union[Suffix, None]]
     datatype: ClassVar[Union[raw_Datatype, None]]
 
@@ -134,16 +134,6 @@ class CompositeFilename(filenameBase):
         return entity_string
 
     @staticmethod
-    def _entities_getter(instance:'CompositeFilename', descriptor:'DescriptorProtocol', owner:'CompositeFilename') -> dict:
-        if instance.parent is None:
-            cur_entities = dict()
-        else:
-            cur_entities = instance.parent.entities
-        
-        cur_entities.update(instance._entities) #overwrite parent values with cur values
-        return cur_entities
-
-    @staticmethod
     def _name_validator(instance:'CompositeFilename', descriptor:'DescriptorProtocol', value:Union[str, Entity]) -> Entity:
         
         match descriptor.tags:
@@ -162,36 +152,53 @@ class CompositeFilename(filenameBase):
             return cur_type(value)
         else:
             raise TypeError(f"changing entities for {instance} requires either a string or {type(cur_type)} object") 
-        
-    entities: ClassVar[dict] = HookedDescriptor(dict, fget=_entities_getter,fval=_name_validator,tags="entities",callback=_update_children_cback)
+    
+    suffix: ClassVar[Suffix] = HookedDescriptor(Suffix,fval=_name_validator,tags="suffix",callback=_update_children_cback)
+    datatype: ClassVar[raw_Datatype] = HookedDescriptor(raw_Datatype,fval=_name_validator,tags="datatype",callback=_update_children_cback)
+    entities: ClassVar[dict[str, Entity]] = HookedDescriptor(dict,fval=_name_validator,tags="entities",callback=_update_children_cback)
 
-    @staticmethod
-    def _suffix_datatype_getter(instance:'CompositeFilename', descriptor:'DescriptorProtocol', owner:'CompositeFilename') -> Union[Suffix, raw_Datatype,None]:
-        cur_val = getattr(instance, descriptor.name)
+    @property
+    def resolved_suffix(self) -> str: 
+        """The current instance's suffix if specified, otherwise inherited from parent folders"""
+        cur_val = self.suffix._name
         if cur_val is not None:
             return cur_val
-        elif instance.parent is not None:
-            return getattr(instance.parent, descriptor.name[1:])
+        elif self.parent is not None:
+            return self.parent.resolved_suffix
         else:
             return None
-
-    suffix: ClassVar = HookedDescriptor(Suffix, fget=_suffix_datatype_getter,fval=_name_validator,tags="suffix",callback=_update_children_cback)
-    datatype: ClassVar = HookedDescriptor(raw_Datatype, fget=_suffix_datatype_getter,fval=_name_validator,tags="datatype",callback=_update_children_cback)
-    
-    """
-    def update(self, key:str, val:str):
-        #local entities only
         
-        cor_ent:Entity = self._entities.pop(key, None)
-        if cor_ent is not None:
-            cor_ent.val = val
-        elif key.lower().strip() == "suffix":
-            self.suffix.name = val
-        elif key.lower().strip() == "datatype":
-            self.datatype.name = val
+    @property
+    def resolved_datatype(self) -> str: 
+        """The current instance's datatype if specified, otherwise inherited from parent folders"""
+        cur_val = self.datatype._name
+        if cur_val is not None:
+            return cur_val
+        elif self.parent is not None:
+            return self.parent.resolved_datatype
         else:
-            raise KeyError(f"key: {key} was not found for {self}")
-    """
+            return None
+        
+    @property
+    def resolved_entities(self) -> dict:
+        """The current instance's entities as well as those inherited from parents (i.e. session or subject)"""
+        
+        # can consider making this a seperate function and caching it depending on the input observableDict
+        def _clean_entities() -> dict:
+            clean_entities = dict()
+            for key, value in self.entities.items():
+                cat, val = value.level, value.val
+                if val is not None:
+                    clean_entities[key] = value
+            return clean_entities
+
+        if self.parent is None:
+            cur_entities = dict()
+        else:
+            cur_entities = self.parent.resolved_entities
+
+        cur_entities.update(_clean_entities()) # overwrite parent values with cur values
+        return cur_entities
     
 def _set_filenames_schema(schema:'Namespace'):
     CompositeFilename.schema = schema.rules.entities

@@ -20,7 +20,6 @@ class JSONfile(DatasetCore):
     _metadata:dict[str, 'Metadata'] = field(init=False, factory=dict)
     _removed_key:dict[str, Any] = field(init=False, factory=dict) #for overflow values passed to json which doesn't have a valid key representing it
     _cur_labels:set = field(init=False, factory=set)
-    
 
     def _make_file(self, force:bool):
         _write_JSON(self._tree_link.path, self.rawMetadata, force)
@@ -65,21 +64,15 @@ class JSONfile(DatasetCore):
         """
         if key not in getattr(self, descriptor.name):
             raise KeyError(f"key: {key} not found in metadata dict: {getattr(self, descriptor.name)}")
-
-        return val
-    
-    """
-    change the setitem logic to be a validator for metadata
-    then just need to update _add_metadata_keys to directly insert into the 
-    _metadata._data sub dict. Before then calling trigger_callback
-    """
+        else:
+            return val
 
     metadata:ClassVar[dict[str, 'Metadata']] = HookedDescriptor(dict, fval=_metadata_validator) # considered making rawMetadata the getter
     # but this leads to all sorts of confusion if people did something like myJson.metadata[key] = value. As it would then not
     # actually modify the structure, but the "raw" dict spat out by rawMetadata
 
     def __contains__(self, key):
-        return (key in self._metadata.keys())
+        return key in self.metadata
 
     def _check_schema(self, add_callbacks:bool=False, tags:Union[list,str] = None):
         """
@@ -108,15 +101,19 @@ class JSONfile(DatasetCore):
                 self.metadata[key].val = val
 
     def _add_metadata_keys(self, to_add:dict, label:str):
-        self.metadata.update(to_add)
+        self.metadata._data.update(to_add)
+        self.metadata._check_callback()
         self._cur_labels.add(label)
 
     def _remove_metadata_keys(self, to_remove:list, label:str):
         self._cur_labels.remove(label)
 
+        self.metadata._frozen = True
         for key in to_remove:
             removed = self.metadata.pop(key)
             self._removed_key[key] = removed.val
+        self.metadata._frozen = True
+        self.metadata._check_callback()
 
 @define(slots=True)
 class sidecar_JSONfile(JSONfile):

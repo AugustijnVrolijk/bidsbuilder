@@ -55,7 +55,8 @@ class ObservableList(MutableSequence, ObservableType):
     def __init__(self, data:list, descriptor:'DescriptorProtocol', weakref:ReferenceType):
         ObservableType.__init__(self, descriptor, weakref)
         self._data = []
-        self.extend(data)
+        if data:
+            self.extend(data)
 
     def __getitem__(self, index):
         return self._data[index]
@@ -99,7 +100,8 @@ class ObservableDict(MutableMapping, ObservableType):
     def __init__(self, data:dict, descriptor:'DescriptorProtocol', weakref:ReferenceType):
         ObservableType.__init__(self, descriptor, weakref)
         self._data = {}
-        self.update(data)
+        if data:
+            self.update(data)
 
     def __getitem__(self, key):
         return self._data[key]
@@ -138,7 +140,8 @@ class ObservableSet(MutableSet, ObservableType):
     def __init__(self, data:set, descriptor:'DescriptorProtocol', weakref:ReferenceType):
         ObservableType.__init__(self, descriptor, weakref)
         self._data = set()
-        self.update()
+        if data:
+            self.update()
 
     def __contains__(self, value):
         return value in self._data
