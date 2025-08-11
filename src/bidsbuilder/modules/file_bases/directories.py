@@ -17,7 +17,7 @@ class folderBase(DatasetCore):
     _val:str = field(repr=True, default=None, alias="_val")
 
     n:int = field(repr=False, init=False)
-    children:list['folderBase'] = field(repr=False, init=False, default=[])
+    children:list['folderBase'] = field(repr=False, init=False, factory=list)
 
     @property
     def val(self):

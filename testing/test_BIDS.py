@@ -28,7 +28,7 @@ def test_system_tests_basic():
 
 def demo():
     folderPath = r"C:\Users\augus\BCI_Stuff\Aspen\demo2"
-    myData = BidsDataset(folderPath, minimal=True)
+    myData = BidsDataset(folderPath)
     subjects = ["mariana", "erdi"]
     for sub in subjects:
         print(sub)
@@ -44,7 +44,7 @@ def myCode():
     dataset.build()
 
 if __name__ == "__main__":
-    test_system_tests_basic()
+    demo()
 
 
 
