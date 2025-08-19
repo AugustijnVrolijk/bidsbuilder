@@ -3,7 +3,7 @@ from ..schema_objects import Entity, raw_Datatype, Suffix
 from ...util.hooks import *
 
 from abc import ABC, abstractmethod
-from typing import Union, ClassVar, TYPE_CHECKING
+from typing import Union, ClassVar, TYPE_CHECKING, Self, Optional, Type
 from functools import lru_cache
 
 if TYPE_CHECKING:
@@ -17,13 +17,11 @@ class filenameBase(ABC):
 
     @property
     @abstractmethod
-    def name(self):
-        pass
+    def name(self): ...
 
     @property
     @abstractmethod
-    def local_name(self):
-        pass
+    def local_name(self): ...
 
     @property #could consider caching, but parent can change, so need to then reset the cache
     def parent(self) -> 'filenameBase':
@@ -32,11 +30,9 @@ class filenameBase(ABC):
         else: 
             None
 
-    def __setitem__(self):
-        ...
+    #def __setitem__(self):
 
-    def __getitem__(self):
-        ...
+    #def __getitem__(self):
 
 @define(slots=True)
 class agnosticFilename(filenameBase):
@@ -62,10 +58,11 @@ def _update_children_cback(instance:'CompositeFilename', tags:Union[str, list]=N
     Callback method which calls on self and all child instances to check their schema 
     add tags to specify which selectors to re-check
     """
-    instance._tree_link.name = instance.local_name
+    instance._tree_link.name = instance.local_name # change the name
+
+    # no need to do: instance._file_link._check_schema - _iter_tree will yield the instance itself
     for child in instance._tree_link._iter_tree():
         child._file_link._check_schema(tags=tags)
-    return
 
 @define(slots=True)
 class CompositeFilename(filenameBase):
@@ -76,16 +73,16 @@ class CompositeFilename(filenameBase):
         name (str): Name of the current filename component
     """
     schema: ClassVar[list] #should point to schema.rules.entities which is an ordered list
-    entities: ClassVar[dict[str, Entity]]
-    suffix: ClassVar[Union[Suffix, None]]
-    datatype: ClassVar[Union[raw_Datatype, None]]
+    entities: ClassVar[dict[str, Optional[Entity]]]
+    suffix: ClassVar[Optional[Suffix]]
+    datatype: ClassVar[Optional[raw_Datatype]]
 
-    _entities: dict[Entity] = field(factory=dict, repr=True, alias="_entities")
-    _suffix: Union[Suffix, None] = field(default=None, repr=True, alias="_suffix")
-    _datatype: Union[raw_Datatype, None] = field(default=None, repr=True, alias="_datatype")
+    _entities: dict[str, Optional[Entity]] = field(factory=dict, repr=True, alias="_entities")
+    _suffix: Optional[Suffix] = field(default=None, repr=True, alias="_suffix")
+    _datatype: Optional[raw_Datatype] = field(default=None, repr=True, alias="_datatype")
 
     @classmethod
-    def create(cls, entities:Union[dict, None]=None, suffix:Union[str, None]=None, datatype:Union[str, None]=None):
+    def create(cls, entities:Optional[dict]=None, suffix:Optional[str]=None, datatype:Optional[str]=None):
         
         if entities:
             for key, val in entities.items():
@@ -134,8 +131,14 @@ class CompositeFilename(filenameBase):
         return entity_string
 
     @staticmethod
-    def _name_validator(instance:'CompositeFilename', descriptor:'DescriptorProtocol', value:Union[str, Entity]) -> Entity:
+    def _name_validator(instance:'CompositeFilename', descriptor:'DescriptorProtocol', value:Union[str, Entity, Suffix, raw_Datatype]) -> Entity:
         
+        tag_to_type: dict[str, Type[Entity]] = {
+            "entities": Entity,
+            "suffix": Suffix,
+            "datatype": raw_Datatype,
+        }
+
         match descriptor.tags:
             case "entities":
                 cur_type = Entity
@@ -144,7 +147,7 @@ class CompositeFilename(filenameBase):
             case "datatype":
                 cur_type = raw_Datatype
             case _:
-                raise RuntimeError("unrecognised entity for entities name validator")
+                raise RuntimeError("unrecognised entity for CompositeFilename _name_validator")
         
         if isinstance(value, cur_type):
             return value
@@ -153,9 +156,22 @@ class CompositeFilename(filenameBase):
         else:
             raise TypeError(f"changing entities for {instance} requires either a string or {type(cur_type)} object") 
     
-    suffix: ClassVar[Suffix] = HookedDescriptor(Suffix,fval=_name_validator,tags="suffix",callback=_update_children_cback)
-    datatype: ClassVar[raw_Datatype] = HookedDescriptor(raw_Datatype,fval=_name_validator,tags="datatype",callback=_update_children_cback)
+    @staticmethod
+    def _suf_dtype_getter(instance:'CompositeFilename', descriptor:DescriptorProtocol,owner) -> Union[Suffix, raw_Datatype, None]:
+        cur_val = getattr(instance, descriptor.name)
+        if cur_val is not None:
+            return cur_val
+        elif instance.parent is not None and isinstance(instance.parent, Self):
+            #descriptor_name = descriptor.name[1:] # strip the leading _ of descriptor.name
+            return instance._suf_dtype_getter(instance.parent, descriptor, owner)
+        else:
+            return None
+
+    suffix: ClassVar[Suffix] = HookedDescriptor(Suffix,fget=_suf_dtype_getter, fval=_name_validator,tags="suffix",callback=_update_children_cback)
+    datatype: ClassVar[raw_Datatype] = HookedDescriptor(raw_Datatype,fget=_suf_dtype_getter,fval=_name_validator,tags="datatype",callback=_update_children_cback)
     entities: ClassVar[dict[str, Entity]] = HookedDescriptor(dict,fval=_name_validator,tags="entities",callback=_update_children_cback)
+
+   
 
     @property
     def resolved_suffix(self) -> str: 
