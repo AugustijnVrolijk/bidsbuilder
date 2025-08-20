@@ -113,8 +113,6 @@ class nameValueBase(ValueBase):
         val (str): The value of the entity
 
     """
-    
-
     _override: ClassVar[WeakKeyDictionary] = WeakKeyDictionary()
 
     # ---- instance fields ----

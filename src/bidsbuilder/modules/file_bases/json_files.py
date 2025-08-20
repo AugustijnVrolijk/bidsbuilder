@@ -1,5 +1,5 @@
 from ...util.categoryDict import categoryDict
-from ...util.io import _write_JSON
+from ...util.io import _write_json
 from ..core.dataset_core import DatasetCore
 from ...schema.schema_checking import JSON_check_schema
 from ...util.hooks import HookedDescriptor, DescriptorProtocol
@@ -22,7 +22,7 @@ class JSONfile(DatasetCore):
     _cur_labels:set = field(init=False, factory=set)
 
     def _make_file(self, force:bool):
-        _write_JSON(self._tree_link.path, self.rawMetadata, force)
+        _write_json(self._tree_link.path, self.rawMetadata, force)
 
     def __getitem__(self, key:str):
         return self._metadata[key].val

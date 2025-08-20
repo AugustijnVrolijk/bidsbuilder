@@ -1,8 +1,40 @@
 import json
+import pandas as pd
+
+import os
+
 from pathlib import Path
 from mne.utils import logger
 
-def _write_JSON(path, data, overwrite = False):
+def _write_tsv(path:str, data:pd.DataFrame, overwrite:bool = False):
+    fname = Path(path)
+    if fname.exists() and not overwrite:
+        raise FileExistsError(
+            f'"{fname}" already exists. Please set overwrite to True.'
+        )
+    
+    args = {"sep":"\t","index":False}
+    if fname.suffix == ".gz" or fname.suffixes[-1] == ".gz":
+        args["compression"] = "gzip"
+    else:
+
+        # check: https://bids-specification.readthedocs.io/en/stable/common-principles.html#tabular-files
+        # at the time of writing 20/08/2025 motion files which end in .tsv MUST not have a header...
+        # Ideally want to add some meta schema to make this all more automated...
+        stem = fname.stem
+        for _ in fname.suffixes:
+            stem = Path(stem).stem
+
+        last_keyword = stem.split("_")[-1]
+        if last_keyword == "motion":
+            args["header"] = False
+        else:
+            args["header"] = True
+
+    data.to_csv(fname,**args)
+
+
+def _write_json(path, data, overwrite = False):
     fname = Path(path)
     if fname.exists() and not overwrite:
         raise FileExistsError(
