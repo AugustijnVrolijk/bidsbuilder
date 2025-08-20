@@ -26,7 +26,7 @@ Next features in order:
 * ~~final schema interpreter features~~
     * ~~create tests comparing to meta.expression_tests to align interpreter~~
     * ~~add tag system to speedup callback calling speed~~
-* Dynamic descriptor classes for callback and field support
+* ~~Dynamic descriptor classes for callback and field support~~
     * ~~base descriptor classes~~
     * ~~adding custom getters, input validators~~
     * ~~support for container types, dynamic upgrading to observable types~~
@@ -36,6 +36,7 @@ Next features in order:
     * ~~Finish metadata class - recursive metadata containerisation (when metadata stores more metadata)~~
     * ~~Finish val setters for all types (suffix, datatype, entity, etc..)~~
     * Finish columns class
+    * Add tests to verify values objects and name-value objetcs, as well as proper val setting checking
     * Add support to lookup info for value terms (modalities, etc..)
 * fix dataset data folders
     * Fix subject/session/datatype class
