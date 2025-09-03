@@ -27,7 +27,7 @@ class ObservableType():
             self._descriptor._trigger_callback(self._ref()) # weak reference so need to call it to access it
 
     def __repr__(self):
-        return repr(self._data)
+        return f"{self.__class__.__name__}({repr(self._data)})"
 
     def __str__(self):
         return str(self._data)
@@ -174,5 +174,10 @@ class ObservableValidatorSet(ObservableSet):
     def add(self, value):
         value = self._descriptor.fval(self._ref(), self._descriptor, value)
         super().add(value)
+
+
+class ABClist(MutableSequence):...
+class ABCdict(MutableMapping):...
+class ABCset(MutableSet):...
 
 __all__ = ["ObservableValidatorSet","ObservableSet","ObservableValidatorDict","ObservableDict","ObservableValidatorList","ObservableList", "ObservableType"]

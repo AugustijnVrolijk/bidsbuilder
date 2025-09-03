@@ -12,11 +12,27 @@ if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
 @define(slots=True)
+class columnView():
+    ref_frame:pd.DataFrame = field()
+    col_name:str = field()
+
+    def __getattribute__(self, name):
+        return self.ref_frame[self.col_name]
+
+    def __contains__(self):
+        ...
+
+@define(slots=True)
 class tabularFile(DatasetCore):
     data:pd.DataFrame = field(factory=pd.DataFrame)
     _columns = list()
     _data = pd.DataFrame()
     columns:ClassVar[list] = HookedDescriptor(list,tags="columns")
+
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
+        self._columns.__class__.__setitem__ == custom_set_item()
+        return 
 
     def _make_file(self, force:bool):
         _write_tsv(self._tree_link.path, self.data, force)

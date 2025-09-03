@@ -1,14 +1,25 @@
 from bidsbuilder.util.hooks.containers import *
 
+from abc import ABC
 
-t = {"a":1,
-     "b":2,
-     "c":3}
+class MyABC(ABC):
+    forbidden_names = {"do_not_use", "bad_attr"}
 
-t2 = {"c":3,
-     "d":4,
-     "e":5}
-h = {}
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        for name in cls.forbidden_names:
+            if name in cls.__dict__:
+                raise TypeError(
+                    f"Class {cls.__name__} must not define `{name}` "
+                    f"(reserved by {MyABC.__name__})."
+                )
 
-h.update(t2)
-h["f"] = 6
+class BadImpl1(MyABC):
+    do_not_use = 123  # 🚨 raises TypeError at definition
+
+class BadImpl2(MyABC):
+    def bad_attr(self):  # 🚨 also raises TypeError
+        pass
+
+class GoodImpl(MyABC):
+    x = 42  # ✅ allowed

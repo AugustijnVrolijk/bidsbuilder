@@ -117,3 +117,28 @@ class Observable(metaclass=ObservableMeta):
                 kwargs = {k: self._validator(v) for k, v in kwargs.items()}
             return args, kwargs
         return args, kwargs
+
+
+
+"""CREATE REACTIVE LIBRARY
+
+
+SUPPORT FOR __dict__ and __slots__ i.e. store the variable in the descriptor itself
+
+support for getter, validator, default values
+
+support for custom containers ( based on base classes)
+        - for containers, it needs to be able to support input arguments and keyword arguments 
+        to support custom containers with __init__'s
+        Moreover try to change for within the class, i.e. that the container is upgraded once, rather than each time it gets instantiated
+
+        this would mean creating a custom factory method, based on the upgraded container
+
+        being able to deal with containers get reset, i.e.
+
+        someone assigning the variable to fresh value, so need to cast it up in the set method
+
+for speed's sake, try slot everything in the descriptors themselves,
+
+
+    """

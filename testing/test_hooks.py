@@ -45,8 +45,9 @@ class demo_validator_property():
 
     @staticmethod
     def _validate_myItems(instance, descriptor, value):
-        value += 5
-        return value
+        key, val = value
+        val += 5
+        return val
     
     _myItems:dict = field(factory=dict,alias="_myItems")
     myItems:ClassVar[dict] = HookedDescriptor(dict, fval=_validate_myItems)
