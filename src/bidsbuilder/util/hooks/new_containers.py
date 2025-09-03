@@ -1,7 +1,7 @@
 import inspect
 import types
 
-from typing import TYPE_CHECKING, Union, Generator
+from typing import TYPE_CHECKING, Union, Generator, Type
 from weakref import ReferenceType
 
 from functools import wraps
@@ -77,15 +77,20 @@ class create_dynamic_container():
 
     set type class attributes, i.e. module scope as this file etc..
     """
-    def __init__(self, base_container:Union[MinimalDict, MinimalList, MinimalSet], validator_flag) -> object:
+    def __init__(self, base_container:Union[MinimalDict, MinimalList, MinimalSet], validator_flag) -> ObservableType:
         name = f"Observable{'Validator' if validator_flag else ''}{base_container.__name__}"
         self.base_container = base_container
-        self.dynamic_container = types.new_class(name, tuple(base_container, ObservableType),kwds={})
+        self.dynamic_container = types.new_class(name, (base_container, ObservableType),kwds={})
 
-        self.wrap_check_callback()
-        self.wrap_frozen_check_callback()
+        for (orig_method, func_name)  in self.iter_methods_set(self.check_callback_methods):
+            setattr(self.dynamic_container, func_name, self.wrap_check_callback(orig_method))
+
+        for (orig_method, func_name)  in self.iter_methods_set(self.frozen_check_callback_methods):
+            setattr(self.dynamic_container, func_name, self.wrap_frozen_check_callback(orig_method))
+
         if validator_flag:
-            self.wrap_validate_input()
+            for (orig_method, func_name)  in self.iter_methods_set(self.validate_input_methods):
+                setattr(self.dynamic_container, func_name, self.wrap_validate_input(orig_method))
 
         return self.dynamic_container
 
@@ -95,44 +100,82 @@ class create_dynamic_container():
                 yield (orig_method, func_name)
 
     check_callback_methods = {"__setitem__", "__delitem__", "insert", "add", "discard"}
-
-    def wrap_check_callback(self):
-        
-        for (orig_method, func_name)  in self.iter_methods_set(self.check_callback_methods):
-            @wraps(orig_method)
-            def _wrapped_check_callback(self:ObservableType, *args, **kwargs):
-                orig_method(self, *args, **kwargs)
-                self._check_callback()
-
-            setattr(self.dynamic_container, func_name, _wrapped_check_callback)
-
     frozen_check_callback_methods = {"update", "extend"}
-
-    def wrap_frozen_check_callback(self):
-        for (orig_method, func_name)  in self.iter_methods_set(self.check_callback_methods):
-
-            @wraps(orig_method)
-            def _wrapped_frozen_check_callback(self:ObservableType, *args, **kwargs):
-                self._frozen = True
-                orig_method(self, *args, **kwargs)
-                self._frozen = False
-                self._check_callback()
-
-            setattr(self.dynamic_container, func_name, _wrapped_frozen_check_callback)
-
     validate_input_methods = {"__setitem__", "insert", "add"}
 
-    def wrap_validate_input(self):
-        for (orig_method, func_name)  in self.iter_methods_set(self.check_callback_methods):
+    @staticmethod
+    def wrap_check_callback(orig_method):
+    
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            orig_method(self, *args, **kwargs)
+            self._check_callback()
 
-            @wraps(orig_method)
-            def _wrapped_check_callback(self:ObservableType, *args, **kwargs):
-                args = self._descriptor.fval(self._ref(), self._descriptor, *args, **kwargs)
-                orig_method(self, *args, **kwargs)
+        return _wrapped
 
-            setattr(self.dynamic_container, func_name, _wrapped_check_callback)
+    @staticmethod
+    def wrap_frozen_check_callback(orig_method):
+
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            self._frozen = True
+            orig_method(self, *args, **kwargs)
+            self._frozen = False
+            self._check_callback()
+
+        return _wrapped
+
+    @staticmethod
+    def wrap_validate_input(orig_method):
+            
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            n_args = self._descriptor.fval(self._ref(), self._descriptor, *args, **kwargs)
+            orig_method(self, *n_args, **kwargs)
+
+        return _wrapped
 
 _class_cache = {}
+
+def wrap_container(original_container:Type, descriptor:'DescriptorProtocol', instance_reference:ReferenceType, validator_flag:bool):
+
+    core = {list:MinimalList, set:MinimalSet, dict:MinimalDict}
+
+    if type(original_container) in core.keys():
+        original_container = core[original_container]
+    elif type(original_container) not in core.values():
+        raise RuntimeError(f"types must be in {core}")
+    
+    wrapped_name = f"Observable{'Validator' if validator_flag else ''}{original_container.__name__}"
+
+    observable_container = _class_cache.get(wrapped_name, False)
+    if not observable_container:
+        observable_container = create_dynamic_container(original_container, validator_flag)
+        _class_cache[wrapped_name] = observable_container
+
+    new_instance = observable_container()
+    new_instance.__observable_container_init__(descriptor, instance_reference)
+    return new_instance
+
+    """
+    if isinstance(new_instance, (MinimalDict, MinimalSet)):
+        new_instance.update(data)
+    elif isinstance(new_instance, MinimalList):
+        new_instance.extend(data)
+    """
+    """
+    
+    2. check cache for class (using name)
+        2.1 if not present create class dynamically 
+
+    3. create instance of cached class
+        3.1 set descriptor, weakref, etc.. (either through closer, or by setting __init__)
+
+    4. based on type, run update/extend etc.. to populate the instance
+
+    return instance
+    """
+
 
 def make_proxying_init_for(base_init):
     sig = inspect.signature(base_init)
@@ -156,31 +199,3 @@ def make_dynamic(base, observable):
         observable.__init__(self, descriptor=kwargs.get("descriptor"), weakref=kwargs.get("weakref"))
 
     return type(f"Observable{base.__name__}", (base, observable), {"__init__": __init__})
-
-def wrap_container(original_container:object, descriptor:'DescriptorProtocol', instance_reference:ReferenceType, validator_flag:bool):
-
-    wrapped_name = f"Observable{'Validator' if validator_flag else ''}{original_container.__name__}"
-
-    observable_container = _class_cache.get(wrapped_name, False)
-    if not observable_container:
-        observable_container = create_dynamic_container(original_container, validator_flag)
-        _class_cache[wrapped_name] = observable_container
-
-    new_instance = observable_container(descriptor, instance_reference)
-    if isinstance(new_instance, (MinimalDict, MinimalSet)):
-        new_instance.update(original_container)
-    elif isinstance(new_instance, MinimalList):
-        new_instance.extend(original_container)
-
-    """
-    
-    2. check cache for class (using name)
-        2.1 if not present create class dynamically 
-
-    3. create instance of cached class
-        3.1 set descriptor, weakref, etc.. (either through closer, or by setting __init__)
-
-    4. based on type, run update/extend etc.. to populate the instance
-
-    return instance
-    """
