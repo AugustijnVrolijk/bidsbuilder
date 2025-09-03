@@ -1,11 +1,12 @@
 import pandas as pd
 
 from ...util.io import _write_json, _write_tsv
-from ..core.dataset_core import UnknownFile, DatasetCore
+from ..core.dataset_core import DatasetCore
 from ...util.hooks import HookedDescriptor, DescriptorProtocol
 
+from pandas.api.types import infer_dtype
 from attrs import define, field
-from typing import TYPE_CHECKING, ClassVar, Any
+from typing import TYPE_CHECKING, ClassVar, Any, Union
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -13,6 +14,8 @@ if TYPE_CHECKING:
 @define(slots=True)
 class tabularFile(DatasetCore):
     data:pd.DataFrame = field(factory=pd.DataFrame)
+    _columns = list()
+    _data = pd.DataFrame()
     columns:ClassVar[list] = HookedDescriptor(list,tags="columns")
 
     def _make_file(self, force:bool):
@@ -22,6 +25,8 @@ class tabularFile(DatasetCore):
     def json_sidecar(self):
         return self._tree_link.parent.fetch(".json")
 
+    def addColumn(self):
+        pass
     """
     TODO:
         rules.tabular_data.*
@@ -65,8 +70,6 @@ additional_columns - Indicates whether additional columns may be defined. One of
             self._check_removed()
 
 class tabularJSONFile(DatasetCore):
-    #no need to differentiate between agnostic and not, they are all in the same dir.
-    #may be slightly ineffecient
     pass
 
 @define(slots=True)
