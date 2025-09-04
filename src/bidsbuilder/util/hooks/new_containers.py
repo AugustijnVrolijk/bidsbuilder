@@ -1,4 +1,3 @@
-import inspect
 import types
 
 from typing import TYPE_CHECKING, Union, Generator, Type
@@ -83,10 +82,13 @@ class create_dynamic_container():
 
     set type class attributes, i.e. module scope as this file etc..
     """
-    def __init__(self, base_container:Union[MinimalDict, MinimalList, MinimalSet], validator_flag) -> ObservableType:
+    def __init__(self, base_container:Union[MinimalDict, MinimalList, MinimalSet], validator_flag):
         name = f"Observable{'Validator' if validator_flag else ''}{base_container.__name__}"
         self.base_container = base_container
         self.dynamic_container = types.new_class(name, (base_container, ObservableType),kwds={})
+        self.validator_flag = validator_flag
+
+    def create(self) -> ObservableType:
 
         for (orig_method, func_name)  in self.iter_methods_set(self.check_callback_methods):
             setattr(self.dynamic_container, func_name, self.wrap_check_callback(orig_method))
@@ -94,7 +96,7 @@ class create_dynamic_container():
         for (orig_method, func_name)  in self.iter_methods_set(self.frozen_check_callback_methods):
             setattr(self.dynamic_container, func_name, self.wrap_frozen_check_callback(orig_method))
 
-        if validator_flag:
+        if self.validator_flag:
             for (orig_method, func_name)  in self.iter_methods_set(self.validate_input_methods):
                 setattr(self.dynamic_container, func_name, self.wrap_validate_input(orig_method))
 
@@ -135,66 +137,80 @@ class create_dynamic_container():
             orig_method(self, *n_args, **kwargs)
         return _wrapped
 
-_class_cache = {}
+_class_cache:dict[str, ObservableType] = {}
 
+def is_supported_type(tp:Union[type, object]) -> bool:
 
-def is_supported_type(tp:type) -> bool:
+    if not isinstance(tp, type):
+        tp = tp.__class__
+
     if tp in (list, dict, set):
         return True
     if issubclass(tp, (MinimalList, MinimalDict, MinimalSet)):
         return True
-    
+
     return False
 
-def wrap_container(original_container:Type, descriptor:'DescriptorProtocol', instance_reference:ReferenceType, validator_flag:bool):
+def get_upgraded_container(og_container_type:Type, validator_flag:bool) -> ObservableType:
 
-    core = {list:MinimalList, set:MinimalSet, dict:MinimalDict}
-
-    if type(original_container) in core.keys():
-        original_container = core[original_container]
-    elif type(original_container) not in core.values():
-        raise RuntimeError(f"types must be in {core}")
-    
-    wrapped_name = f"Observable{'Validator' if validator_flag else ''}{original_container.__name__}"
+    wrapped_name = f"Observable{'Validator' if validator_flag else ''}{og_container_type.__name__}"
 
     observable_container = _class_cache.get(wrapped_name, False)
     if not observable_container:
-        observable_container = create_dynamic_container(original_container, validator_flag)
+        creator = create_dynamic_container(og_container_type, validator_flag)
+        observable_container = creator.create()
         _class_cache[wrapped_name] = observable_container
 
-    new_instance = observable_container()
-    new_instance.__observable_container_init__(descriptor, instance_reference)
-    return new_instance
+    return observable_container
 
+def wrap_container(og_container:Union[type, object], validator_flag:bool=False) -> Union[type, object]:
     """
-    if isinstance(new_instance, (MinimalDict, MinimalSet)):
-        new_instance.update(data)
-    elif isinstance(new_instance, MinimalList):
-        new_instance.extend(data)
-    """
-    """
-    
-    2. check cache for class (using name)
-        2.1 if not present create class dynamically 
+    converts a container into an observable equivalent.
+        - If og_container is a type, this will return an observable equivalent type
 
-    3. create instance of cached class
-        3.1 set descriptor, weakref, etc.. (either through closer, or by setting __init__)
-
-    4. based on type, run update/extend etc.. to populate the instance
-
-    return instance
+        - If og_container is an instance, this will return the upgraded observable instance
     """
 
-def upgrade_container(): ...
+    if isinstance(og_container, type):
+        IS_TYPE = True
+        og_type = og_container
+    else:
+        IS_TYPE = False
+        og_container_contents = og_container
+        og_type = og_container.__class__
+
+    if not is_supported_type(og_type):
+        raise TypeError(f"Only list, dict, set, their minimal equivalents and subclasses of the minimal equivalents are valid to be made observable, not {og_type}")
+
+    core:dict[type, type] = {list:MinimalList, set:MinimalSet, dict:MinimalDict}
+
+    # convert from python inbuilt types to MinimalType
+    if og_type in core.keys():
+        og_type = core[og_type]
+        if not IS_TYPE:
+            og_container_contents = og_type(og_container_contents) # initialise MinimalType with the original DS
+
+    observable_container = get_upgraded_container(og_type, validator_flag)
+
+    # return observable type, or upcast instance
+    if IS_TYPE:
+        return observable_container
+    else:
+        og_container_contents.__class__ = observable_container
+        return og_container_contents
 
 
+__all__ = ["wrap_container", "is_supported_type", "MinimalDict", "MinimalList", "MinimalSet"]
+
+"""
+NOT NECESSARY, we can upgrade by changing an instances __class__
 
 def make_proxying_init_for(base_init):
     sig = inspect.signature(base_init)
     def __init__(self, *args, **kwargs):
         bound = sig.bind(self, *args, **kwargs)
         base_init(*bound.args, **bound.kwargs)
-        # no observable init here; we’ll inject post-init anyway
+        # no observable init here; we'll inject post-init anyway
     return __init__
 
 def make_dynamic(base, observable):
@@ -211,3 +227,4 @@ def make_dynamic(base, observable):
         observable.__init__(self, descriptor=kwargs.get("descriptor"), weakref=kwargs.get("weakref"))
 
     return type(f"Observable{base.__name__}", (base, observable), {"__init__": __init__})
+"""

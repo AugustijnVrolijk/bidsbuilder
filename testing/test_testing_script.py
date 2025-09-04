@@ -1,7 +1,7 @@
 from bidsbuilder.util.hooks.containers import *
 import inspect
 import types
-from bidsbuilder.util.hooks.new_containers import MinimalList
+from bidsbuilder.util.hooks.new_containers import *
 
 class toMerge():
 
@@ -59,18 +59,8 @@ def create_tester_list(*args, **kwargs) -> object:
     ret_instance = dynamic_container(*args, **kwargs)
     return ret_instance
 
-if __name__ == "__main__":
-    """
-    t1 = test1(5,6)
-    t2 = merge(t1)
-    t2.post__init__(8)
-    final = t2.addSelf()
-    print(final)
-    """
-    t1 = MinimalList([1,2,3,4,5])
-    print(t1.__repr__())
-    t2 = create_tester_list([1,4])
+if __name__ == "__main__":    
+    t = [12,3,5,6]
+    print(t.__repr__())
+    t2 = wrap_container(t)
     print(t2.__repr__())
-    t2._check_callback()
-    print(issubclass(t2.__class__, MinimalList))
-    print(issubclass(t1.__class__, MinimalList))  

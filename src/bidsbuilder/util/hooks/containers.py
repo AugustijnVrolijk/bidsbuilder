@@ -175,9 +175,4 @@ class ObservableValidatorSet(ObservableSet):
         value = self._descriptor.fval(self._ref(), self._descriptor, value)
         super().add(value)
 
-
-class ABClist(MutableSequence):...
-class ABCdict(MutableMapping):...
-class ABCset(MutableSet):...
-
 __all__ = ["ObservableValidatorSet","ObservableSet","ObservableValidatorDict","ObservableDict","ObservableValidatorList","ObservableList", "ObservableType"]

@@ -5,6 +5,7 @@ import types
 from typing import Any, Callable, Generic, TypeVar, Union, overload, Self, TypedDict, Unpack, ClassVar
 from functools import partial
 from .containers import *
+from .new_containers import get_upgraded_container
 
 VAL = TypeVar("VAL")
 CBACK = TypeVar("Descriptor", bound="DescriptorProtocol")
@@ -160,9 +161,18 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
         def __init__(self, type_hint:type, **kwargs):
             self._is_wrapped:set = set()
             self.type_hint:type = type_hint
+
+            self.default_val:object
+            self.in_args: tuple
+            self.in_kwargs: dict
             super().__init__(**kwargs)
 
-        def _instantiate_default_(self) -> object: ... 
+        def _instantiate_default_(self, instance:INSTANCE) -> object:
+
+            observable_type = get_upgraded_container(self.type_hint, False)
+            default_instance = observable_type(*self.in_args, **self.in_kwargs)
+            default_instance.__observable_container_init__(self, weakref.ref(instance))
+            setattr(instance, self.name, default_instance)
 
         def _wrap_container_field(self, instance:INSTANCE) -> None:
             
