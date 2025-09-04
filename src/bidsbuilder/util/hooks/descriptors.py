@@ -162,6 +162,8 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             self.type_hint:type = type_hint
             super().__init__(**kwargs)
 
+        def _instantiate_default_(self) -> object: ... 
+
         def _wrap_container_field(self, instance:INSTANCE) -> None:
             
             val = getattr(instance, self.name)

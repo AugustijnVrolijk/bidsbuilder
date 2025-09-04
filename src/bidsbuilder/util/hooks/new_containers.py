@@ -13,8 +13,10 @@ if TYPE_CHECKING:
     from .descriptors import DescriptorProtocol
 
 class hookedContainerABC(ABC):
-
-    forbidden_instance_names = {"_check_callback", "__observable_container_init__"}
+    """
+    ABC class ensuring that users inheriting from base
+    """
+    forbidden_instance_names = {"__check_callback__", "__observable_container_init__"}
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -35,7 +37,7 @@ class DataMixin():
     def __ge__(self, other): return self._data >= getattr(other, '_data', other)
     
 class MinimalDict(MutableMapping, DataMixin, hookedContainerABC):
-    def __init__(self): self._data:dict = dict()
+    def __init__(self, *args, **kwargs): self._data:dict = dict(*args, **kwargs)
     def __getitem__(self, key): return self._data[key]
     def __setitem__(self, key, value): self._data[key] = value
     def __delitem__(self, key): del self._data[key]
@@ -43,7 +45,7 @@ class MinimalDict(MutableMapping, DataMixin, hookedContainerABC):
     def __len__(self): return len(self._data)
 
 class MinimalList(MutableSequence, DataMixin, hookedContainerABC):
-    def __init__(self): self._data:list = list()
+    def __init__(self, *args, **kwargs): self._data:list = list(*args, **kwargs)
     def __getitem__(self, index): return self._data[index]
     def __setitem__(self, index, value): self._data[index] = value
     def __delitem__(self, index): del self._data[index]
@@ -51,7 +53,7 @@ class MinimalList(MutableSequence, DataMixin, hookedContainerABC):
     def insert(self, index, value): self._data.insert(index, value)
 
 class MinimalSet(MutableSet, DataMixin, hookedContainerABC):
-    def __init__(self): self._data:set = set()
+    def __init__(self, *args, **kwargs): self._data:set = set(*args, **kwargs)
     def __contains__(self, value): return value in self._data
     def __iter__(self): return iter(self._data)
     def __len__(self): return len(self._data)
@@ -60,14 +62,18 @@ class MinimalSet(MutableSet, DataMixin, hookedContainerABC):
 
 class ObservableType():
     def __observable_container_init__(self, descriptor:'DescriptorProtocol', weakref:ReferenceType):
-        self._descriptor:'DescriptorProtocol' = descriptor
-        self._ref:ReferenceType = weakref 
-        self._frozen:bool = False
+        names = ("_descriptor_", "_object_ref", "_frozen_flag")
+        for n in names:
+            if getattr(self, n, False):
+                raise TypeError(f"Observable objects reserve the attribute name: {n}\n Please rename this attribute to something else")
 
-    def _check_callback(self):
-        if not self._frozen:
-            self._descriptor._trigger_callback(self._ref()) # weak reference so need to call it to access it
+        self._descriptor_:'DescriptorProtocol' = descriptor
+        self._object_ref_:ReferenceType = weakref 
+        self._frozen_flag_:bool = False
 
+    def __check_callback__(self):
+        if not self._frozen_flag_:
+            self._descriptor_._trigger_callback(self._object_ref_()) # weak reference so need to call it to access it
 
 class create_dynamic_container():
     """
@@ -105,37 +111,40 @@ class create_dynamic_container():
 
     @staticmethod
     def wrap_check_callback(orig_method):
-    
         @wraps(orig_method)
         def _wrapped(self:ObservableType, *args, **kwargs):
             orig_method(self, *args, **kwargs)
-            self._check_callback()
-
+            self.__check_callback__()
         return _wrapped
 
     @staticmethod
     def wrap_frozen_check_callback(orig_method):
-
         @wraps(orig_method)
         def _wrapped(self:ObservableType, *args, **kwargs):
-            self._frozen = True
+            self._frozen_flag_ = True
             orig_method(self, *args, **kwargs)
-            self._frozen = False
-            self._check_callback()
-
+            self._frozen_flag_ = False
+            self.__check_callback__()
         return _wrapped
 
     @staticmethod
-    def wrap_validate_input(orig_method):
-            
+    def wrap_validate_input(orig_method):  
         @wraps(orig_method)
         def _wrapped(self:ObservableType, *args, **kwargs):
-            n_args = self._descriptor.fval(self._ref(), self._descriptor, *args, **kwargs)
+            n_args = self._descriptor_.fval(self._object_ref_(), self._descriptor_, *args, **kwargs)
             orig_method(self, *n_args, **kwargs)
-
         return _wrapped
 
 _class_cache = {}
+
+
+def is_supported_type(tp:type) -> bool:
+    if tp in (list, dict, set):
+        return True
+    if issubclass(tp, (MinimalList, MinimalDict, MinimalSet)):
+        return True
+    
+    return False
 
 def wrap_container(original_container:Type, descriptor:'DescriptorProtocol', instance_reference:ReferenceType, validator_flag:bool):
 
@@ -175,6 +184,9 @@ def wrap_container(original_container:Type, descriptor:'DescriptorProtocol', ins
 
     return instance
     """
+
+def upgrade_container(): ...
+
 
 
 def make_proxying_init_for(base_init):
