@@ -85,6 +85,35 @@ class ObservableType():
         if not self._frozen_flag_:
             self._descriptor_._trigger_callback(self._object_ref_()) # weak reference so need to call it to access it
 
+
+class test_create_dynamic_container():
+    @staticmethod
+    def wrap_check_callback(orig_method):
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            super().orig_method(self, *args, **kwargs)
+            self.__check_callback__()
+        return _wrapped
+
+    @staticmethod
+    def wrap_frozen_check_callback(orig_method):
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            self._frozen_flag_ = True
+            orig_method(self, *args, **kwargs)
+            self._frozen_flag_ = False
+            self.__check_callback__()
+        return _wrapped
+
+    @staticmethod
+    def wrap_validate_input(orig_method):  
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            n_args = self._descriptor_.fval(self._object_ref_(), self._descriptor_, *args, **kwargs)
+            orig_method(self, *n_args, **kwargs)
+        return _wrapped
+    
+
 class create_dynamic_container():
     """
     create new type by mixing base_container with observableType
