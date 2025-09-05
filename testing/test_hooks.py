@@ -36,18 +36,16 @@ class demo_list_property():
     _myItems:list = field(factory=list,alias="_myItems")
     myItems:ClassVar[list] = HookedDescriptor(list, tags="myItems")
 
-
 @define(slots= True)
 class demo_validator_property():
     myItems:ClassVar[dict]
     myName:ClassVar[str]
 
-
     @staticmethod
-    def _validate_myItems(instance, descriptor, value):
-        key, val = value
-        val += 5
-        return val
+    def _validate_myItems(instance, descriptor, key, value):
+        value += 5
+        key += key  # duplicate key for testing
+        return (key, value)
     
     _myItems:dict = field(factory=dict,alias="_myItems")
     myItems:ClassVar[dict] = HookedDescriptor(dict, fval=_validate_myItems)
@@ -234,16 +232,16 @@ def test_validator():
     assert isinstance(t1.myItems._data, dict)
     # Validator returns value + 5 → but this doesn’t apply when setting a full dict in your current code
     # unless you have custom logic in HookedDescriptor to do this. Let's assume you do.
-    assert t1.myItems == {'a': 15, 'b': 25}
+    assert t1.myItems == {'aa': 15, 'bb': 25}
 
     # Test assignment to a key, which should trigger the validator
     t1.myItems['x'] = 100  # should become 105
-    assert t1.myItems['x'] == 105
+    assert t1.myItems['xx'] == 105
 
     # Test updating multiple values
     t1.myItems.update({'y': 200, 'z': 300})
-    assert t1.myItems['y'] == 205
-    assert t1.myItems['z'] == 305
+    assert t1.myItems['yy'] == 205
+    assert t1.myItems['zz'] == 305
 
 def test_correct_callback_inputs():
     ...

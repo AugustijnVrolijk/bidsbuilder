@@ -5,7 +5,8 @@ import types
 from typing import Any, Callable, Generic, TypeVar, Union, overload, Self, TypedDict, Unpack, ClassVar
 from functools import partial
 from .containers import *
-from .new_containers import get_upgraded_container
+from .new_containers import *
+from .new_containers import ObservableType
 
 VAL = TypeVar("VAL")
 CBACK = TypeVar("Descriptor", bound="DescriptorProtocol")
@@ -142,12 +143,6 @@ class SingleCallbackMixin():
     def _trigger_callback(self, instance:INSTANCE) -> None:
         self.callback(instance, self.tags)
 
-_observable_types:dict[type, ObservableType] = {
-    type(list()): (ObservableList, ObservableValidatorList),
-    type(dict()): (ObservableDict, ObservableValidatorDict),
-    type(set()): (ObservableSet, ObservableValidatorSet)
-    }
-
 def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, CallbackGetterMixin], validator:bool) -> type:
     """
     Mixin for descriptors that wrap a container type (list or dict)
@@ -156,33 +151,43 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
     as well as whether it has a validator method or not
     """
     class ContainerMixin(_base_getter_cls):
-        TYPEIDX:ClassVar[int] = 0
+        TYPEIDX:ClassVar[bool] = False
 
-        def __init__(self, type_hint:type, **kwargs):
+        def __init__(self, type_hint:type, factory:Callable=None, **kwargs):
             self._is_wrapped:set = set()
+            if not isinstance(type_hint, type):
+                raise TypeError(f"type_hint must be a type, got {type(type_hint)}")
+            elif not is_supported_type(type_hint):
+                raise TypeError(f"type_hint must be a supported container type (list, dict, set or MinimalList, MinimalDict, MinimalSet and any of their subclasses), got {type_hint}")
+            
             self.type_hint:type = type_hint
-
+            if factory is None:
+                self.factory = type_hint
             self.default_val:object
             self.in_args: tuple
             self.in_kwargs: dict
             super().__init__(**kwargs)
 
-        def _instantiate_default_(self, instance:INSTANCE) -> object:
+        def _instantiate_default_(self, instance:INSTANCE) -> ObservableType:
+            if self.factory == self.type_hint:
+                observable_type = wrap_container(self.factory, self.TYPEIDX)
+                default_instance = observable_type()
+            else:
+                default_instance = wrap_container(self.factory(), self.TYPEIDX)
 
-            observable_type = get_upgraded_container(self.type_hint, False)
-            default_instance = observable_type(*self.in_args, **self.in_kwargs)
             default_instance.__observable_container_init__(self, weakref.ref(instance))
-            setattr(instance, self.name, default_instance)
+            return default_instance
 
         def _wrap_container_field(self, instance:INSTANCE) -> None:
             
             val = getattr(instance, self.name)
-            if type(val) not in _observable_types:
-                return
+            if type(val) != self.type_hint:
+                raise TypeError(f"The attribute {self.name} of {instance} must be of type {self.type_hint}, got {type(val)}")
             
-            _observable_obj:ObservableType = _observable_types.get(type(val))[self.TYPEIDX]
-            wrapped = _observable_obj(val, self, weakref.ref(instance))
-            setattr(instance, self.name, wrapped)
+            _observable_obj:ObservableType = wrap_container(val, self.TYPEIDX)
+            _observable_obj.__observable_container_init__(self, weakref.ref(instance))
+
+            setattr(instance, self.name, _observable_obj)
             self._is_wrapped.add(id(instance))
 
         def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
@@ -191,8 +196,6 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             if id(instance) not in self._is_wrapped:
                 self._wrap_container_field(instance)
             return _base_getter_cls.__get__(self, instance, owner) # must return the observable type
-            # if _base_getter_cls.__get__(self, instance, owner)._data then it won't trigger callbacks, as _data is the 
-            # raw un-Observable datatype
 
         def __set__(self, instance:INSTANCE, value:VAL) -> None:
             """
@@ -202,10 +205,14 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             assert type(value) == self.type_hint, f"When setting {instance}.{self.tags}, it must be a container of type {self.type_hint}"
             setattr(instance, self.name, value)
             self._wrap_container_field(instance)
-            #self._trigger_callback(instance)   no need to trigger callback, once the new value is wrapped, it will trigger a callback
+            self._trigger_callback(instance)  
+            """
+            need to trigger callbacks since 05/09/2025. wrap_container just sets the __class__ to an observable type, so doesn't trigger callbacks
+            like the old way
+            """
 
     class ContainerValidatorMixin(ContainerMixin):
-        TYPEIDX:ClassVar[int] = 1
+        TYPEIDX:ClassVar[bool] = True
 
         def __init__(self, *, fval:Callable[[INSTANCE, CBACK, Any], VAL], **kwargs):
             self.fval:Callable[[INSTANCE, CBACK, Any], VAL] = fval
@@ -290,7 +297,7 @@ def HookedDescriptor(type_hint:type[VAL], **kwargs:Unpack[callbackKwargs]) -> De
     single = "callback" in kwargs
     getter = "fget" in kwargs
     validator = "fval" in kwargs
-    container = type_hint in _observable_types
+    container = is_supported_type(type_hint)
     if container:
         kwargs["type_hint"] = type_hint
 

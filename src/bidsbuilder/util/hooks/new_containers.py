@@ -61,14 +61,14 @@ class MinimalSet(MutableSet, DataMixin, hookedContainerABC):
 
 class ObservableType():
     def __observable_container_init__(self, descriptor:'DescriptorProtocol', weakref:ReferenceType):
-        names = ("_descriptor_", "_object_ref", "_frozen_flag")
+        names = ("_descriptor_", "_object_ref_", "_frozen_flag_")
         for n in names:
             if getattr(self, n, False):
                 raise TypeError(f"Observable objects reserve the attribute name: {n}\n Please rename this attribute to something else")
 
-        self._descriptor_:'DescriptorProtocol' = descriptor
-        self._object_ref_:ReferenceType = weakref 
-        self._frozen_flag_:bool = False
+        setattr(self, names[0], descriptor)
+        setattr(self, names[1], weakref)
+        setattr(self, names[2], False)
 
     def __check_callback__(self):
         if not self._frozen_flag_:
@@ -97,19 +97,26 @@ class create_dynamic_container():
             setattr(self.dynamic_container, func_name, self.wrap_frozen_check_callback(orig_method))
 
         if self.validator_flag:
-            for (orig_method, func_name)  in self.iter_methods_set(self.validate_input_methods):
-                setattr(self.dynamic_container, func_name, self.wrap_validate_input(orig_method))
-
+            self.wrap_with_validator()
+            
         return self.dynamic_container
+
+    def wrap_with_validator(self):
+        for (orig_method, func_name)  in self.iter_methods_set(self.validate_input_methods):
+            setattr(self.dynamic_container, func_name, self.wrap_validate_input(orig_method))
+
+        _validator_init_name_ = "__observable_container_init__"
+        _validator_init_ = getattr(self.dynamic_container, _validator_init_name_)
+        setattr(self.dynamic_container, _validator_init_name_, self.wrap_validate_instance_creation(_validator_init_))
 
     def iter_methods_set(self, to_iter) -> Generator:
         for func_name in to_iter:
             if orig_method := getattr(self.dynamic_container, func_name, False):
                 yield (orig_method, func_name)
 
-    check_callback_methods = {"__setitem__", "__delitem__", "insert", "add", "discard"}
-    frozen_check_callback_methods = {"update", "extend"}
-    validate_input_methods = {"__setitem__", "insert", "add"}
+    check_callback_methods = ("__setitem__", "__delitem__", "insert", "add", "discard")
+    frozen_check_callback_methods = ("update", "extend")
+    validate_input_methods = ("__setitem__", "insert", "add")
 
     @staticmethod
     def wrap_check_callback(orig_method):
@@ -135,6 +142,35 @@ class create_dynamic_container():
         def _wrapped(self:ObservableType, *args, **kwargs):
             n_args = self._descriptor_.fval(self._object_ref_(), self._descriptor_, *args, **kwargs)
             orig_method(self, *n_args, **kwargs)
+        return _wrapped
+    
+    @staticmethod
+    def wrap_validate_instance_creation(orig_method):
+
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            orig_method(self, *args, **kwargs)
+            
+            self._frozen_flag_ = True
+
+            if isinstance(self, MinimalList):
+                 for i in range(len(self)):
+                    self[i] = self[i]
+            elif isinstance(self, MinimalDict):
+                vals = [k for k in self]
+                for key in vals:
+                    val = self.pop(key)
+                    self[key] = val
+            elif isinstance(self, MinimalSet):
+                vals = [item for item in self]
+                for val in vals:
+                    self.remove(val)
+                    self.add(val)
+            else:
+                raise NotImplementedError(f"Validator wrapping not implemented for {self.__class__}")
+        
+            self._frozen_flag_ = False
+
         return _wrapped
 
 _class_cache:dict[str, ObservableType] = {}
@@ -163,21 +199,21 @@ def get_upgraded_container(og_container_type:Type, validator_flag:bool) -> Obser
 
     return observable_container
 
-def wrap_container(og_container:Union[type, object], validator_flag:bool=False) -> Union[type, object]:
+def wrap_container(container:Union[type, object], validator_flag:bool=False) -> Union[type[ObservableType], ObservableType]:
     """
     converts a container into an observable equivalent.
-        - If og_container is a type, this will return an observable equivalent type
+        - If container is a type, this will return an observable equivalent type
 
-        - If og_container is an instance, this will return the upgraded observable instance
+        - If container is an instance, this will return the upgraded observable instance
     """
 
-    if isinstance(og_container, type):
+    if isinstance(container, type):
         IS_TYPE = True
-        og_type = og_container
+        og_type = container
     else:
         IS_TYPE = False
-        og_container_contents = og_container
-        og_type = og_container.__class__
+        og_container_contents = container
+        og_type = container.__class__
 
     if not is_supported_type(og_type):
         raise TypeError(f"Only list, dict, set, their minimal equivalents and subclasses of the minimal equivalents are valid to be made observable, not {og_type}")
