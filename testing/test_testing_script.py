@@ -23,6 +23,10 @@ def inherit_class(to_inherit):
     
     return to_inherit
 
+def testerino(**kwargs):
+    print(kwargs)
+    return
+
 def main():
     t1 = types.new_class("MyNewClass", (), kwds={}, exec_body=lambda ns: ns.update({"method1": method1, "__slots__":["var3", "var4"]}))
  
@@ -34,7 +38,7 @@ def main():
     tester.var3 = 10
     tester.var4 = 20
 
-    print(tester.__dict__)
+    #print(tester.__dict__)
 
 
     tester2 = test2()
@@ -45,6 +49,10 @@ def main():
 
     print(tester2.__dict__)
 
+    tester3 = test1()
+    tester3.var3 = 15
+    tester3.var4 = 20
+    print(tester3.__dict__)
 
 if __name__ == "__main__":
     main()
