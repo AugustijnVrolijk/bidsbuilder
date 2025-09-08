@@ -4,7 +4,6 @@ import types
 
 from typing import Any, Callable, Generic, TypeVar, Union, overload, Self, TypedDict, Unpack, ClassVar
 from functools import partial
-from .containers import *
 from .new_containers import *
 from .new_containers import ObservableType
 
@@ -37,6 +36,7 @@ class CallbackBase(Generic[VAL]): # generic base class to enable dynamic type hi
     """
     def __init__(self, *, tags:Union[list, str, None]=None, **kwargs) -> None:
         self.tags:Union[list, str, None] = tags
+        self.variables: dict[int, Any] = {}
         super().__init__(**kwargs)
 
     def __set_name__(self, owner:OWNER, name:str) -> None:
@@ -59,7 +59,7 @@ class CallbackGetterMixin():
     def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
         if instance is None:
             return self
-        return self.fget(instance, self, owner)
+        return self.fget(instance, self.variables.get(id(instance), None), self)
     
 class CallbackNoGetterMixin():
     """
@@ -68,7 +68,7 @@ class CallbackNoGetterMixin():
     def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
         if instance is None:
             return self
-        return getattr(instance, self.name)
+        return self.variables.get(id(instance), None)
 
 class PerInstanceCallbackMixin():
     """
@@ -78,8 +78,8 @@ class PerInstanceCallbackMixin():
     exists value. I.e. dataset_description is dependent on genetic_info existing.
     """
     def __init__(self, **kwargs) -> None:
-        self.callbacks:dict[str, list] = {}
-        self.finalizers:dict[str, Any] = {}
+        self.callbacks:dict[int, list] = {}
+        self.finalizers:dict[int, Any] = {}
         super().__init__(**kwargs)
 
     def _trigger_callback(self, instance:INSTANCE) -> None:
@@ -193,8 +193,8 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
         def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
             if instance is None:
                 return self
-            if id(instance) not in self._is_wrapped:
-                self._wrap_container_field(instance)
+            if id(instance) not in self.variables:
+                self.variables[id(instance)] = self._instantiate_default_(instance)
             return _base_getter_cls.__get__(self, instance, owner) # must return the observable type
 
         def __set__(self, instance:INSTANCE, value:VAL) -> None:
@@ -202,9 +202,11 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             no repeated check when setting attributes
             assume types are static, i.e. no changing attribute from int to a list or dict
             """
-            assert type(value) == self.type_hint, f"When setting {instance}.{self.tags}, it must be a container of type {self.type_hint}"
-            setattr(instance, self.name, value)
-            self._wrap_container_field(instance)
+            if type(value) != self.type_hint:
+                raise TypeError(f"When setting {instance}.{self.name}, it must be a container of type {self.type_hint}")
+            _observable_obj:ObservableType = wrap_container(value, self.TYPEIDX)
+            _observable_obj.__observable_container_init__(self, weakref.ref(instance))
+            self.variables[id(instance)] = _observable_obj
             self._trigger_callback(instance)  
             """
             need to trigger callbacks since 05/09/2025. wrap_container just sets the __class__ to an observable type, so doesn't trigger callbacks
