@@ -7,7 +7,6 @@ from functools import wraps
 from collections.abc import MutableMapping, MutableSequence, MutableSet
 from abc import ABC
 
-
 if TYPE_CHECKING:
     from .descriptors import DescriptorProtocol
 
@@ -59,20 +58,61 @@ class MinimalSet(MutableSet, DataMixin, hookedContainerABC):
     def add(self, value): self._data.add(value)
     def discard(self, value): self._data.discard(value)
 
+def _make_observable(base_list:type):
+    class ObservableList(base_list):
+        __slots__ = ("_descriptor_", "_object_ref_", "_frozen_flag_")
+
+        def __setitem__(self, *args, **kwargs):
+            super().__setitem__(*args, **kwargs)
+            self.__check_callback__()
+        
+
+    return ObservableList
+
 class ObservableType():
+
+    __slots__ = ("_descriptor_", "_object_ref_", "_frozen_flag_")
     def __observable_container_init__(self, descriptor:'DescriptorProtocol', weakref:ReferenceType):
-        names = ("_descriptor_", "_object_ref_", "_frozen_flag_")
-        for n in names:
+        for n in self.__slots__:
             if getattr(self, n, False):
                 raise TypeError(f"Observable objects reserve the attribute name: {n}\n Please rename this attribute to something else")
 
-        setattr(self, names[0], descriptor)
-        setattr(self, names[1], weakref)
-        setattr(self, names[2], False)
+        setattr(self, self.__slots__[0], descriptor)
+        setattr(self, self.__slots__[1], weakref)
+        setattr(self, self.__slots__[2], False)
 
     def __check_callback__(self):
         if not self._frozen_flag_:
             self._descriptor_._trigger_callback(self._object_ref_()) # weak reference so need to call it to access it
+
+
+class test_create_dynamic_container():
+    @staticmethod
+    def wrap_check_callback(orig_method):
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            super().orig_method(self, *args, **kwargs)
+            self.__check_callback__()
+        return _wrapped
+
+    @staticmethod
+    def wrap_frozen_check_callback(orig_method):
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            self._frozen_flag_ = True
+            orig_method(self, *args, **kwargs)
+            self._frozen_flag_ = False
+            self.__check_callback__()
+        return _wrapped
+
+    @staticmethod
+    def wrap_validate_input(orig_method):  
+        @wraps(orig_method)
+        def _wrapped(self:ObservableType, *args, **kwargs):
+            n_args = self._descriptor_.fval(self._object_ref_(), self._descriptor_, *args, **kwargs)
+            orig_method(self, *n_args, **kwargs)
+        return _wrapped
+    
 
 class create_dynamic_container():
     """
@@ -235,32 +275,4 @@ def wrap_container(container:Union[type, object], validator_flag:bool=False) -> 
         og_container_contents.__class__ = observable_container
         return og_container_contents
 
-
 __all__ = ["wrap_container", "is_supported_type", "MinimalDict", "MinimalList", "MinimalSet"]
-
-"""
-NOT NECESSARY, we can upgrade by changing an instances __class__
-
-def make_proxying_init_for(base_init):
-    sig = inspect.signature(base_init)
-    def __init__(self, *args, **kwargs):
-        bound = sig.bind(self, *args, **kwargs)
-        base_init(*bound.args, **bound.kwargs)
-        # no observable init here; we'll inject post-init anyway
-    return __init__
-
-def make_dynamic(base, observable):
-    def __init__(self, *args, **kwargs):
-        # figure out what init belongs to the base
-        base_init = base.__init__
-        sig = inspect.signature(base_init)
-
-        # bind args/kwargs to the base signature
-        bound = sig.bind(self, *args, **kwargs)
-        base_init(*bound.args, **bound.kwargs)
-
-        # then inject observable state
-        observable.__init__(self, descriptor=kwargs.get("descriptor"), weakref=kwargs.get("weakref"))
-
-    return type(f"Observable{base.__name__}", (base, observable), {"__init__": __init__})
-"""

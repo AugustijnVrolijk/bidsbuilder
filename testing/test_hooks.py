@@ -9,37 +9,35 @@ from unittest.mock import Mock, call
 class demo_property():
     number:ClassVar = HookedDescriptor(int)
 
-    _number:int = field(alias="_number")
+    def __init__(self, number:int):
+        self.number = number
 
 @define(slots=True)
 class demo_property_getter():
-    myStr:ClassVar[str]
-    #number:ClassVar = schemaCallbackField(tag="number")
 
-    _myStr:str = field(alias="_myStr")
+    def __init__(self, myStr):
+        self.myStr = myStr
     """interestingly as the descriptor passes the instance as the first variable, it could be written
     either as a static method or instance method as in _number_getter. Ill keep it as static to make it 
     clear they are descriptor getters"""
     @staticmethod
-    def _static_number_getter(instance, descriptor, owner):
-        return instance._myStr + descriptor.tags
+    def _static_number_getter(instance, value, descriptor:DescriptorProtocol):
+        return value + descriptor.tags
 
     myStr:ClassVar[str] = HookedDescriptor(str, fget=_static_number_getter, tags=" woohoo")
-
-    def _number_getter(self, descriptor, owner):
-        
-        return self._myStr + descriptor.tags
 
 @define(slots=True)
 class demo_list_property():
 
-    _myItems:list = field(factory=list,alias="_myItems")
     myItems:ClassVar[list] = HookedDescriptor(list, tags="myItems")
+
+    def __init__(self, myItems:list):
+        self.myItems = myItems
 
 @define(slots= True)
 class demo_validator_property():
-    myItems:ClassVar[dict]
     myName:ClassVar[str]
+    myItems:ClassVar[dict]
 
     @staticmethod
     def _validate_myItems(instance, descriptor, key, value):
@@ -47,20 +45,18 @@ class demo_validator_property():
         key += key  # duplicate key for testing
         return (key, value)
     
-    _myItems:dict = field(factory=dict,alias="_myItems")
     myItems:ClassVar[dict] = HookedDescriptor(dict, fval=_validate_myItems)
 
     @staticmethod
-    def _myName_getter(self, descriptor, Owner):
+    def _myName_getter(self, value, descriptor):
         to_add = descriptor.tags
-        return f"{self._myName}{to_add}"
+        return f"{value}{to_add}"
 
     @staticmethod
     def _validate_myName(self, descriptor, value):
         return f"Name: {value}"
     
-    _myName:ClassVar[str] = field(default="nothing",alias="_myName")
-    myName:ClassVar[str] = HookedDescriptor(str, fget=_myName_getter, fval=_validate_myName, tags=" hehe")
+    myName:ClassVar[str] = HookedDescriptor(str, default="nothing", fget=_myName_getter, fval=_validate_myName, tags=" hehe")
 
 
 @define(slots=True)
@@ -202,11 +198,11 @@ def test_custom_getter():
 
     # Manually check that the descriptor getter uses the correct signature
     computed_value = instance.myStr  # triggers the descriptor's __get__
-    assert computed_value == "yes woohoo" and instance._myStr == "yes"
+    assert computed_value == "yes woohoo" and instance.__class__.myStr.variables[id(instance)] == "yes"
 
     # Change underlying field
-    instance._myStr = "no"
-    assert instance.myStr == "no woohoo" and instance._myStr == "no"
+    instance.myStr = "no"
+    assert instance.myStr == "no woohoo" and instance.__class__.myStr.variables[id(instance)] == "no"
 
     # Check that descriptor is called as a descriptor, not returning raw _myStr
     assert not isinstance(instance.__class__.myStr.__get__(None, instance.__class__), str)
@@ -217,7 +213,7 @@ def test_validator():
     # --- Test validator for myName (string) ---
     # Setting should trigger _validate_myName and prefix the value
     t1.myName = "Alice"
-    assert t1._myName == "Name: Alice" # includes validator "Name: "
+    assert t1.__class__.myName.variables[id(t1)] == "Name: Alice" # includes validator "Name: "
     assert t1.myName == "Name: Alice hehe"  # includes fget tag " hehe"
 
     # --- Test validator for myItems (dict) ---

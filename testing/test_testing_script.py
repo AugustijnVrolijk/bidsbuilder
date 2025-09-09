@@ -1,6 +1,6 @@
-from bidsbuilder.util.hooks.containers import *
+from bidsbuilder.util.hooks.test_containers import *
 import types
-from bidsbuilder.util.hooks.new_containers import *
+from bidsbuilder.util.hooks.containers import *
 from functools import wraps
 
 from collections.abc import MutableMapping, MutableSequence, MutableSet

@@ -4,8 +4,8 @@ import types
 
 from typing import Any, Callable, Generic, TypeVar, Union, overload, Self, TypedDict, Unpack, ClassVar
 from functools import partial
-from .new_containers import *
-from .new_containers import ObservableType
+from .containers import *
+from .containers import ObservableType
 
 VAL = TypeVar("VAL")
 CBACK = TypeVar("Descriptor", bound="DescriptorProtocol")
@@ -34,16 +34,17 @@ class CallbackBase(Generic[VAL]): # generic base class to enable dynamic type hi
 
     this is used to support local data storage for slotted classes
     """
-    def __init__(self, *, tags:Union[list, str, None]=None, **kwargs) -> None:
+    def __init__(self, *, tags:Union[list, str, None]=None, default:Any=None, **kwargs) -> None:
         self.tags:Union[list, str, None] = tags
         self.variables: dict[int, Any] = {}
+        self.default = default
         super().__init__(**kwargs)
 
     def __set_name__(self, owner:OWNER, name:str) -> None:
         """add underscore for instance variable. All classes are slotted so cannot use
         __dict__. Consequently use '_' to denote the raw attribute and store it on the instance
         also makes debugging easier as the instance owns its attributes"""
-        self.name:str = f"_{name}"
+        self.name:str = f"{name}"
 
 class CallbackGetterMixin():
     """
@@ -59,7 +60,7 @@ class CallbackGetterMixin():
     def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
         if instance is None:
             return self
-        return self.fget(instance, self.variables.get(id(instance), None), self)
+        return self.fget(instance, self.variables.get(id(instance), self.default), self)
     
 class CallbackNoGetterMixin():
     """
@@ -68,7 +69,7 @@ class CallbackNoGetterMixin():
     def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
         if instance is None:
             return self
-        return self.variables.get(id(instance), None)
+        return self.variables.get(id(instance), self.default)
 
 class PerInstanceCallbackMixin():
     """
@@ -154,7 +155,6 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
         TYPEIDX:ClassVar[bool] = False
 
         def __init__(self, type_hint:type, factory:Callable=None, **kwargs):
-            self._is_wrapped:set = set()
             if not isinstance(type_hint, type):
                 raise TypeError(f"type_hint must be a type, got {type(type_hint)}")
             elif not is_supported_type(type_hint):
@@ -162,10 +162,9 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             
             self.type_hint:type = type_hint
             if factory is None:
-                self.factory = type_hint
-            self.default_val:object
-            self.in_args: tuple
-            self.in_kwargs: dict
+                self.factory:type = type_hint
+            else:
+                self.factory:Callable = factory
             super().__init__(**kwargs)
 
         def _instantiate_default_(self, instance:INSTANCE) -> ObservableType:
@@ -177,18 +176,6 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
 
             default_instance.__observable_container_init__(self, weakref.ref(instance))
             return default_instance
-
-        def _wrap_container_field(self, instance:INSTANCE) -> None:
-            
-            val = getattr(instance, self.name)
-            if type(val) != self.type_hint:
-                raise TypeError(f"The attribute {self.name} of {instance} must be of type {self.type_hint}, got {type(val)}")
-            
-            _observable_obj:ObservableType = wrap_container(val, self.TYPEIDX)
-            _observable_obj.__observable_container_init__(self, weakref.ref(instance))
-
-            setattr(instance, self.name, _observable_obj)
-            self._is_wrapped.add(id(instance))
 
         def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
             if instance is None:
@@ -230,7 +217,7 @@ class PlainMixin():
     mixin for descriptors who's value is a plain value, i.e. str, or int, or float.
     """
     def __set__(self, instance:INSTANCE, value:VAL) -> None:
-        setattr(instance, self.name, value)
+        self.variables[id(instance)] = value
         self._trigger_callback(instance)
 
 class PlainValMixin():
@@ -242,8 +229,8 @@ class PlainValMixin():
         super().__init__(**kwargs)
 
     def __set__(self, instance:INSTANCE, value:Any) -> None:
-        value = self.fval(instance, self, value)
-        setattr(instance, self.name, value)
+        n_value = self.fval(instance, self, value)
+        self.variables[id(instance)] = n_value
         self._trigger_callback(instance)
 
 _callback_types = {}

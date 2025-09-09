@@ -1,6 +1,6 @@
 #import pytest
 
-from bidsbuilder.util.hooks.new_containers import (
+from bidsbuilder.util.hooks.containers import (
     wrap_container,
     MinimalList,
     MinimalDict,
