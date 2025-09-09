@@ -13,7 +13,7 @@ def _write_tsv(path:str, data:pd.DataFrame, overwrite:bool = False):
             f'"{fname}" already exists. Please set overwrite to True.'
         )
     
-    args = {"sep":"\t","index":False}
+    args = {"sep":"\t","index":False, "na_rep":"n/a"}
     if fname.suffix == ".gz" or fname.suffixes[-1] == ".gz":
         args["compression"] = "gzip"
     else:

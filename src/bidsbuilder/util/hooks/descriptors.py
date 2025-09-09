@@ -172,7 +172,7 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
                 observable_type = wrap_container(self.factory, self.TYPEIDX)
                 default_instance = observable_type()
             else:
-                default_instance = wrap_container(self.factory(), self.TYPEIDX)
+                default_instance = wrap_container(self.factory(instance, self), self.TYPEIDX)
 
             default_instance.__observable_container_init__(self, weakref.ref(instance))
             return default_instance

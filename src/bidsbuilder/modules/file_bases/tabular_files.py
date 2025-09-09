@@ -2,37 +2,42 @@ import pandas as pd
 
 from ...util.io import _write_json, _write_tsv
 from ..core.dataset_core import DatasetCore
-from ...util.hooks import HookedDescriptor, DescriptorProtocol
-
+from ...util.hooks import *
 from pandas.api.types import infer_dtype
 from attrs import define, field
 from typing import TYPE_CHECKING, ClassVar, Any, Union
+from ..schema_objects import Column
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
 @define(slots=True)
-class columnView():
-    ref_frame:pd.DataFrame = field()
-    col_name:str = field()
+class columnView(MinimalSet):
+    data:pd.DataFrame = field(init=False, factory=pd.DataFrame)
+    col_names:set = field(set)
 
-    def __getattribute__(self, name):
-        return self.ref_frame[self.col_name]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.col_names = set(self.data.columns.to_list())
+        return
 
-    def __contains__(self):
-        ...
+    def __getitem__(self, col_name):
+        return self.data[col_name].to_list()
+
+    def __contains__(self, value):
+        return value in self.col_names
+
+def make_column_view(instance:'tabularFile', descriptor):
+    return columnView
 
 @define(slots=True)
 class tabularFile(DatasetCore):
-    data:pd.DataFrame = field(factory=pd.DataFrame)
-    _columns = list()
-    _data = pd.DataFrame()
-    columns:ClassVar[list] = HookedDescriptor(list,tags="columns")
+    data:pd.DataFrame = field(init=False, factory=pd.DataFrame)
+    columns:ClassVar[MinimalDict[str, Column]] = HookedDescriptor(columnView,factory=make_column_view,tags="columns")
 
     def __attrs_post_init__(self):
         super().__attrs_post_init__()
-        self._columns.__class__.__setitem__ == custom_set_item()
-        return 
+        return
 
     def _make_file(self, force:bool):
         _write_tsv(self._tree_link.path, self.data, force)
@@ -84,6 +89,8 @@ additional_columns - Indicates whether additional columns may be defined. One of
         
         if modified:
             self._check_removed()
+
+
 
 class tabularJSONFile(DatasetCore):
     pass
