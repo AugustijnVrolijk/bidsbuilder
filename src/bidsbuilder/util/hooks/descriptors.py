@@ -37,7 +37,7 @@ class CallbackBase(Generic[VAL]): # generic base class to enable dynamic type hi
     def __init__(self, *, tags:Union[list, str, None]=None, default:Any=None, **kwargs) -> None:
         self.tags:Union[list, str, None] = tags
         self.variables: dict[int, Any] = {}
-        self.default = default
+        self.default:Any = default
         super().__init__(**kwargs)
 
     def __set_name__(self, owner:OWNER, name:str) -> None:
@@ -275,10 +275,12 @@ def _dynamic_callback_type(container:bool=False, single:bool=False, getter:bool=
 
 # Define the callback kwargs type for type checking
 class callbackKwargs(TypedDict, total=False):
-    fget: Callable[[INSTANCE, CBACK, OWNER], VAL]
+    fget: Callable[[INSTANCE, VAL, CBACK], VAL]
     fval: Callable[[INSTANCE, CBACK, Any], VAL]
     tags: Union[list, str, None]
     callback: Callable[[INSTANCE, Union[list, str, None]], Any]
+    factory: Callable[[INSTANCE, CBACK], Union[type, object]]
+    default: Any
 
 def HookedDescriptor(type_hint:type[VAL], **kwargs:Unpack[callbackKwargs]) -> DescriptorProtocol[VAL]:  
     assert isinstance(type_hint, type), f"type_hint must be a type, got {type(type_hint)}"
