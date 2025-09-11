@@ -62,8 +62,14 @@ class tableView():
 
         index_columns: - An optional list of columns that uniquely identify a row.
         """
+
+        df = pd.DataFrame()
+
+        if index_columns:
+
+            df.set_index()
+
         return cls()
-        ...
 
     def _update_meta(self, columns:dict): ...    
 
@@ -168,8 +174,13 @@ additional_columns - Indicates whether additional columns may be defined. One of
     and a validator when adding columns based on wether it is allowed (additional_columns) etc..
     """
 
+
 class tabularJSONFile(DatasetCore):
+    def _check_schema(self, *args, **kwargs):...
+
+    def _make_file(self, force):...
     pass
+
 
 def _set_tabular_schema(schema:'Namespace'):
     tabularFile._schema = schema.rules.tabular_data

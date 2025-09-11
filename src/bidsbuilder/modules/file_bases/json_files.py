@@ -11,8 +11,9 @@ if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
 
 class JSON_shema_checker(schema_checker_OLD):
-    @staticmethod
-    def _process_add(all_fields:'Namespace') -> dict:
+
+    @classmethod
+    def _process_add(cls, all_fields:'Namespace') -> dict:
             """convert the fields namespace into a metadata dict"""
             fields = all_fields["fields"]
             processed = {}
@@ -26,8 +27,8 @@ class JSON_shema_checker(schema_checker_OLD):
                     processed[key] = met_instance
             return processed
 
-    @staticmethod
-    def _process_del(all_fields:'Namespace') -> dict:
+    @classmethod
+    def _process_del(cls, all_fields:'Namespace') -> dict:
         """convert the fields namespace into a list of keys to delete"""
         fields = all_fields["fields"]
         processed = fields["fields"].keys()

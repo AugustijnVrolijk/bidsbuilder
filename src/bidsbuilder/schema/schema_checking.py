@@ -12,11 +12,9 @@ from abc import ABC, abstractmethod
 class schema_checker_OLD(ABC):
 
     @abstractmethod
-    @staticmethod
     def _process_add(cls, fields:'Namespace') -> Any:...
 
     @abstractmethod
-    @staticmethod
     def _process_del(cls, fields:'Namespace') -> Any:...
 
     @classmethod
