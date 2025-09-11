@@ -1,15 +1,40 @@
-from ...util.categoryDict import categoryDict
+from attrs import define, field
+from typing import TYPE_CHECKING, ClassVar, Any, Union, Self, Generator
+
 from ...util.io import _write_json
 from ..core.dataset_core import DatasetCore
-from ...schema.schema_checking import JSON_check_schema
+from ...schema.schema_checking import schema_checker_OLD
 from ...util.hooks import HookedDescriptor, DescriptorProtocol
-from attrs import define, field
-from typing import TYPE_CHECKING, ClassVar, Any, Union, Self
 from ..schema_objects import Metadata
 
 if TYPE_CHECKING:
-    from ...schema.interpreter.selectors import selectorHook
     from bidsschematools.types.namespace import Namespace
+
+class JSON_shema_checker(schema_checker_OLD):
+    @staticmethod
+    def _process_add(all_fields:'Namespace') -> dict:
+            """convert the fields namespace into a metadata dict"""
+            fields = all_fields["fields"]
+            processed = {}
+            for key in fields.keys():
+                if isinstance(fields[key], str): # the value is a requirement
+                    processed[key] = Metadata(key, fields[key])
+                else:
+                    level = fields[key].pop("level")
+                    met_instance = Metadata(key, level)
+                    Metadata._override[met_instance] = fields[key]
+                    processed[key] = met_instance
+            return processed
+
+    @staticmethod
+    def _process_del(all_fields:'Namespace') -> dict:
+        """convert the fields namespace into a list of keys to delete"""
+        fields = all_fields["fields"]
+        processed = fields["fields"].keys()
+        return processed
+
+def JSON_check_schema(*args, **kwargs) -> Generator[tuple, None, None]:
+    yield from JSON_shema_checker.check_schema(*args, **kwargs)
 
 @define(slots=True)
 class JSONfile(DatasetCore):

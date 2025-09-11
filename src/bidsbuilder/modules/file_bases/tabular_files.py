@@ -1,14 +1,14 @@
 import pandas as pd
 import pandera.pandas as pa
+from pandas.api.types import infer_dtype
+from attrs import define, field
+from typing import TYPE_CHECKING, ClassVar, Any, Union, Generator, Self
 
 from ...util.io import _write_json, _write_tsv
 from ..core.dataset_core import DatasetCore
 from ...util.hooks import *
-from pandas.api.types import infer_dtype
-from attrs import define, field
-from typing import TYPE_CHECKING, ClassVar, Any, Union
 from ..schema_objects import Column
-from ...schema.schema_checking import TSV_check_schema
+from ...schema.schema_checking import check_schema
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -44,25 +44,43 @@ and a dataschema for validation of the dataframe inputs
 
 @define(slots=True)
 class tableView():
-    data:pd.DataFrame = field(init=False, factory=pd.DataFrame) # at the moment will not 
-    data_schema:pa.DataFrameSchema = field(init=False, factory=lambda: pa.DataFrameSchema({}))
-    columns:dict
+    data_schema:pa.DataFrameSchema = field()
+    data:pd.DataFrame = field() # at the moment will not 
+    index_columns:set = field()
+    additional_columns_flag = field() #allowed, allowed_if_defined, not_allowed
+    columns:dict = field()
+    
 
     @classmethod
-    def create(cls):
+    def create(cls, columns:dict, additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
+        """
+        columns: - dict with values that may be found in objects.columns
+        
+        additional_columns: - Indicates whether additional columns may be defined. One of allowed, allowed_if_defined and not_allowed
+
+        initial_columns: - An optional list of columns that must be the first N columns of a file
+
+        index_columns: - An optional list of columns that uniquely identify a row.
+        """
+        return cls()
         ...
 
-    def add(): ...
+    def _update_meta(self, columns:dict): ...    
 
+    def _remove_meta(self, columns:list): ...
+
+    def add(self): ...
+
+    def addColumn(self, columnName:str, schema:Column): ...
 
 @define(slots=True)
 class tabularFile(DatasetCore):
     
-    _n_schema_true:int = field(init=False, default=0) #number of times schema has been applied
-    data:pd.DataFrame = field(init=False, factory=pd.DataFrame) # at the moment will not 
-    data_schema:pa.DataFrameSchema = field(init=False, factory=lambda: pa.DataFrameSchema({}))
-    
+    _schema:ClassVar['Namespace']
 
+    _n_schema_true:int = field(init=False, default=0) #number of times schema has been applied
+    data:Union[None, tableView] = field(init=False, default=None)
+    _cur_labels:set = field(init=False, factory=set)
 
     columns:ClassVar[MinimalDict[str, Column]] = HookedDescriptor(columnView,factory=make_column_view,tags="columns")
 
@@ -73,12 +91,62 @@ class tabularFile(DatasetCore):
     def _make_file(self, force:bool):
         _write_tsv(self._tree_link.path, self.data, force)
 
+    def _check_schema(self, add_callbacks:bool=False, tags:Union[list,str] = None):
+
+        for flag, label, items in check_schema(self, self._schema, self._cur_labels, add_callbacks, tags):
+            if flag == "add":
+                self._cur_labels.add(label)
+                self._add_metadata_(items)
+            elif flag == "del":
+                self._cur_labels.remove(label)
+                self._remove_metadata_(items)
+            else:
+                raise RuntimeError(f"unknown flag: {flag} given in {self}._check_schema")
+   
+    def _add_metadata_(self, items:'Namespace'):
+        
+        # process columns
+        columns = items.get("columns")
+        processed_cols = {}
+        for key in columns.keys():
+            if isinstance(columns[key], str): # the value is a requirement
+                processed_cols[key] = Column(key, columns[key])
+            else:
+                level = columns[key].pop("level")
+                met_instance = Column(key, level)
+                Column._override[met_instance] = columns[key]
+                processed_cols[key] = met_instance
+
+        # get other metadata
+        initial_columns = items.get("initial_columns", None) # can be None
+        index_columns = items.get("index_columns", None) # can be None
+        additional_columns_flag = items.get("additional_columns") # must specify one of allowed, allowed_if_defined, not_allowed
+        
+        # set table/update
+        self._n_schema_true += 1
+        if self._n_schema_true > 1:
+            if (initial_columns is not None) or (index_columns is not None) or (additional_columns_flag != "n/a"): # check for added columns              
+                raise RuntimeError(f"{self.__class__.__name__} can only support one tsv at the moment, please report this error with associated context to reproduce")
+            self.data._update_meta(processed_cols)
+        else:
+            self.data = tableView.create(processed_cols, additional_columns_flag, initial_columns, index_columns)
+
+    def _remove_metadata_(self, items:'Namespace'):
+        self._n_schema_true -= 1
+        if self._n_schema_true == 0:
+            self.data = None
+        else:
+            keys = items.get("columns").keys()
+            self.data._remove_meta(items.get("columns"))
+
     @property
     def json_sidecar(self):
         return self._tree_link.parent.fetch(".json")
 
     def addColumn(self):
         pass
+
+
     """
     TODO:
         rules.tabular_data.*
@@ -100,30 +168,8 @@ additional_columns - Indicates whether additional columns may be defined. One of
     and a validator when adding columns based on wether it is allowed (additional_columns) etc..
     """
 
-    def _check_schema(self, add_callbacks:bool=False, tags:Union[list,str] = None):
-        """
-        check the schema for the given object. 
-        add_callbacks defines whether to add callbacks when checking the schema
-        tags defines which selectors to check, enables skipping of irrelevant selectors or those unchanged
-        """
-        # we use a generator (JSON_check_schema) in order to adhere to the top down logic
-        # (schema assumes top down parsing)
-        modified = False
-        for flag, label, items in JSON_check_schema(self, self._schema,self._cur_labels, add_callbacks, tags):
-            modified = True
-            if flag == "add":
-                self._add_metadata_keys(items, label)
-            elif flag == "del":
-                self._remove_metadata_keys(items, label)
-            else:
-                raise RuntimeError(f"unknown flag: {flag} given in {self}._check_schema")
-        
-        if modified:
-            self._check_removed()
-
 class tabularJSONFile(DatasetCore):
     pass
 
 def _set_tabular_schema(schema:'Namespace'):
-    tabularJSONFile._schema = schema.rules.tabular_data
-    tabularJSONFile._recurse_depth = 2
+    tabularFile._schema = schema.rules.tabular_data
