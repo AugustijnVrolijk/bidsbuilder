@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, ClassVar, Any, Union, Self, Generator
 from ...util.io import _write_json
 from ..core.dataset_core import DatasetCore
 from ...schema.schema_checking import schema_checker_OLD
-from ...util.hooks import HookedDescriptor, DescriptorProtocol
+from ...util.hooks import HookedDescriptor, DescriptorProtocol, MinimalDict
 from ..schema_objects import Metadata
 
 if TYPE_CHECKING:
@@ -37,6 +37,23 @@ class JSON_shema_checker(schema_checker_OLD):
 def JSON_check_schema(*args, **kwargs) -> Generator[tuple, None, None]:
     yield from JSON_shema_checker.check_schema(*args, **kwargs)
 
+class metadataDict(MinimalDict):
+    def set_metadata(self, dict:dict):
+        self._data.update(dict)
+        self._check_callback_()
+
+    def del_metadata(self, to_remove: list) -> dict:
+        ret_dict = {}
+
+        self._frozen = True
+        for key in to_remove:
+            removed = self.pop(key)
+            ret_dict[key] = removed.val
+        self._frozen = True
+        self._check_callback_()
+
+        return ret_dict
+ 
 @define(slots=True)
 class JSONfile(DatasetCore):
     
@@ -47,6 +64,12 @@ class JSONfile(DatasetCore):
     _removed_key:dict[str, Any] = field(init=False, factory=dict) #for overflow values passed to json which doesn't have a valid key representing it
     _cur_labels:set = field(init=False, factory=set)
 
+    @classmethod
+    def create(cls, *args, **kwargs) -> Self:
+        obj = cls()
+        obj._metadata = {}
+        return obj
+        
     def _make_file(self, force:bool):
         _write_json(self._tree_link.path, self.rawMetadata, force)
 
@@ -93,7 +116,7 @@ class JSONfile(DatasetCore):
         else:
             return val
 
-    metadata:ClassVar[dict[str, 'Metadata']] = HookedDescriptor(dict, fval=_metadata_validator) # considered making rawMetadata the getter
+    metadata:ClassVar[metadataDict[str, 'Metadata']] = HookedDescriptor(metadataDict, fval=_metadata_validator) # considered making rawMetadata the getter
     # but this leads to all sorts of confusion if people did something like myJson.metadata[key] = value. As it would then not
     # actually modify the structure, but the "raw" dict spat out by rawMetadata
 
@@ -112,9 +135,12 @@ class JSONfile(DatasetCore):
         for flag, label, items in JSON_check_schema(self, self._schema,self._cur_labels, add_callbacks, tags):
             modified = True
             if flag == "add":
-                self._add_metadata_keys(items, label)
+                self._cur_labels.add(label)
+                self.metadata.set_metadata(items)
             elif flag == "del":
-                self._remove_metadata_keys(items, label)
+                self._cur_labels.remove(label)
+                deleted_keys = self.metadata.del_metadata(items)
+                self._removed_key.update(deleted_keys)
             else:
                 raise RuntimeError(f"unknown flag: {flag} given in {self}._check_schema")
         
@@ -125,21 +151,6 @@ class JSONfile(DatasetCore):
         for key, val in self._removed_key.items():
             if key in self.metadata:
                 self.metadata[key].val = val
-
-    def _add_metadata_keys(self, to_add:dict, label:str):
-        self.metadata._data.update(to_add)
-        self.metadata._check_callback()
-        self._cur_labels.add(label)
-
-    def _remove_metadata_keys(self, to_remove:list, label:str):
-        self._cur_labels.remove(label)
-
-        self.metadata._frozen = True
-        for key in to_remove:
-            removed = self.metadata.pop(key)
-            self._removed_key[key] = removed.val
-        self.metadata._frozen = True
-        self.metadata._check_callback()
 
 @define(slots=True)
 class sidecar_JSONfile(JSONfile):

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union, ClassVar
+from typing import TYPE_CHECKING, Union, ClassVar, Self
 from attrs import define, field
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -15,12 +15,20 @@ class DatasetCore(ABC):
     exists:ClassVar[bool]
 
     _tree_link: Union['FileEntry', None] = field(repr=True, init=False, default=None, alias="_tree_link")
-    _exists:bool = field(repr=True, init=False, default=True, alias="_exists")
     _level:str = field(repr=True, default="optional", alias="_level")
 
-    def __attrs_post_init__(self):
-        if self._level == "required":
-            self.exists = True
+    @abstractmethod
+    def create(cls, *args, **kwargs) -> Self: ...
+
+    @classmethod
+    def __init_create__(cls, obj:object, _level:str="optional", exists:bool=True) -> object:
+        if _level == "required":
+            exists = True
+            
+        obj = cls(_level=_level)
+        obj.exists = exists
+        return obj
+
 
     def __core_post_init__(self, add_callbacks=True):
         """
@@ -38,7 +46,7 @@ class DatasetCore(ABC):
             return True # must exists for files which are required
         return value
 
-    exists:ClassVar[bool] = HookedDescriptor(bool, fval=_validate_exists, tags="exists")
+    exists:ClassVar[bool] = HookedDescriptor(bool, default=True, fval=_validate_exists, tags="exists")
 
     @abstractmethod
     def _check_schema(self, *args, **kwargs):

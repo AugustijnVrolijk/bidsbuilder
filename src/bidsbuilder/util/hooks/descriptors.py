@@ -174,7 +174,7 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             else:
                 default_instance = wrap_container(self.factory(instance, self), self.TYPEIDX)
 
-            default_instance.__observable_container_init__(self, weakref.ref(instance))
+            default_instance._observable_container_init_(self, weakref.ref(instance))
             return default_instance
 
         def __get__(self, instance:INSTANCE, owner:OWNER) -> VAL:
@@ -192,7 +192,7 @@ def _make_container_mixin(_base_getter_cls:Union[CallbackNoGetterMixin, Callback
             if type(value) != self.type_hint:
                 raise TypeError(f"When setting {instance}.{self.name}, it must be a container of type {self.type_hint}")
             _observable_obj:ObservableType = wrap_container(value, self.TYPEIDX)
-            _observable_obj.__observable_container_init__(self, weakref.ref(instance))
+            _observable_obj._observable_container_init_(self, weakref.ref(instance))
             self.variables[id(instance)] = _observable_obj
             self._trigger_callback(instance)  
             """

@@ -15,7 +15,7 @@ class hookedContainerABC(ABC):
     """
     ABC class ensuring that users inheriting from base
     """
-    forbidden_instance_names = {"__check_callback__", "__observable_container_init__"}
+    forbidden_instance_names = {"_check_callback_", "_observable_container_init_"}
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -60,7 +60,7 @@ class MinimalSet(MutableSet, DataMixin, hookedContainerABC):
     def discard(self, value): self._data.discard(value)
 
 class ObservableType():
-    def __observable_container_init__(self, descriptor:'DescriptorProtocol', weakref:ReferenceType):
+    def _observable_container_init_(self, descriptor:'DescriptorProtocol', weakref:ReferenceType):
         names = ("_descriptor_", "_object_ref_", "_frozen_flag_")
         for n in names:
             if getattr(self, n, False):
@@ -70,7 +70,7 @@ class ObservableType():
         setattr(self, names[1], weakref)
         setattr(self, names[2], False)
 
-    def __check_callback__(self):
+    def _check_callback_(self):
         if not self._frozen_flag_:
             self._descriptor_._trigger_callback(self._object_ref_()) # weak reference so need to call it to access it
 
@@ -105,7 +105,7 @@ class create_dynamic_container():
         for (orig_method, func_name)  in self.iter_methods_set(self.validate_input_methods):
             setattr(self.dynamic_container, func_name, self.wrap_validate_input(orig_method))
 
-        _validator_init_name_ = "__observable_container_init__"
+        _validator_init_name_ = "_observable_container_init_"
         _validator_init_ = getattr(self.dynamic_container, _validator_init_name_)
         setattr(self.dynamic_container, _validator_init_name_, self.wrap_validate_instance_creation(_validator_init_))
 
@@ -123,7 +123,7 @@ class create_dynamic_container():
         @wraps(orig_method)
         def _wrapped(self:ObservableType, *args, **kwargs):
             orig_method(self, *args, **kwargs)
-            self.__check_callback__()
+            self._check_callback_()
         return _wrapped
 
     @staticmethod
@@ -133,7 +133,7 @@ class create_dynamic_container():
             self._frozen_flag_ = True
             orig_method(self, *args, **kwargs)
             self._frozen_flag_ = False
-            self.__check_callback__()
+            self._check_callback_()
         return _wrapped
 
     @staticmethod
