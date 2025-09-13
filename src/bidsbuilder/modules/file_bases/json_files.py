@@ -60,21 +60,14 @@ class JSONfile(DatasetCore):
     _schema:ClassVar['Namespace']
     metadata:ClassVar[dict[str, 'Metadata']]
 
-    _metadata:dict[str, 'Metadata'] = field(init=False, factory=dict)
     _removed_key:dict[str, Any] = field(init=False, factory=dict) #for overflow values passed to json which doesn't have a valid key representing it
     _cur_labels:set = field(init=False, factory=set)
-
-    @classmethod
-    def create(cls, *args, **kwargs) -> Self:
-        obj = cls()
-        obj._metadata = {}
-        return obj
         
     def _make_file(self, force:bool):
         _write_json(self._tree_link.path, self.rawMetadata, force)
 
     def __getitem__(self, key:str):
-        return self._metadata[key].val
+        return self.metadata[key].val
 
     def  __setitem__(self, key:str, value:Any):
         """

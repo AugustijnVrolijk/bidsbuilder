@@ -94,7 +94,7 @@ def _resolve_class_type(file_info:dict[str, Any], is_dir:bool=False) -> Callable
 def _process_folder(file_info:dict[str, Any], tree:'Directory', minimal:bool=False) -> Directory:
     assert file_info["extensions"] == []
     filename = agnosticFilename(file_info["stem"])
-    file = UnknownFile(_level=file_info["level"])
+    file = UnknownFile.create(_level=file_info["level"])
     if minimal:
         file.exists = False
     tree.add_child(filename,file,type_flag="directory")
@@ -104,7 +104,7 @@ def _process_folder(file_info:dict[str, Any], tree:'Directory', minimal:bool=Fal
 def _process_JSON(file_info:dict[str, Any], tree:'Directory', minimal:bool=False) -> FileEntry:
     assert file_info["extensions"] == [".json"]
     filename = agnosticFilename(file_info["stem"], [".json"], ".json")
-    file = agnostic_JSONfile(_level=file_info["level"])
+    file = agnostic_JSONfile.create(_level=file_info["level"])
     if minimal:
         file.exists = False
     tree.add_child(filename, file, "file")
@@ -115,13 +115,13 @@ def _process_TSV(file_info:dict[str, Any], tree:'Directory', minimal:bool=False)
     ret_obj = tree.add_child(col_name, None, 'collection')
     #tsv:
     filename = agnosticFilename('', [".tsv"], ".tsv")
-    file = tabularFile(_level=file_info["level"])
+    file = tabularFile.create(_level=file_info["level"])
     if minimal:
         file.exists = False
     ret_obj.add_child(filename, file)
     #json:
     filename = agnosticFilename('', [".json"], ".json")
-    file = tabularJSONFile(_level=file_info["level"])
+    file = tabularJSONFile.create(_level=file_info["level"])
     if minimal:
         file.exists = False
     ret_obj.add_child(filename, file)
@@ -133,7 +133,7 @@ def _process_UNKNOWN(file_info:dict[str, Any], tree:'Directory', minimal:bool=Fa
     else:
         cur_ext = file_info["extensions"][0]
     filename = agnosticFilename(file_info["stem"], file_info["extensions"], cur_ext)
-    file = UnknownFile(_level=file_info["level"])
+    file = UnknownFile.create(_level=file_info["level"])
     tree.add_child(filename, file, "file")
     #no need to assign links, as creating a FileEntry does this
     if minimal:

@@ -238,6 +238,7 @@ class nameValueBase(ValueBase):
         # will leave this as is for the moment
         # hopefully future bids will make properties able to be recursive.
 
+        raise NotImplementedError("Object validation not implemented yet")
         return (is_correct, error_msg)
 
     def _validate_new_val(self, new_val:Any, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
@@ -393,7 +394,7 @@ class Entity(nameValueBase):
 
         self._val = new_val
 
-@define(slots=True)
+@define(slots=True, weakref_slot=True, hash=True)
 class Column(nameValueBase):
     
     @nameValueBase.val.setter
@@ -404,8 +405,12 @@ class Column(nameValueBase):
     @lru_cache(maxsize=256) #many different values so allow for larger cache for this
     def _cached_fetch_object(cls, name: str):
         # Optionally delegate back to Base method if logic identical
-        return super()._cached_fetch_object.__wrapped__(cls, name)
-
+        obj = cls.schema.get(name) # admittedly don't really need a cache as Namespace.get is already hashed and fast...
+        if obj is None:
+            raise KeyError(f"no object found for key {name} in {cls.__name__}")
+        
+        return obj
+    
 @define(slots=True, weakref_slot=True, hash=True)
 class Metadata(nameValueBase):
     """Metadata is quite unique, mainly due to the 'items'/'properties' attribute 

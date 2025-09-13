@@ -17,18 +17,14 @@ class DatasetCore(ABC):
     _tree_link: Union['FileEntry', None] = field(repr=True, init=False, default=None, alias="_tree_link")
     _level:str = field(repr=True, default="optional", alias="_level")
 
-    @abstractmethod
-    def create(cls, *args, **kwargs) -> Self: ...
-
     @classmethod
-    def __init_create__(cls, obj:object, _level:str="optional", exists:bool=True) -> object:
+    def create(cls,*, _level:str="optional", exists:bool=True, **kwargs) -> Self:
         if _level == "required":
             exists = True
-            
-        obj = cls(_level=_level)
+
+        obj = cls(_level=_level, **kwargs)
         obj.exists = exists
         return obj
-
 
     def __core_post_init__(self, add_callbacks=True):
         """
