@@ -63,7 +63,7 @@ class DatasetCore(ABC):
     def _read_BIDS(self):
         pass
 
-    def deleteSelf(self):
+    def delete_self(self):
         return
     
     def __contains__(self, key): #used for selector parsing "in", need it to point it to whatever is needed

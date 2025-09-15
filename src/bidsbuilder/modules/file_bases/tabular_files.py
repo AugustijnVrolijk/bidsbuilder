@@ -63,11 +63,12 @@ class tableView():
         index_columns: - An optional list of columns that uniquely identify a row.
         """
 
-        df = pd.DataFrame()
-
+        df = pd.DataFrame(columns=initial_columns)
+        ds = pa.DataFrameSchema({})
         if index_columns:
-
-            df.set_index()
+            if len(index_columns) == 1:
+                index_columns = index_columns[0]
+            df.set_index(index_columns, inplace=True)
 
         return cls()
 

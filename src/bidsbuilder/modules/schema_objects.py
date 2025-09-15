@@ -394,12 +394,56 @@ class Entity(nameValueBase):
 
         self._val = new_val
 
+class UserDefinedColumn():
+    """
+    at the time of writing, version 1.10.1 defined in common-principles.html#tabular-files
+    Users can define their own columns, using the following metadata:
+
+    LongName	OPTIONAL	string	                    Long (unabbreviated) name of the column.
+    Description	RECOMMENDED	string	                    Free-form natural language description. The description of the column.
+    Format	    OPTIONAL	string	                    Permitted formats for values in the described column. For a list of valid values for this field, see the associated glossary entry.
+    Levels	    RECOMMENDED	object	                    For categorical variables: An object of possible values (keys) and their descriptions (values).
+    Units	    RECOMMENDED	string	                    Measurement units for the associated variable. SI units in CMIXF formatting are RECOMMENDED (see Units).
+    Delimiter	OPTIONAL	string	                    If rows in a column may be interpreted as a lists of values, the character that separates one value from the next.
+    TermURL	    RECOMMENDED	string	                    URL pointing to a formal definition of this type of data in an ontology available on the web. For example: https://www.ncbi.nlm.nih.gov/mesh/68008297 for "male".
+    HED	        OPTIONAL	string or object of strings	Hierarchical Event Descriptor (HED) information, see the HED Appendix for details.
+    Maximum	    OPTIONAL	number	                    Maximum value a column entry is permitted to have.
+    Minimum	    OPTIONAL	number	                    Minimum value a column entry is permitted to have.
+
+    """
+    @classmethod
+    def create(cls, **kwargs) -> 'UserDefinedColumn': ...
+
+    def val_checker(self, new_val:Any) -> bool: ...
+
 @define(slots=True, weakref_slot=True, hash=True)
 class Column(nameValueBase):
     
-    @nameValueBase.val.setter
-    def val():
-        pass
+    _has_definition:bool = field(repr=False, init=False, alias="_has_definition")
+    _definition_obj:UserDefinedColumn = field(repr=False, init=False, alias="_definition_obj")
+
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
+        info = self._cached_fetch_object(self._name)
+        cur_overrides = self._override.get(self, {})
+        info.update(cur_overrides)
+        if definition := info.get("definition", False):
+            self._has_definition = True
+            self._definition_obj = UserDefinedColumn.create(**definition) # at the moment just a placeholder, will add functionality later
+
+
+    def val_checker(self, new_val:Any) -> bool:
+        if self._has_definition:
+            return self._definition_obj.val_checker(new_val)
+
+        else:
+            info = self._cached_fetch_object(self._name)
+            cur_overrides = self._override.get(self, {})
+            info.update(cur_overrides)
+
+            orig_msg = f"Value: {new_val} for {self.name} is not valid:\n"
+            is_correct, error_msg = self._validate_new_val(new_val, info, orig_msg)
+            return is_correct
 
     @classmethod
     @lru_cache(maxsize=256) #many different values so allow for larger cache for this
@@ -411,6 +455,7 @@ class Column(nameValueBase):
         
         return obj
     
+
 @define(slots=True, weakref_slot=True, hash=True)
 class Metadata(nameValueBase):
     """Metadata is quite unique, mainly due to the 'items'/'properties' attribute 
