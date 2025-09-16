@@ -394,6 +394,32 @@ class Entity(nameValueBase):
 
         self._val = new_val
 
+@define(slots=True, weakref_slot=True, hash=True)
+class Metadata(nameValueBase):
+    """Metadata is quite unique, mainly due to the 'items'/'properties' attribute 
+    
+    This basically allows for the value of one metadata field, to be an array, or dictionary of other metadata fields
+
+    """
+    
+    @nameValueBase.val.setter
+    def val(self, new_val):
+        self._val = new_val
+
+        info:'Namespace' = self._cached_fetch_object(self._name)
+        cur_overrides = self._override.get(self, {})
+        info.update(cur_overrides)
+
+    @classmethod
+    @lru_cache(maxsize=256) # many different values so allow for larger cache for this
+    def _cached_fetch_object(cls, name: str):
+        obj = cls.schema.get(name) # admittedly don't really need a cache as Namespace.get is already hashed and fast...
+        if obj is None:
+            raise KeyError(f"no object found for key {name} in {cls.__name__}")
+        
+        return obj
+
+
 class UserDefinedColumn():
     """
     at the time of writing, version 1.10.1 defined in common-principles.html#tabular-files
@@ -409,12 +435,74 @@ class UserDefinedColumn():
     HED	        OPTIONAL	string or object of strings	Hierarchical Event Descriptor (HED) information, see the HED Appendix for details.
     Maximum	    OPTIONAL	number	                    Maximum value a column entry is permitted to have.
     Minimum	    OPTIONAL	number	                    Minimum value a column entry is permitted to have.
-
     """
-    @classmethod
-    def create(cls, **kwargs) -> 'UserDefinedColumn': ...
+    name:str =             field(repr=True)
+    LongName:Metadata =    field(repr=True)
+    Description:Metadata = field(repr=True)
+    Format:Metadata =      field(repr=True)
+    Levels:Metadata =      field(repr=True)
+    Units:Metadata =       field(repr=True)
+    Delimiter:Metadata =   field(repr=True)
+    TermURL:Metadata =     field(repr=True)
+    HED:Metadata =         field(repr=True)
+    Maximum:Metadata =     field(repr=True)
+    Minimum:Metadata =     field(repr=True)
 
-    def val_checker(self, new_val:Any) -> bool: ...
+
+    @classmethod
+    def create(cls, name:str,
+               LongName:str=None,
+               Description:str=None,
+               Format:str=None,
+               Levels:dict=None,
+               Units:str=None,
+               Delimiter:str=None,
+               TermURL:str=None,
+               HED:Union[str, list[str]]=None,
+               Maximum:int=None,
+               Minimum:int=None) -> 'UserDefinedColumn':
+
+        def set_meta(fieldname, val, level):
+            if val is not None:
+                meta = Metadata(fieldname, level)
+                meta.val = val
+                return meta
+            return None
+
+        LongName = set_meta("LongName", LongName, "optional")
+        Description = set_meta("Description", Description, "recommended")
+        Format = set_meta("Format", Format, "optional")
+        Levels = set_meta("Levels", Levels, "recommended")
+        Units = set_meta("Units", Units, "recommended")
+        Delimiter = set_meta("Delimiter", Delimiter, "optional")
+        TermURL = set_meta("TermURL", TermURL, "recommended")
+        HED = set_meta("HED", HED, "optional")
+        Maximum = set_meta("Maximum", Maximum, "optional")
+        Minimum = set_meta("Minimum", Minimum, "optional")
+
+        return cls(name=name,
+               LongName=LongName,
+               Description=Description,
+               Format=Format,
+               Levels=Levels,
+               Units=Units,
+               Delimiter=Delimiter,
+               TermURL=TermURL,
+               HED=HED,
+               Maximum=Maximum,
+               Minimum=Minimum)
+
+    def val_checker(self, new_val:Any) -> bool:
+        if self.Format: ...
+
+        if self.Levels: ...
+
+        if self.Delimiter: ...
+            # check its a list, an
+
+        if self.Maximum: ...
+
+        if self.Minimum: ...
 
 @define(slots=True, weakref_slot=True, hash=True)
 class Column(nameValueBase):
@@ -455,31 +543,6 @@ class Column(nameValueBase):
         
         return obj
     
-
-@define(slots=True, weakref_slot=True, hash=True)
-class Metadata(nameValueBase):
-    """Metadata is quite unique, mainly due to the 'items'/'properties' attribute 
-    
-    This basically allows for the value of one metadata field, to be an array, or dictionary of other metadata fields
-
-    """
-    
-    @nameValueBase.val.setter
-    def val(self, new_val):
-        self._val = new_val
-
-        info:'Namespace' = self._cached_fetch_object(self._name)
-        cur_overrides = self._override.get(self, {})
-        info.update(cur_overrides)
-
-    @classmethod
-    @lru_cache(maxsize=256) # many different values so allow for larger cache for this
-    def _cached_fetch_object(cls, name: str):
-        obj = cls.schema.get(name) # admittedly don't really need a cache as Namespace.get is already hashed and fast...
-        if obj is None:
-            raise KeyError(f"no object found for key {name} in {cls.__name__}")
-        
-        return obj
 
 @define(slots=True)
 class Suffix(ValueBase):

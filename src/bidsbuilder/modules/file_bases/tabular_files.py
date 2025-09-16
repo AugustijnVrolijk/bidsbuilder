@@ -92,6 +92,9 @@ class tabularFile(DatasetCore):
     columns:ClassVar[MinimalDict[str, Column]] = HookedDescriptor(columnView,factory=make_column_view,tags="columns")
 
     def _make_file(self, force:bool):
+        raise NotImplementedError("error")
+        """UserDefinedLists have specified delimiters, as such need to convert the lists to strings
+        with the delimiter implemented, so that then the correct delimiter in the sublists is used"""
         _write_tsv(self._tree_link.path, self.data, force)
 
     def _check_schema(self, add_callbacks:bool=False, tags:Union[list,str] = None):
