@@ -493,16 +493,53 @@ class UserDefinedColumn():
                Minimum=Minimum)
 
     def val_checker(self, new_val:Any) -> bool:
-        if self.Format: ...
 
-        if self.Levels: ...
+        def check_max(max, val) -> bool:
+            if val > max:
+                # raise ValueError(f"value {val} is greater than the allowed max {max} for {self}")
+                return False
+            return True
+        
+        def check_min(min, val) -> bool: 
+            if val < min:
+                # raise ValueError(f"value {val} is lesser than the allowed min {min} for {self}")
+                return False
+            return True
 
-        if self.Delimiter: ...
-            # check its a list, an
+        is_correct = True
 
-        if self.Maximum: ...
+        if self.Format:
+            if not formats.check_pattern(self.Format.val, new_val):
+                #raise ValueError(f"Incorrect format, should be: format.{self.Format.val}")
+                is_correct = False
+        
+        if self.Levels:
+            if not self.Levels.val.get(new_val, False):
+                # raise ValueError(f"Key {new_val} was not found in the allowed levels for {self}: {self.Levels}")
+                is_correct = False
 
-        if self.Minimum: ...
+        if self.Delimiter:
+            if not isinstance(new_val, list):
+                # raise ValueError(f"A delimiter of value {self.Delimiter} was specified for column {self}, but rows were filled with")
+                is_correct = False
+
+        if self.Maximum:
+            if isinstance(new_val, list):
+                t_max = self.Maximum.val
+                for c_val in new_val:
+                    is_correct = (is_correct and check_max(t_max, c_val))
+            else:
+                is_correct = (is_correct and check_max(self.Maximum.val, new_val))
+
+        if self.Minimum:
+            if isinstance(new_val, list):
+                t_min = self.Minimum.val
+                for c_val in new_val:
+                    is_correct = (is_correct and check_min(t_min, c_val))
+            else:
+                is_correct = (is_correct and check_min(self.Minimum.val, new_val))
+        
+        return is_correct
 
 @define(slots=True, weakref_slot=True, hash=True)
 class Column(nameValueBase):
