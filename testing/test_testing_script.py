@@ -16,12 +16,24 @@ list_delimiters = {
     'col2': ','    # Could define something different for col2 if needed
 }
 
-def stringify_lists(cell, col_name):
-    """Convert lists into strings using column-specific delimiter."""
-    if isinstance(cell, list):
-        delim = list_delimiters.get(col_name, ',')
-        return delim.join(map(str, cell))
-    return cell
+
+
+
+def stringify_all(df:pd.DataFrame, cols:dict):
+    def stringify_lists(cell, delimiter:str):
+        """Convert lists into strings using column-specific delimiter."""
+        if isinstance(cell, list):
+            stringified = delimiter.join(map(str, cell))
+            return f"[{stringified}]" 
+        return cell
+
+    for col in df.columns:
+        cur_col = cols.get(col)
+        
+        if cur_delim := cur_col.get("Delimiter"):
+            df[col] = df[col].apply(lambda x: stringify_lists(x, cur_delim))
+    
+    return df
 
 # Apply conversion
 for col in df.columns:

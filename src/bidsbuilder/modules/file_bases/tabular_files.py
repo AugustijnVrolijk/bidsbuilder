@@ -80,6 +80,23 @@ class tableView():
 
     def addColumn(self, columnName:str, schema:Column): ...
 
+def stringify_all(orig_df:pd.DataFrame, cols:dict[str, Column]):
+    def stringify_lists(cell, delimiter:str):
+        """Convert lists into strings using column-specific delimiter."""
+        if isinstance(cell, list):
+            stringified = delimiter.join(map(str, cell))
+            return f"[{stringified}]" 
+        return cell
+
+    df = orig_df.copy()
+    for col in df.columns:
+        cur_col = cols.get(col)
+        cur_delim = cur_col.Delimiter
+        if cur_delim is not None:
+            df[col] = df[col].apply(lambda x: stringify_lists(x, cur_delim))
+    
+    return df
+
 @define(slots=True)
 class tabularFile(DatasetCore):
     
@@ -92,10 +109,10 @@ class tabularFile(DatasetCore):
     columns:ClassVar[MinimalDict[str, Column]] = HookedDescriptor(columnView,factory=make_column_view,tags="columns")
 
     def _make_file(self, force:bool):
-        raise NotImplementedError("error")
+        final_data = stringify_all(self.data, self.columns)
         """UserDefinedLists have specified delimiters, as such need to convert the lists to strings
         with the delimiter implemented, so that then the correct delimiter in the sublists is used"""
-        _write_tsv(self._tree_link.path, self.data, force)
+        _write_tsv(self._tree_link.path, final_data, force)
 
     def _check_schema(self, add_callbacks:bool=False, tags:Union[list,str] = None):
 

@@ -4,6 +4,7 @@ from attrs import define, field
 from typing import Union, ClassVar, TYPE_CHECKING, Any
 from functools import lru_cache
 from weakref import WeakKeyDictionary
+from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -419,8 +420,21 @@ class Metadata(nameValueBase):
         
         return obj
 
+class ColumnInterface(ABC):
+    """
+    tabular files allow for creation of UserDefinedColumn for new columns but uses Column for schematised standard columns
 
-class UserDefinedColumn():
+    ensures modifications to UserDefinedColumn or Column have necessary methods and properties for tabular_files
+    """
+
+    @abstractmethod
+    def val_checker(self, new_val:Any) -> bool: ...
+
+    @abstractmethod
+    @property
+    def Delimiter(self) -> str: ...
+
+class UserDefinedColumn(ColumnInterface):
     """
     at the time of writing, version 1.10.1 defined in common-principles.html#tabular-files
     Users can define their own columns, using the following metadata:
@@ -541,8 +555,9 @@ class UserDefinedColumn():
         
         return is_correct
 
+
 @define(slots=True, weakref_slot=True, hash=True)
-class Column(nameValueBase):
+class Column(nameValueBase, ColumnInterface):
     
     _has_definition:bool = field(repr=False, init=False, alias="_has_definition")
     _definition_obj:UserDefinedColumn = field(repr=False, init=False, alias="_definition_obj")
@@ -579,8 +594,14 @@ class Column(nameValueBase):
             raise KeyError(f"no object found for key {name} in {cls.__name__}")
         
         return obj
-    
 
+    @property
+    def Delimiter(self):
+        if not self._has_definition:
+            return None
+        else:
+            return self._definition_obj.Delimiter
+    
 @define(slots=True)
 class Suffix(ValueBase):
     pass
