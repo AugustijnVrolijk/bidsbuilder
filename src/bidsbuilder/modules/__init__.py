@@ -17,3 +17,7 @@ def set_all_schema_(dataset:'BidsDataset',schema:'Namespace'):
     _set_tabular_schema(schema)
     from .file_bases.json_files import _set_JSON_schema
     _set_JSON_schema(schema)
+
+from .schema_objects import UserDefinedColumn
+
+__all__ = ["UserDefinedColumn"]

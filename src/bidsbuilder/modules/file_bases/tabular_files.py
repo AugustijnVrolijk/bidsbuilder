@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, ClassVar, Any, Union, Generator, Self
 from ...util.io import _write_json, _write_tsv
 from ..core.dataset_core import DatasetCore
 from ...util.hooks import *
-from ..schema_objects import Column
+from ..schema_objects import Column, UserDefinedColumn
 from ...schema.schema_checking import check_schema
 
 if TYPE_CHECKING:
@@ -42,17 +42,22 @@ have tableview encapsulate the actual dataframe, with support for initial column
 and a dataschema for validation of the dataframe inputs
 """
 
+ALLOWED = 2
+ALLOWED_IF_DEFINED = 1
+NOT_ALLOWED = 0
+
 @define(slots=True)
 class tableView():
-    data_schema:pa.DataFrameSchema = field()
+    
     data:pd.DataFrame = field() # at the moment will not 
-    index_columns:set = field()
-    additional_columns_flag = field() #allowed, allowed_if_defined, not_allowed
-    columns:dict = field()
+    data_schema:pa.DataFrameSchema = field() # validator to check input data
+    #index_columns:set = field() # 
+    additional_columns_flag = field() # allowed, allowed_if_defined, not_allowed
+    columns:dict = field() #
     
 
     @classmethod
-    def create(cls, columns:dict, additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
+    def create(cls, columns:dict[str, Column], additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
         """
         columns: - dict with values that may be found in objects.columns
         
@@ -62,23 +67,55 @@ class tableView():
 
         index_columns: - An optional list of columns that uniquely identify a row.
         """
+        flag_converter = {
+            "allowed":ALLOWED,
+            "allowed_if_defined":ALLOWED_IF_DEFINED,
+            "not_allowed":NOT_ALLOWED
+        }
 
+        # get validator flag
+        flag_val = flag_converter.get(additional_columns_flag)
+        if flag_val is None:
+            raise ValueError(f"additional columns flag {additional_columns_flag} is not recognised. Must be one of {flag_converter.keys()}")
+
+        # create original dataframe
         df = pd.DataFrame(columns=initial_columns)
-        ds = pa.DataFrameSchema({})
         if index_columns:
             if len(index_columns) == 1:
                 index_columns = index_columns[0]
             df.set_index(index_columns, inplace=True)
+        
+        #create dataschema checker
+        check_data = {}
+        for key, val in columns.items():
+            check_data[key] = pa.Column(pa.Check(lambda s: val.val_checker(s)))
+        ds = pa.DataFrameSchema(check_data)
 
-        return cls()
+        return cls(data=df, data_schema=ds, additional_columns_flag=flag_val, columns=columns)
 
-    def _update_meta(self, columns:dict): ...    
+    def _update_meta(self, columns:dict):  
+        self.columns.update(columns)
+        self.data_schema.add_columns(columns)
 
-    def _remove_meta(self, columns:list): ...
+    def _remove_meta(self, columns:list):
+        for col in columns:
+            del self.columns[col]
+        self.data_schema.remove_columns(columns)
+        raise NotImplementedError("NEED TO ACTUALLY REMOVE DATAFRAME COLUMNS")
 
     def add(self): ...
 
-    def addColumn(self, columnName:str, schema:Column): ...
+    def addColumn(self, columnName:str, schema:Union[Column, dict]=None):
+        if self.additional_columns_flag == NOT_ALLOWED:
+            raise TypeError(f"Tabular file {self} does not allow adding columns")
+        elif self.additional_columns_flag == ALLOWED_IF_DEFINED:
+            if columnName not in self.columns:
+                raise TypeError(f"Tabular file {self} only allows adding one of the following columns {self.columns.keys()}")
+            raise NotImplementedError("NEED TO ADD COLUMN HERE")
+        else:
+            if isinstance(schema, dict):
+                schema = UserDefinedColumn.create(name=columnName, **schema)
+            raise NotImplementedError("NEED TO ADD COLUMN HERE")
 
 def stringify_all(orig_df:pd.DataFrame, cols:dict[str, Column]):
     def stringify_lists(cell, delimiter:str):
@@ -149,7 +186,7 @@ class tabularFile(DatasetCore):
         self._n_schema_true += 1
         if self._n_schema_true > 1:
             if (initial_columns is not None) or (index_columns is not None) or (additional_columns_flag != "n/a"): # check for added columns              
-                raise RuntimeError(f"{self.__class__.__name__} can only support one tsv at the moment, please report this error with associated context to reproduce")
+                raise RuntimeError(f"{self.__class__.__name__} cannot support the additional given tsv at the moment, please report this error with associated context to reproduce")
             self.data._update_meta(processed_cols)
         else:
             self.data = tableView.create(processed_cols, additional_columns_flag, initial_columns, index_columns)

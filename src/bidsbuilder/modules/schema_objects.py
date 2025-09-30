@@ -587,7 +587,7 @@ class Column(nameValueBase, ColumnInterface):
 
     @classmethod
     @lru_cache(maxsize=256) #many different values so allow for larger cache for this
-    def _cached_fetch_object(cls, name: str):
+    def _cached_fetch_object(cls, name: str) -> Namespace:
         # Optionally delegate back to Base method if logic identical
         obj = cls.schema.get(name) # admittedly don't really need a cache as Namespace.get is already hashed and fast...
         if obj is None:
@@ -628,4 +628,4 @@ def _set_object_schemas(schema:'Namespace'):
 
     return
 
-__all__ = ["Entity", "Column", "Metadata", "Suffix", "_set_object_schemas", "raw_Datatype"]
+__all__ = ["Entity", "Column", "Metadata", "Suffix", "_set_object_schemas", "raw_Datatype", "UserDefinedColumn"]
