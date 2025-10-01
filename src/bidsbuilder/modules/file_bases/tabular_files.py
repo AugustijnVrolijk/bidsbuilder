@@ -57,7 +57,7 @@ class tableView():
     
 
     @classmethod
-    def create(cls, columns:dict[str, Column], additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
+    def _create(cls, columns:dict[str, Column], additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
         """
         columns: - dict with values that may be found in objects.columns
         
@@ -103,7 +103,99 @@ class tableView():
         self.data_schema.remove_columns(columns)
         raise NotImplementedError("NEED TO ACTUALLY REMOVE DATAFRAME COLUMNS")
 
-    def add(self): ...
+    def _merge_validated(self, candidate: pd.DataFrame):
+        """
+        Internal method:
+        - Validates candidate dataframe against schema.
+        - Updates existing rows and appends new rows.
+        """
+        # enforce schema
+        candidate = self.data_schema.validate(candidate)
+
+        # updates: overlap in index
+        updates = candidate.loc[candidate.index.isin(self.data.index)]
+        if not updates.empty:
+            self.data.update(updates)
+
+        # new rows: not already in self.data
+        new_rows = candidate.loc[~candidate.index.isin(self.data.index)]
+        if not new_rows.empty:
+            self.data = pd.concat([self.data, new_rows])
+
+        return self
+
+    """
+    def addDataframe(self): ...
+
+    def addRow(self): ...
+
+    def addValues(self): ...
+
+    def delRow(self): ...
+
+    def delValues(self): ...
+    """
+
+    def addDataframe(self, df: pd.DataFrame):
+   
+        extra = set(df.columns) - set(self.columns.keys())
+        if extra:
+            raise ValueError(f"Column mismatch between giving dataframe and existing dataframe. Please first addColumn to resolve")
+
+        return self._merge_validated(df)
+
+    def addRow(self, values: dict):
+        """
+        Add a single row (requires primary key).
+        """
+        df = pd.DataFrame([values])
+        if self.data.index.name:
+            df.set_index(self.data.index.name, inplace=True)
+
+        if df.index.isin(self.data.index).any():
+            raise ValueError(f"Primary key {df.index.tolist()} already exists.")
+
+        return self._merge_validated(df)
+
+
+    def addValues(self, pk, values: dict):
+        """
+        Update values for a given primary key.
+        """
+        if pk not in self.data.index:
+            raise KeyError(f"Primary key {pk} not found.")
+
+        candidate = self.data.loc[[pk]].copy()
+        for col, val in values.items():
+            candidate.at[pk, col] = val
+
+        return self._merge_validated(candidate)
+
+    def delRow(self, pk):
+        """
+        Remove a row by primary key.
+        No validation is performed.
+        """
+        if pk not in self.data.index:
+            raise KeyError(f"Primary key {pk} not found.")
+        self.data.drop(pk, inplace=True)
+        return self
+
+
+    def delValues(self, pk, columns: list[str]):
+        """
+        Set specified columns in a row to NA/null.
+        No validation is performed (handled downstream).
+        """
+        if pk not in self.data.index:
+            raise KeyError(f"Primary key {pk} not found.")
+
+        for col in columns:
+            if col not in self.data.columns:
+                raise KeyError(f"Column {col} not found.")
+            self.data.at[pk, col] = pd.NA
+
+        return self
 
     def addColumn(self, columnName:str, schema:Union[Column, dict]=None):
         if self.additional_columns_flag == NOT_ALLOWED:
