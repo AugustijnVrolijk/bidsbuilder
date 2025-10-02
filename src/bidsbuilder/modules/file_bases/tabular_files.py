@@ -33,7 +33,6 @@ class columnView(MinimalSet):
 def make_column_view(instance:'tabularFile', descriptor):
     return columnView
 
-
 """
 columnView is what to return for the interpreter column attribute. i.e. its a list of columns, 
 and gives access to the specific dataframe column as a list with getitem
@@ -53,8 +52,7 @@ class tableView():
     data_schema:pa.DataFrameSchema = field() # validator to check input data
     #index_columns:set = field() # 
     additional_columns_flag = field() # allowed, allowed_if_defined, not_allowed
-    columns:dict = field() #
-    
+    columns:dict = field()
 
     @classmethod
     def _create(cls, columns:dict[str, Column], additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
@@ -124,18 +122,6 @@ class tableView():
 
         return self
 
-    """
-    def addDataframe(self): ...
-
-    def addRow(self): ...
-
-    def addValues(self): ...
-
-    def delRow(self): ...
-
-    def delValues(self): ...
-    """
-
     def addDataframe(self, df: pd.DataFrame):
    
         extra = set(df.columns) - set(self.columns.keys())
@@ -156,7 +142,6 @@ class tableView():
             raise ValueError(f"Primary key {df.index.tolist()} already exists.")
 
         return self._merge_validated(df)
-
 
     def addValues(self, pk, values: dict):
         """
@@ -180,7 +165,6 @@ class tableView():
             raise KeyError(f"Primary key {pk} not found.")
         self.data.drop(pk, inplace=True)
         return self
-
 
     def delValues(self, pk, columns: list[str]):
         """
@@ -281,7 +265,7 @@ class tabularFile(DatasetCore):
                 raise RuntimeError(f"{self.__class__.__name__} cannot support the additional given tsv at the moment, please report this error with associated context to reproduce")
             self.data._update_meta(processed_cols)
         else:
-            self.data = tableView.create(processed_cols, additional_columns_flag, initial_columns, index_columns)
+            self.data = tableView._create(processed_cols, additional_columns_flag, initial_columns, index_columns)
 
     def _remove_metadata_(self, items:'Namespace'):
         self._n_schema_true -= 1
@@ -326,7 +310,6 @@ class tabularJSONFile(DatasetCore):
 
     def _make_file(self, force):...
     pass
-
 
 def _set_tabular_schema(schema:'Namespace'):
     tabularFile._schema = schema.rules.tabular_data

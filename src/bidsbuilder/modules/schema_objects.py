@@ -6,8 +6,7 @@ from functools import lru_cache
 from weakref import WeakKeyDictionary
 from abc import ABC, abstractmethod
 
-if TYPE_CHECKING:
-    from bidsschematools.types.namespace import Namespace
+from bidsschematools.types.namespace import Namespace
 
 
 """
@@ -135,7 +134,7 @@ class nameValueBase(ValueBase):
     valid_types:ClassVar = {
         "integer":int,
         "string":str,
-        "number":float,
+        "number":(float, int),
         "array":list,
         "object":dict,
     }
@@ -238,8 +237,10 @@ class nameValueBase(ValueBase):
         # annoyingly 
         # will leave this as is for the moment
         # hopefully future bids will make properties able to be recursive.
-
-        raise NotImplementedError("Object validation not implemented yet")
+        if not isinstance(new_val, dict):
+            is_correct = False
+            error_msg += f"Object was not of type 'dict'\n"
+        # raise NotImplementedError("Object validation not implemented yet")
         return (is_correct, error_msg)
 
     def _validate_new_val(self, new_val:Any, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
@@ -402,7 +403,7 @@ class Metadata(nameValueBase):
     This basically allows for the value of one metadata field, to be an array, or dictionary of other metadata fields
 
     """
-    
+    """
     @nameValueBase.val.setter
     def val(self, new_val):
         self._val = new_val
@@ -410,10 +411,10 @@ class Metadata(nameValueBase):
         info:'Namespace' = self._cached_fetch_object(self._name)
         cur_overrides = self._override.get(self, {})
         info.update(cur_overrides)
-
+    """
     @classmethod
     @lru_cache(maxsize=256) # many different values so allow for larger cache for this
-    def _cached_fetch_object(cls, name: str):
+    def _cached_fetch_object(cls, name: str) -> 'Namespace':
         obj = cls.schema.get(name) # admittedly don't really need a cache as Namespace.get is already hashed and fast...
         if obj is None:
             raise KeyError(f"no object found for key {name} in {cls.__name__}")
@@ -430,10 +431,11 @@ class ColumnInterface(ABC):
     @abstractmethod
     def val_checker(self, new_val:Any) -> bool: ...
 
-    @abstractmethod
     @property
+    @abstractmethod
     def Delimiter(self) -> str: ...
 
+@define(slots=True, weakref_slot=True)
 class UserDefinedColumn(ColumnInterface):
     """
     at the time of writing, version 1.10.1 defined in common-principles.html#tabular-files
@@ -462,7 +464,6 @@ class UserDefinedColumn(ColumnInterface):
     Maximum:Metadata =     field(repr=True)
     Minimum:Metadata =     field(repr=True)
 
-
     @classmethod
     def create(cls, name:str,
                LongName:str=None,
@@ -479,6 +480,8 @@ class UserDefinedColumn(ColumnInterface):
         def set_meta(fieldname, val, level):
             if val is not None:
                 meta = Metadata(fieldname, level)
+                if isinstance(val, Namespace):
+                    val = val.to_dict()
                 meta.val = val
                 return meta
             return None
@@ -559,8 +562,8 @@ class UserDefinedColumn(ColumnInterface):
 @define(slots=True, weakref_slot=True, hash=True)
 class Column(nameValueBase, ColumnInterface):
     
-    _has_definition:bool = field(repr=False, init=False, alias="_has_definition")
-    _definition_obj:UserDefinedColumn = field(repr=False, init=False, alias="_definition_obj")
+    _has_definition:bool = field(repr=False, default=False, init=False, alias="_has_definition")
+    _definition_obj:UserDefinedColumn = field(repr=False, default=None, init=False, alias="_definition_obj")
 
     def __attrs_post_init__(self):
         super().__attrs_post_init__()
@@ -569,8 +572,7 @@ class Column(nameValueBase, ColumnInterface):
         info.update(cur_overrides)
         if definition := info.get("definition", False):
             self._has_definition = True
-            self._definition_obj = UserDefinedColumn.create(**definition) # at the moment just a placeholder, will add functionality later
-
+            self._definition_obj = UserDefinedColumn.create(self.name, **definition) # at the moment just a placeholder, will add functionality later
 
     def val_checker(self, new_val:Any) -> bool:
         if self._has_definition:
@@ -587,7 +589,7 @@ class Column(nameValueBase, ColumnInterface):
 
     @classmethod
     @lru_cache(maxsize=256) #many different values so allow for larger cache for this
-    def _cached_fetch_object(cls, name: str) -> Namespace:
+    def _cached_fetch_object(cls, name: str) -> 'Namespace':
         # Optionally delegate back to Base method if logic identical
         obj = cls.schema.get(name) # admittedly don't really need a cache as Namespace.get is already hashed and fast...
         if obj is None:
