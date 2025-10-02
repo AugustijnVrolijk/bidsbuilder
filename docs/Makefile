@@ -3,18 +3,17 @@
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = source
-BUILDDIR      = build
+SRC_DIR = ../src/bidsbuilder
+API_DIR = source
+DOCS_DIR = .
 
-# Put it first so that "make" without argument is like "make help".
-help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+# Remove old API docs and regenerate
+apidoc:
+	rm -rf $(API_DIR)/*
+	sphinx-apidoc -o $(API_DIR) $(SRC_DIR) -f -e --separate
 
-.PHONY: help Makefile
+# Build HTML documentation
+html: apidoc
+	sphinx-build -b html $(DOCS_DIR) _build/html
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+.PHONY: apidoc html

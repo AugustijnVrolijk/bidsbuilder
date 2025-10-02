@@ -1,4 +1,3 @@
-from ..modules.schema_objects import Metadata
 from ..modules.core.dataset_core import DatasetCore
 
 from typing import TYPE_CHECKING, Generator, Union, Any
