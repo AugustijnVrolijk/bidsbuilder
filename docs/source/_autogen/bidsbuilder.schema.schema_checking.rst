@@ -1,5 +1,5 @@
-schema.schema_checking
-======================
+bidsbuilder.schema.schema_checking
+==================================
 
 .. automodule:: bidsbuilder.schema.schema_checking
     :members:

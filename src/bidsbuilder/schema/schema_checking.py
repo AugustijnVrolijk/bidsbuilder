@@ -27,8 +27,7 @@ class schema_checker_OLD(ABC):
                                     a schema,
                                     Optionally: a list of current labels
                                                 a bool to add callbacks,
-                                                a list of tags to check
-                                                
+                                                a list of tags to check             
         yields tuples of the format: 
         ("add"/"del", label, fields)
         the first variable tells whether to add or remove the given fields

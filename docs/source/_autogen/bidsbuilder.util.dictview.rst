@@ -1,5 +1,5 @@
-util.dictview
-=============
+bidsbuilder.util.dictview
+=========================
 
 .. automodule:: bidsbuilder.util.dictview
     :members:

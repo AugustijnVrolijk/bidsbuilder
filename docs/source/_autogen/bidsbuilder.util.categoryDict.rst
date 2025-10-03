@@ -1,5 +1,5 @@
-util.categoryDict
-=================
+bidsbuilder.util.categoryDict
+=============================
 
 .. automodule:: bidsbuilder.util.categoryDict
     :members:

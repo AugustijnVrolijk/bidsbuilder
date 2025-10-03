@@ -1,5 +1,5 @@
-schema.interpreter.operator_funcs
-=================================
+bidsbuilder.schema.interpreter.operator_funcs
+=============================================
 
 .. automodule:: bidsbuilder.schema.interpreter.operator_funcs
     :members:

@@ -1,5 +1,5 @@
-modules.file_bases.file_collection
-==================================
+bidsbuilder.modules.file_bases.file_collection
+==============================================
 
 .. automodule:: bidsbuilder.modules.file_bases.file_collection
     :members:

@@ -1,5 +1,5 @@
-schema.interpreter.evaluation_funcs
-===================================
+bidsbuilder.schema.interpreter.evaluation_funcs
+===============================================
 
 .. automodule:: bidsbuilder.schema.interpreter.evaluation_funcs
     :members:

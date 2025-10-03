@@ -1,5 +1,5 @@
-main_module
-===========
+bidsbuilder.main_module
+=======================
 
 .. automodule:: bidsbuilder.main_module
     :members:

@@ -1,5 +1,5 @@
-util.io
-=======
+bidsbuilder.util.io
+===================
 
 .. automodule:: bidsbuilder.util.io
     :members:

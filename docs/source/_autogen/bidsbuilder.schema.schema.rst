@@ -1,5 +1,5 @@
-schema.schema
-=============
+bidsbuilder.schema.schema
+=========================
 
 .. automodule:: bidsbuilder.schema.schema
     :members:

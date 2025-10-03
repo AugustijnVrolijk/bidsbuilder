@@ -29,7 +29,7 @@ if exist %AUTOGEN_DIR% rmdir /s /q %AUTOGEN_DIR%
 mkdir %AUTOGEN_DIR%
 
 echo.
-echo.Running sphinx-apidoc ...
+echo.Creating base .rst files ...
 %PYTHON% %SPHINXSRC%
 if errorlevel 1 goto apidoc_fail
 

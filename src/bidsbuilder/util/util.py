@@ -195,16 +195,3 @@ def clearSchema(schema:MutableMapping, key:str):
         schema.pop(key)
     
     return schema
-
-if __name__ == "__main__":
-    paths = [r"C:\Users\augus\BCI_Stuff\Aspen\bids_conversion", 
-             r"C:/Users/augus/BCI_Stuff/Aspen/bids_conversion/wrapBIDS/ut/il/tester/1/", 
-             r"E:/Users",
-             r"C:/",
-             r"C:\Windows\System32\config",
-             r"C:\\System Volume Information",
-             r"C:\\$Recycle.Bin"]
-    
-    for path in paths:
-        print(path)
-        print(checkPath(path))

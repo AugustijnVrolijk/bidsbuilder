@@ -1,5 +1,5 @@
-modules.core.dataset_core
-=========================
+bidsbuilder.modules.core.dataset_core
+=====================================
 
 .. automodule:: bidsbuilder.modules.core.dataset_core
     :members:

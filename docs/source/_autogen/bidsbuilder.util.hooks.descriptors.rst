@@ -1,5 +1,5 @@
-util.hooks.descriptors
-======================
+bidsbuilder.util.hooks.descriptors
+==================================
 
 .. automodule:: bidsbuilder.util.hooks.descriptors
     :members:

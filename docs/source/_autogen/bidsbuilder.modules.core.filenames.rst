@@ -1,5 +1,5 @@
-modules.core.filenames
-======================
+bidsbuilder.modules.core.filenames
+==================================
 
 .. automodule:: bidsbuilder.modules.core.filenames
     :members:

@@ -4,7 +4,6 @@ from ...util.hooks import *
 
 from abc import ABC, abstractmethod
 from typing import Union, ClassVar, TYPE_CHECKING, Self, Optional, Type
-from functools import lru_cache
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace

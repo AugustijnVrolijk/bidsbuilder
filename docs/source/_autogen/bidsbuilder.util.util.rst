@@ -1,7 +1,7 @@
-util.hooks.containers
+bidsbuilder.util.util
 =====================
 
-.. automodule:: bidsbuilder.util.hooks.containers
+.. automodule:: bidsbuilder.util.util
     :members:
     :undoc-members:
     :show-inheritance:

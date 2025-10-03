@@ -1,5 +1,5 @@
-modules.schema_objects
-======================
+bidsbuilder.modules.schema_objects
+==================================
 
 .. automodule:: bidsbuilder.modules.schema_objects
     :members:

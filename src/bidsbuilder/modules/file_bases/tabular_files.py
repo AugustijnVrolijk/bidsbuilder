@@ -86,7 +86,7 @@ class tableView():
         #create dataschema checker
         check_data = {}
         for key, val in columns.items():
-            check_data[key] = pa.Column(pa.Check(lambda s: val.val_checker(s)))
+            check_data[key] = pa.Column(int, pa.Check(lambda s: val.val_checker(s)))
         ds = pa.DataFrameSchema(check_data)
 
         return cls(data=df, data_schema=ds, additional_columns_flag=flag_val, columns=columns)

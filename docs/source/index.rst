@@ -11,9 +11,6 @@ bidsbuilder is still being built: https://github.com/AugustijnVrolijk/bidsbuilde
 Welcome to the documentation for **bidsbuilder**, a library for ...
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
    usage
    api
 

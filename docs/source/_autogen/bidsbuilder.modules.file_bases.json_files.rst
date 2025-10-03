@@ -1,5 +1,5 @@
-modules.file_bases.json_files
-=============================
+bidsbuilder.modules.file_bases.json_files
+=========================================
 
 .. automodule:: bidsbuilder.modules.file_bases.json_files
     :members:

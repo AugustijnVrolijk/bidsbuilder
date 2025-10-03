@@ -1,5 +1,5 @@
-modules.file_bases.directories
-==============================
+bidsbuilder.modules.file_bases.directories
+==========================================
 
 .. automodule:: bidsbuilder.modules.file_bases.directories
     :members:

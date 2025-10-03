@@ -1,5 +1,0 @@
-bidsbuilder
-===========
-
-.. toctree::
-   :maxdepth: 4
