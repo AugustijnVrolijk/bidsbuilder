@@ -16,7 +16,8 @@ class JSON_shema_checker(schema_checker_OLD):
 
     @classmethod
     def _process_add(cls, all_fields:'Namespace') -> dict:
-            """convert the fields namespace into a metadata dict"""
+            """convert the fields namespace into a metadata dict
+            """
             fields = all_fields["fields"]
             processed = {}
             for key in fields.keys():
@@ -31,7 +32,8 @@ class JSON_shema_checker(schema_checker_OLD):
 
     @classmethod
     def _process_del(cls, all_fields:'Namespace') -> dict:
-        """convert the fields namespace into a list of keys to delete"""
+        """convert the fields namespace into a list of keys to delete
+        """
         fields = all_fields["fields"]
         processed = fields["fields"].keys()
         return processed

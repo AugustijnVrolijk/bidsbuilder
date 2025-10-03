@@ -63,11 +63,11 @@ def _update_children_cback(instance:'CompositeFilename', tags:Union[str, list]=N
 
 @define(slots=True)
 class CompositeFilename(filenameBase):
-    """Base class for filename generation for files with entities
-
+    """
+    Base class for filename generation for files with entities
     Attributes:
-        parent (Union[filenameBase, None]): Parent filename object to inherit from
-        name (str): Name of the current filename component
+    parent (Union[filenameBase, None]): Parent filename object to inherit from
+    name (str): Name of the current filename component
     """
     schema: ClassVar[list] #should point to schema.rules.entities which is an ordered list
     entities: ClassVar[dict[str, Optional[Entity]]]
@@ -96,12 +96,16 @@ class CompositeFilename(filenameBase):
 
     @property
     def name(self) -> str:
-        """Construct the full filename by combining parent names and current name."""
+        """
+        Construct the full filename by combining parent names and current name.
+        """
         return self._construct_name(self.entities, self.suffix, self.datatype)
     
     @property
     def local_name(self) -> str:
-        """construct instance name from attributes unique to the instance."""
+        """
+        construct instance name from attributes unique to the instance.
+        """
         return self._construct_name(self._entities, self._suffix, self._datatype)
 
     @classmethod

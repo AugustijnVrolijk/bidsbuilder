@@ -8,30 +8,25 @@ from ..schema_objects import Entity, Suffix
 from ..core.filenames import CompositeFilename
 from .directories import Subject, Session
 
-"""
-DATASET COLLECTION:
-
-AT ITS CORE IT IS:
-
-    RAW DATA
-    JSON SIDECAR
-
-linked data, i.e:
-    _channels.tsv
-    _events.tsv
-    _electrodes.tsv
-
-    etc...
-"""
-
 @define(slots=True)
 class dataCollection(DatasetCore):
-    
-    parent: Union['Subject', 'Session'] = field(repr=False)
+    """
+    DATASET COLLECTION:
+
+    AT ITS CORE IT IS:
+
+        RAW DATA
+        JSON SIDECAR
+
+    linked data, i.e:
+        _channels.tsv
+        _events.tsv
+        _electrodes.tsv
+
+        etc...
+    """
     containers: dict[Any] = field(init=False)
-
-    #Metadata: dict[str] = field(init=False, repr=False)
-
+    parent: Union['Subject', 'Session'] = field(init=False, repr=False)
 
     def __attrs_post_init__(self):
         try:
@@ -64,13 +59,14 @@ class dataCollection(DatasetCore):
                 final_ents[cur_ent.name] = cur_ent
 
         t = CompositeFilename(final_ents, suffix=suffix)
+        raise NotImplementedError("NEED TO FIX THE DATACOLLECTION IMPORTS")
+
         dataset = cls(t)
         dataset.populate_metadata(metadata)
         return dataset
 
     def populate_metadata(self):
         pass
-
 
 def add_data(*args, **kwargs) -> dataCollection:
     return dataCollection.create(*args, **kwargs)

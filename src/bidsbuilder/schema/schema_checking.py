@@ -25,13 +25,9 @@ class schema_checker_OLD(ABC):
                         add_callbacks:bool=False, 
                         tags:Union[str, list] = None) -> Generator[tuple[str, str, Any], None, None]:
         """
-        generator, which when given: a JSON object to check,
-                                    a schema,
-                                    Optionally: a list of current labels
-                                                a bool to add callbacks,
-                                                a list of tags to check             
-        yields tuples of the format: 
-        ("add"/"del", label, fields)
+        generator, which when given: a JSON object to check, a schema,
+        Optionally: a list of current labels, a bool to add callbacks, a list of tags to check
+        yields tuples of the format: ("add"/"del", label, fields)
         the first variable tells whether to add or remove the given fields
         """
         if cur_labels is None:
@@ -87,14 +83,9 @@ class schema_checker():
                         add_callbacks:bool=False, 
                         tags:Union[str, list] = None) -> Generator[tuple[str, str, Any], None, None]:
         """
-        generator, which when given: a JSON object to check,
-                                    a schema,
-                                    Optionally: a list of current labels
-                                                a bool to add callbacks,
-                                                a list of tags to check
-                                                
-        yields tuples of the format: 
-        ("add"/"del", label, fields)
+        generator, which when given: a JSON object to check, a schema,
+        Optionally: a list of current labels, a bool to add callbacks, a list of tags to check
+        yields tuples of the format: ("add"/"del", label, fields)
         the first variable tells whether to add or remove the given fields
         """
         if cur_labels is None:

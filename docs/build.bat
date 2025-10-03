@@ -39,7 +39,7 @@ echo.Building HTML docs ...
 if errorlevel 1 goto build_fail
 
 echo.
-echo >>> Documentation built in _build/html
+echo.Documentation built in _build/html
 popd
 exit /b 0
 

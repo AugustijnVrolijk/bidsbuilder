@@ -101,16 +101,16 @@ def checkPath(path:str, force:bool = False, flag:str=None) -> tuple[bool|str | N
     check path and create folder struct if necessary
     
     inputs: 
-        - path: path to check
-        - force: whether to ask the user about potential conflict or force path creation
-        - flag: additional flags for different behaviour
-            levels:
-                -"read" doesn't matter if the folder doesn't have write permissions,
-                can still read from the folder (used if you want to load in from a folder)
-                -"write" doesn't matter if the folder doesn't have read permissions,
-                can still write to a folder (used if you want to write your data to a folder)
+    - path: path to check
+    - force: whether to ask the user about potential conflict or force path creation
+    - flag: additional flags for different behaviour
+    levels:
+    -"read" doesn't matter if the folder doesn't have write permissions,
+    can still read from the folder (used if you want to load in from a folder)
+    -"write" doesn't matter if the folder doesn't have read permissions,
+    can still write to a folder (used if you want to write your data to a folder)
     returns:
-        - success: whether the path was successfully created/found depending on the flag
+    - success: whether the path was successfully created/found depending on the flag
     
     """
     def getInput(msg:str, force:bool = False) -> bool:
