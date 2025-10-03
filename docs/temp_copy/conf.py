@@ -24,6 +24,7 @@ autodoc_typehints = "description"
 
 add_module_names = False
 autodoc_class_signature = "separated"
+autodoc_typehints_use_signature = False
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,

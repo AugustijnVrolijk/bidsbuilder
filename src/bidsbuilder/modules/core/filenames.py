@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from attrs import define, field
 from ..schema_objects import Entity, raw_Datatype, Suffix
 from ...util.hooks import *
@@ -23,15 +25,11 @@ class filenameBase(ABC):
     def local_name(self): ...
 
     @property #could consider caching, but parent can change, so need to then reset the cache
-    def parent(self) -> 'filenameBase':
+    def parent(self) -> Self:
         if self._tree_link.parent:
             return self._tree_link.parent._name_link
         else: 
             None
-
-    #def __setitem__(self):
-
-    #def __getitem__(self):
 
 @define(slots=True)
 class agnosticFilename(filenameBase):
@@ -41,11 +39,11 @@ class agnosticFilename(filenameBase):
     _cur_ext:str = field(repr=True, default='', alias="_cur_ext")
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._stem + self._cur_ext
     
     @property
-    def local_name(self):
+    def local_name(self) -> str:
         return self.name
 
     def _change_ext(self, val:str):
@@ -130,7 +128,7 @@ class CompositeFilename(filenameBase):
         return entity_string
 
     @staticmethod
-    def _name_validator(instance:'CompositeFilename', descriptor:'DescriptorProtocol', value:Union[str, Entity, Suffix, raw_Datatype]) -> Entity:
+    def _name_validator(instance:Self, descriptor:'DescriptorProtocol', value:Union[str, Entity, Suffix, raw_Datatype]) -> Entity:
         
         tag_to_type: dict[str, Type[Entity]] = {
             "entities": Entity,
@@ -156,7 +154,7 @@ class CompositeFilename(filenameBase):
             raise TypeError(f"changing entities for {instance} requires either a string or {type(cur_type)} object") 
     
     @staticmethod
-    def _suf_dtype_getter(instance:'CompositeFilename', descriptor:DescriptorProtocol,owner) -> Union[Suffix, raw_Datatype, None]:
+    def _suf_dtype_getter(instance:Self, descriptor:DescriptorProtocol, owner) -> Union[Suffix, raw_Datatype, None]:
         cur_val = getattr(instance, descriptor.name)
         if cur_val is not None:
             return cur_val

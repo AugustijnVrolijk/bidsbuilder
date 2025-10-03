@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pandas as pd
 import pandera.pandas as pa
 from pandas.api.types import infer_dtype

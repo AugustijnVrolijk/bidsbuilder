@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from functools import wraps
 
-from types import MethodType
 from functools import wraps
 
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from ...modules.core.dataset_core import DatasetCore

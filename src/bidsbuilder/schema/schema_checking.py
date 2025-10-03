@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ..modules.core.dataset_core import DatasetCore
 
 from typing import TYPE_CHECKING, Generator, Union, Any

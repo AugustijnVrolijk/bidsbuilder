@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import types
 
 from typing import TYPE_CHECKING, Union, Generator, Type
 from weakref import ReferenceType
-
 from functools import wraps
 from collections.abc import MutableMapping, MutableSequence, MutableSet
 from abc import ABC

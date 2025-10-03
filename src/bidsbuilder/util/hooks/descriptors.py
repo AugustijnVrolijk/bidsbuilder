@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import weakref
-
 import types
-
 from typing import Any, Callable, Generic, TypeVar, Union, overload, Self, TypedDict, Unpack, ClassVar
 from functools import partial
+
 from .containers import *
 from .containers import ObservableType
 

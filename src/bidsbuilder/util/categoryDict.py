@@ -1,4 +1,5 @@
-import re
+from __future__ import annotations
+
 from mne.utils import logger
 from typing import Any
 

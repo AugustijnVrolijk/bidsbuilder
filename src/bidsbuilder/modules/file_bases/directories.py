@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from attrs import define, field
-from typing import ClassVar, TYPE_CHECKING
+from typing import ClassVar, TYPE_CHECKING, Self
 from ..core.dataset_core import DatasetCore
 from ..schema_objects import Entity, Suffix
 from ..core.filenames import CompositeFilename
@@ -8,7 +10,7 @@ from ..core.dataset_tree import Directory
 from pathlib import Path
 
 if TYPE_CHECKING:
-    from bidsschematools.types.namespace import Namespace
+    from .directories import folderBase
 
 @define(slots=True)
 class folderBase(DatasetCore):

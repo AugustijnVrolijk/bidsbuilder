@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 import operator as op
 from typing import Any, TYPE_CHECKING, Callable, Union

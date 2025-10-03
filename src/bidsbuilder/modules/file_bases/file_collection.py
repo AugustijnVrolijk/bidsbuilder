@@ -1,9 +1,7 @@
+from __future__ import annotations
 
 from attrs import define, field
-from typing import TYPE_CHECKING, Union, Any
-
-if TYPE_CHECKING:
-    from bidsschematools.types.namespace import Namespace
+from typing import Union, Any
 
 from ..core.dataset_core import DatasetCore
 from ..schema_objects import Entity, Suffix
@@ -24,8 +22,6 @@ linked data, i.e:
     _electrodes.tsv
 
     etc...
-
-
 """
 
 @define(slots=True)

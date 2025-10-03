@@ -21,6 +21,7 @@ extensions = ["sphinx.ext.autodoc",
 
 autosummary_generate = True
 autodoc_typehints = "description"
+autodoc_typehints_format = "short"
 
 add_module_names = False
 autodoc_class_signature = "separated"

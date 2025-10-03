@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Union, ClassVar, Self
 from attrs import define, field
 from pathlib import Path
@@ -34,7 +36,7 @@ class DatasetCore(ABC):
             self._check_schema(add_callbacks)
 
     @staticmethod
-    def _validate_exists(instance:'DatasetCore', descriptor:'DescriptorProtocol', value:bool) -> bool:
+    def _validate_exists(instance:Self, descriptor:'DescriptorProtocol', value:bool) -> bool:
         if not isinstance(value, bool):
             raise TypeError(f"exists must be of type boolean not {type(value)} for {value}") 
 

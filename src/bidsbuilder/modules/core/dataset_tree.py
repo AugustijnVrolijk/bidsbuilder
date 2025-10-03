@@ -5,7 +5,7 @@ import posixpath
 
 
 from attrs import define, field
-from typing import Union, TYPE_CHECKING, Generator
+from typing import Union, TYPE_CHECKING, Generator, Self
 from pathlib import Path
 
 from .filenames import filenameBase
@@ -13,6 +13,7 @@ from .dataset_core import DatasetCore
 
 
 if TYPE_CHECKING:
+    from .dataset_tree import Directory # to resolve wacky imports (circular imports for FileEntry parent)
     from ...main_module import BidsDataset
 
 @define(slots=True)
@@ -99,7 +100,7 @@ class FileCollection(FileEntry):
 
         This enables grouping of similar metadata between them
     """
-    children: dict[str, Union['Directory', 'FileCollection', 'FileEntry']] = field(repr=False, factory=dict)
+    children: dict[str, Union['Directory', Self, 'FileEntry']] = field(repr=False, factory=dict)
 
     def __attrs_post_init__(self) -> None:
         super().__attrs_post_init__()
@@ -187,12 +188,12 @@ class Directory(FileCollection):
     def __attrs_post_init__(self) -> None:
         super().__attrs_post_init__()
 
-    def add_tree_node(self, name_ref: Union['Directory', 'FileCollection', 'FileEntry']):
+    def add_tree_node(self, name_ref: Union[Self, 'FileCollection', 'FileEntry']):
         assert isinstance(name_ref, FileEntry), 'Directory add_tree_node expects a FileEntry or subclass'
         self.children[name_ref.name] = name_ref
         name_ref.parent = self
 
-    def add_child(self, name_ref: 'filenameBase', file_ref: 'DatasetCore', type_flag:str='collection') -> Union['Directory','FileCollection','FileEntry']:
+    def add_child(self, name_ref: 'filenameBase', file_ref: 'DatasetCore', type_flag:str='collection') -> Union[Self,'FileCollection','FileEntry']:
 
         child_type = {
             "collection": FileCollection,
