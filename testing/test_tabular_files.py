@@ -12,4 +12,10 @@ test_file = tabularFile()
 
 cur_schema = schema.rules.tabular_data.modality_agnostic.Participants
 test_file._add_metadata_(cur_schema)
+cur_data = test_file.data
+cur_data.addColumn("age")
+cur_data.data.loc[1] = 15
+cur_data.data.loc[2] = 18
+cur_data.data.loc[3] = 11
+cur_data.data.to_csv(r"C:\Users\augus\BCI_Stuff\Aspen\test.csv")
 print("test")

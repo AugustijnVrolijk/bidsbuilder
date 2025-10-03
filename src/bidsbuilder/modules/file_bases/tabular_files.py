@@ -55,6 +55,7 @@ class tableView():
     #index_columns:set = field() # 
     additional_columns_flag = field() # allowed, allowed_if_defined, not_allowed
     columns:dict = field()
+    cur_cols:set = field()
 
     @classmethod
     def _create(cls, columns:dict[str, Column], additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
@@ -93,6 +94,10 @@ class tableView():
 
         return cls(data=df, data_schema=ds, additional_columns_flag=flag_val, columns=columns)
 
+    @property
+    def _index_col(self):
+        return self.data.index.name
+    
     def _update_meta(self, columns:dict):  
         self.columns.update(columns)
         self.data_schema.add_columns(columns)
@@ -109,8 +114,24 @@ class tableView():
         - Validates candidate dataframe against schema.
         - Updates existing rows and appends new rows.
         """
+        extra = candidate.columns.difference(self.data.columns)
+        if extra:
+            # add more helpful check to see if its an incorrect column or one that needs to be added
+            raise ValueError(f"Column mismatch between given dataframe and existing dataframe. Please first addColumn to resolve.\nCurrent columns are:{self.cur_cols}")
+
         # enforce schema
         candidate = self.data_schema.validate(candidate)
+        if self._index_col is not None:
+            if self._index_col not in candidate.columns:
+                raise ValueError(f"Candidate must have column '{self._index_col}'.")
+            candidate = candidate.set_index(self._index_col)
+
+        missing_cols = self.data.columns.difference(candidate.columns)
+        na_values = [pd.NA] * len(candidate)
+        for col in missing_cols:
+            candidate[col] = pd.Series(na_values, dtype=self.data[col].dtype)
+
+        candidate = candidate[self.data.columns]
 
         # updates: overlap in index
         updates = candidate.loc[candidate.index.isin(self.data.index)]
@@ -125,17 +146,17 @@ class tableView():
         return self
 
     def addDataframe(self, df: pd.DataFrame):
-   
-        extra = set(df.columns) - set(self.columns.keys())
-        if extra:
-            raise ValueError(f"Column mismatch between giving dataframe and existing dataframe. Please first addColumn to resolve")
-
         return self._merge_validated(df)
 
-    def addRow(self, values: dict):
+    def addRow(self, pk:Any=None, values: Union[dict, list]=None):
         """
         Add a single row (requires primary key).
         """
+        if self.data.index and pk is None:
+            raise ValueError(f"for dataframe with primary key index {self.data.index}, you must provide a primary key when using addRow")
+        if pk is None and values is None:
+            raise ValueError(f"primary key or values must be set")
+        
         df = pd.DataFrame([values])
         if self.data.index.name:
             df.set_index(self.data.index.name, inplace=True)
@@ -184,17 +205,28 @@ class tableView():
         return self
 
     def addColumn(self, columnName:str, schema:Union[Column, dict]=None):
+        def _add_col():
+            # add checks so that the
+            self.data[columnName] = pd.Series([pd.NA] * len(self.data)) #add ,dtype= etc... 
+
+        def _update_dfschema(n_schema:Union[Column, UserDefinedColumn]): 
+            ...
+
         if self.additional_columns_flag == NOT_ALLOWED:
             raise TypeError(f"Tabular file {self} does not allow adding columns")
         elif self.additional_columns_flag == ALLOWED_IF_DEFINED:
             if columnName not in self.columns:
                 raise TypeError(f"Tabular file {self} only allows adding one of the following columns {self.columns.keys()}")
-            raise NotImplementedError("NEED TO ADD COLUMN HERE")
+            _add_col()
         else:
             if isinstance(schema, dict):
                 schema = UserDefinedColumn.create(name=columnName, **schema)
-            raise NotImplementedError("NEED TO ADD COLUMN HERE")
 
+            _update_dfschema(schema)    
+            _add_col()
+            
+
+   
 def stringify_all(orig_df:pd.DataFrame, cols:dict[str, Column]):
     def stringify_lists(cell, delimiter:str):
         """Convert lists into strings using column-specific delimiter."""
@@ -281,32 +313,25 @@ class tabularFile(DatasetCore):
     def json_sidecar(self):
         return self._tree_link.parent.fetch(".json")
 
-    def addColumn(self):
-        pass
+    def addDataframe(self, df: pd.DataFrame):
+        return self.data.addDataframe(df)
+       
+    def addRow(self, pk:Any, values: dict[Any, Any]):
+        return self.data.addRow(pk, values)
 
+    def addValues(self, pk, values: dict):
+        return self.data.addValues(pk, values)        
 
-    """
-    TODO:
-        rules.tabular_data.*
+    def delRow(self, pk):
+        return self.data.delRow(pk)
 
-selectors - List of expressions; any evaluating false indicate rule does not apply
-columns - Object with keys that may be found in objects.columns, values either a requirement level or an object
-initial_columns - An optional list of columns that must be the first N columns of a file
-index_columns - An optional list of columns that uniquely identify a row.
-additional_columns - Indicates whether additional columns may be defined. One of allowed, allowed_if_defined and not_allowed.
-    
-    allow for setting of initial column
+    def delValues(self, pk, columns: list[str]):
+        return self.data.delValues(pk, columns)
+        
 
-    index column
-
-    as well as using additional_column as a validator for columns
-
-    Maybe set columns as a hooked descriptor with a callback to update the sidecar_json if columns are added
-
-    and a validator when adding columns based on wether it is allowed (additional_columns) etc..
-    """
-
-
+    def addColumn(self, columnName:str, schema:Union[Column, dict]=None):
+        return self.data.addColumn(columnName, schema)
+       
 class tabularJSONFile(DatasetCore):
     def _check_schema(self, *args, **kwargs):...
 
