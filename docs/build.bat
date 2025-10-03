@@ -62,3 +62,6 @@ exit /b 1
 :python_error
 echo [ERROR] Python not found in PATH!
 exit /b 1
+
+:help
+%SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
