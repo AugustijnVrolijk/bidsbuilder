@@ -50,12 +50,11 @@ NOT_ALLOWED = 0
 @define(slots=True)
 class tableView():
     
-    data:pd.DataFrame = field() # at the moment will not 
-    data_schema:pa.DataFrameSchema = field() # validator to check input data
+    data:pd.DataFrame = field(repr=True) # at the moment will not 
+    data_schema:pa.DataFrameSchema = field(repr=False) # validator to check input data
     #index_columns:set = field() # 
-    additional_columns_flag = field() # allowed, allowed_if_defined, not_allowed
-    columns:dict = field()
-    cur_cols:set = field()
+    additional_columns_flag = field(repr=True) # allowed, allowed_if_defined, not_allowed
+    columns:dict = field(repr=False)
 
     @classmethod
     def _create(cls, columns:dict[str, Column], additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
@@ -86,11 +85,7 @@ class tableView():
                 index_columns = index_columns[0]
             df.set_index(index_columns, inplace=True)
         
-        #create dataschema checker
-        check_data = {}
-        for key, val in columns.items():
-            check_data[key] = pa.Column(int, pa.Check(lambda s: val.val_checker(s)))
-        ds = pa.DataFrameSchema(check_data)
+        ds = cls._create_col_schema(columns)
 
         return cls(data=df, data_schema=ds, additional_columns_flag=flag_val, columns=columns)
 
@@ -98,9 +93,23 @@ class tableView():
     def _index_col(self):
         return self.data.index.name
     
+    @property
+    def _template_df(self):
+        return self.data.iloc[0:0].copy()
+
+    @staticmethod
+    def _create_col_schema(columns:dict[str, Union[Column, UserDefinedColumn]]):
+        check_data = {}
+        for key, val in columns.items():
+            check_data[key] = pa.Column(int, pa.Check(lambda s: val.val_checker(s)))
+        return pa.DataFrameSchema(check_data)
+
     def _update_meta(self, columns:dict):  
         self.columns.update(columns)
-        self.data_schema.add_columns(columns)
+
+        # IF THIS IS UPDATED PLEASE UPDATE addColumn()
+        s_cols = self._create_col_schema(columns)
+        self.data_schema = self.data_schema.add_columns(s_cols)
 
     def _remove_meta(self, columns:list):
         for col in columns:
@@ -146,23 +155,40 @@ class tableView():
         return self
 
     def addDataframe(self, df: pd.DataFrame):
+        """
+        Add dataframe to current data
+        """
+        if name := self._index_col:
+            if name not in df.columns:
+                raise ValueError(f"Given Dataframe {df} must have column '{name}'\n currently has {df.columns.to_list()}")
+            df.set_index(name, inplace=True)
         return self._merge_validated(df)
 
     def addRow(self, pk:Any=None, values: Union[dict, list]=None):
         """
-        Add a single row (requires primary key).
+        Add a single row, (with values if specified, defaults to NA)
         """
-        if self.data.index and pk is None:
-            raise ValueError(f"for dataframe with primary key index {self.data.index}, you must provide a primary key when using addRow")
-        if pk is None and values is None:
-            raise ValueError(f"primary key or values must be set")
-        
-        df = pd.DataFrame([values])
-        if self.data.index.name:
-            df.set_index(self.data.index.name, inplace=True)
+        if type(self.data.index) != pd.RangeIndex:
+            if pk is None:
+                raise ValueError(f"for dataframe with primary key index {self.data.index}, you must provide a primary key when using addRow")
+        else:
+            pk = 0
 
-        if df.index.isin(self.data.index).any():
-            raise ValueError(f"Primary key {df.index.tolist()} already exists.")
+        df = self._template_df
+
+        if isinstance(values, dict):
+            for key in values.keys():
+                if key not in df.columns:
+                    raise KeyError(f"Column {key} not found in dataframe columns {df.columns.tolist()}")
+        elif isinstance(values, list):
+            if len(values) != len(df.columns):
+                raise ValueError(f"values length {len(values)} does not match number of columns {len(df.columns)}\nIf you want to specify fewer columns, use a dict and specify which columns data belongs to")
+        elif values is None:
+            values = pd.NA
+        else:
+            raise TypeError(f"values must be a dict or list, got {type(values)}")
+        
+        df.loc[pk] = values
 
         return self._merge_validated(df)
 
@@ -205,28 +231,24 @@ class tableView():
         return self
 
     def addColumn(self, columnName:str, schema:Union[Column, dict]=None):
-        def _add_col():
-            # add checks so that the
-            self.data[columnName] = pd.Series([pd.NA] * len(self.data)) #add ,dtype= etc... 
-
-        def _update_dfschema(n_schema:Union[Column, UserDefinedColumn]): 
-            ...
-
+     
         if self.additional_columns_flag == NOT_ALLOWED:
             raise TypeError(f"Tabular file {self} does not allow adding columns")
         elif self.additional_columns_flag == ALLOWED_IF_DEFINED:
             if columnName not in self.columns:
                 raise TypeError(f"Tabular file {self} only allows adding one of the following columns {self.columns.keys()}")
-            _add_col()
         else:
             if isinstance(schema, dict):
                 schema = UserDefinedColumn.create(name=columnName, **schema)
 
-            _update_dfschema(schema)    
-            _add_col()
-            
+            # IF THIS IS UPDATED PLEASE UPDATE _UPDATE_META
+            s_cols = self._create_col_schema({columnName:schema})
+            self.data_schema = self.data_schema.add_columns(s_cols)
 
-   
+        self.data[columnName] = pd.Series([pd.NA] * len(self.data)) #add ,dtype= etc... 
+        print("IN METHOD ADDCOLUMN TABLEVIEW; ADD SCHEMA DRIVEN TYPE SETTING WHEN ADDING COLUMNS")
+        return
+
 def stringify_all(orig_df:pd.DataFrame, cols:dict[str, Column]):
     def stringify_lists(cell, delimiter:str):
         """Convert lists into strings using column-specific delimiter."""
@@ -319,16 +341,15 @@ class tabularFile(DatasetCore):
     def addRow(self, pk:Any, values: dict[Any, Any]):
         return self.data.addRow(pk, values)
 
-    def addValues(self, pk, values: dict):
+    def addValues(self, pk:Any, values: dict):
         return self.data.addValues(pk, values)        
 
-    def delRow(self, pk):
+    def delRow(self, pk:Any):
         return self.data.delRow(pk)
 
-    def delValues(self, pk, columns: list[str]):
+    def delValues(self, pk:Any, columns: list[str]):
         return self.data.delValues(pk, columns)
         
-
     def addColumn(self, columnName:str, schema:Union[Column, dict]=None):
         return self.data.addColumn(columnName, schema)
        
