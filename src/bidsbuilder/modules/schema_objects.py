@@ -7,7 +7,6 @@ from typing import Union, ClassVar, TYPE_CHECKING, Any
 from functools import lru_cache
 from weakref import WeakKeyDictionary
 from abc import ABC, abstractmethod
-
 from bidsschematools.types.namespace import Namespace
 
 
@@ -512,7 +511,6 @@ class UserDefinedColumn(ColumnInterface):
                Minimum=Minimum)
 
     def val_checker(self, new_val:Any) -> bool:
-
         def check_max(max, val) -> bool:
             if val > max:
                 # raise ValueError(f"value {val} is greater than the allowed max {max} for {self}")

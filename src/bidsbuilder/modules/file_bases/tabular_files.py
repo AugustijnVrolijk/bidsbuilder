@@ -47,12 +47,27 @@ ALLOWED = 2
 ALLOWED_IF_DEFINED = 1
 NOT_ALLOWED = 0
 
+"""
+
+
+
+assuming ds : DataFrameSchema
+
+we can do ds.add_columns({...}) to add columns
+where {...} is just the dict of columnname:pa.Column
+
+and we can do ds.set_index([...]) to set index
+
+
+"""
+
+
 @define(slots=True)
 class tableView():
     
     data:pd.DataFrame = field(repr=True) # at the moment will not 
     data_schema:pa.DataFrameSchema = field(repr=False) # validator to check input data
-    #index_columns:set = field() # 
+    index_columns:set = field() # 
     additional_columns_flag = field(repr=True) # allowed, allowed_if_defined, not_allowed
     columns:dict = field(repr=False)
 
@@ -78,15 +93,19 @@ class tableView():
         if flag_val is None:
             raise ValueError(f"additional columns flag {additional_columns_flag} is not recognised. Must be one of {flag_converter.keys()}")
 
-        # create original dataframe
+
+        # set index column/ columns
+        # Before checking for index_columns, as set_index needs the input to be wrapped in a list
+        ds = pa.DataFrameSchema(cls._create_col_schema(columns))
+        ds = ds.set_index(index_columns)
+
+        # create original dataframe        
         df = pd.DataFrame(columns=initial_columns)
         if index_columns:
             if len(index_columns) == 1:
                 index_columns = index_columns[0]
             df.set_index(index_columns, inplace=True)
         
-        ds = cls._create_col_schema(columns)
-
         return cls(data=df, data_schema=ds, additional_columns_flag=flag_val, columns=columns)
 
     @property
@@ -101,8 +120,8 @@ class tableView():
     def _create_col_schema(columns:dict[str, Union[Column, UserDefinedColumn]]):
         check_data = {}
         for key, val in columns.items():
-            check_data[key] = pa.Column(int, pa.Check(lambda s: val.val_checker(s)))
-        return pa.DataFrameSchema(check_data)
+            check_data[key] = pa.Column(object, pa.Check(lambda s: val.val_checker(s)))
+        return check_data    
 
     def _update_meta(self, columns:dict):  
         self.columns.update(columns)
@@ -245,8 +264,8 @@ class tableView():
             s_cols = self._create_col_schema({columnName:schema})
             self.data_schema = self.data_schema.add_columns(s_cols)
 
-        self.data[columnName] = pd.Series([pd.NA] * len(self.data)) #add ,dtype= etc... 
-        print("IN METHOD ADDCOLUMN TABLEVIEW; ADD SCHEMA DRIVEN TYPE SETTING WHEN ADDING COLUMNS")
+        self.data[columnName] = pd.Series([pd.NA] * len(self.data), dtype=object) #add ,dtype= etc... 
+        # print("IN METHOD ADDCOLUMN TABLEVIEW; ADD SCHEMA DRIVEN TYPE SETTING WHEN ADDING COLUMNS")
         return
 
 def stringify_all(orig_df:pd.DataFrame, cols:dict[str, Column]):

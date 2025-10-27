@@ -19,3 +19,4 @@ cur_data.data.loc[2] = 18
 cur_data.data.loc[3] = 11
 cur_data.data.to_csv(r"C:\Users\augus\BCI_Stuff\Aspen\test.csv")
 print("test")
+
