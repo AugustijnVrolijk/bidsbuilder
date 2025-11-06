@@ -68,14 +68,20 @@ class BidsDataset():
         if not exists:
             raise FileExistsError(msg)
         """
-        curGeneratedBy = self.dataset_description["generatedby"]
+        curGeneratedBy = self.dataset_description["GeneratedBy"]
         generatedby = [{'Name': 'bidsbuilder',
                      'Version': "0.0.1",
                      'Description:': 'Schema-driven pythonic object representation of all BIDS components',
                      'CodeURL': 'https://github.com/AugustijnVrolijk/bidsbuilder',
                      }]
-        
-        curGeneratedBy.append()
+        if curGeneratedBy is None:
+            self.dataset_description["GeneratedBy"] = generatedby
+        elif isinstance(curGeneratedBy, list):
+            self.dataset_description["GeneratedBy"] = curGeneratedBy.append(generatedby)
+        else:
+            curGeneratedBy = [curGeneratedBy]
+            self.dataset_description["GeneratedBy"] = curGeneratedBy.append(generatedby)
+
         self._tree_reference._make(force)
     
     def _removeRedundant(self):

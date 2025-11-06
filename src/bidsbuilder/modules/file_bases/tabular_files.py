@@ -65,7 +65,7 @@ class tableView():
     columns:dict = field(repr=False)
 
     @classmethod
-    def _create(cls, columns:dict[str, Column], additional_columns_flag:str, initial_columns:list=None, index_columns:list=None) -> Self:
+    def _create(cls, columns:dict[str, Column], additional_columns_flag:str, initial_columns:list=[], index_columns:list=[]) -> Self:
         """
         columns: - dict with values that may be found in objects.columns
         
@@ -86,9 +86,8 @@ class tableView():
         if flag_val is None:
             raise ValueError(f"additional columns flag {additional_columns_flag} is not recognised. Must be one of {flag_converter.keys()}")
 
-
-        # set index column/ columns
-        # Before checking for index_columns, as set_index needs the input to be wrapped in a list
+        
+        # create schema
         ds = pa.DataFrameSchema(cls._create_col_schema(columns,init_cols=set(initial_columns)))
         ds = ds.set_index(index_columns, drop=False)
         
@@ -338,10 +337,17 @@ class tabularFile(DatasetCore):
                 processed_cols[key] = met_instance
 
         # get other metadata
-        initial_columns = items.get("initial_columns", None) # can be None
-        index_columns = items.get("index_columns", None) # can be None
+        initial_columns = items.get("initial_columns", list()) # can be None
+        index_columns = items.get("index_columns", list()) # can be None
         additional_columns_flag = items.get("additional_columns") # must specify one of allowed, allowed_if_defined, not_allowed
         
+        # inconsistency in schema, initial_cols doesn't always have the index cols listed. check initial and index columns
+        t_init_cols = set(initial_columns)
+        t_index_cols = set(index_columns)
+        to_add = t_index_cols.difference(t_init_cols)
+        for col in to_add:
+            initial_columns.append(col)
+
         # set table/update
         self._n_schema_true += 1
         if self._n_schema_true > 1:

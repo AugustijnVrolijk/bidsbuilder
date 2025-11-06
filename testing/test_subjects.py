@@ -1,7 +1,7 @@
 from bidsbuilder import *
 
 def demo():
-    folderPath = r"C:\Users\augus\BCI_Stuff\Aspen\demo2"
+    folderPath = r"C:\Users\augus\BCI_Stuff\Aspen\testing\test"
     myData = BidsDataset(folderPath)
     subjects = ["mariana", "erdi"]
     for sub in subjects:
