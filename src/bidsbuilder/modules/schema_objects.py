@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import pandas as pd
 
 from attrs import define, field
 from typing import Union, ClassVar, TYPE_CHECKING, Any
@@ -261,6 +262,11 @@ class nameValueBase(ValueBase):
                 error_msg += f"Incorrect format, should be: format.{c_format}\n"
                 is_correct = False
 
+        if c_pattern:=rules.get("pattern", False):
+            if not formats.validate_pattern(c_pattern, new_val):
+                error_msg += f"Value does not match required pattern: {c_pattern}\n"
+                is_correct = False
+
         if c_type:=rules.get("type", False):
             if not self._check_type(c_type, new_val):
                 error_msg += f"Incorrect Type. Should be: {c_type}\n"
@@ -364,10 +370,15 @@ class formats():
 
         return pattern
 
-    @classmethod
-    def check_pattern(cls, inp_type:str, val:str) -> bool:
+    @classmethod 
+    def check_pattern(cls, inp_type:str, val:str) -> bool: # old name, should be changed as this really checks the format, not the pattern
         pattern = cls.get_pattern(inp_type)  # Ensure the format exists
-        return bool(pattern.fullmatch(val))
+        return bool(pattern.fullmatch(str(val)))
+
+    @classmethod
+    def validate_pattern(cls, inp_pattern:str, val:str) -> bool:
+        pattern = re.compile(inp_pattern)
+        return bool(pattern.fullmatch(str(val)))
 
 @define(slots=True, weakref_slot=True, hash=True)
 class Entity(nameValueBase):
@@ -429,8 +440,13 @@ class ColumnInterface(ABC):
     ensures modifications to UserDefinedColumn or Column have necessary methods and properties for tabular_files
     """
 
+    def vectorized_val_checker(self, series: pd.Series) -> pd.Series:
+        """Apply self.val_checker() to each value in a Series and return a boolean Series."""
+        results = [self.val_checker(val) for val in series]
+        return pd.Series(results, index=series.index, dtype=bool)
+
     @abstractmethod
-    def val_checker(self, new_val:Any) -> bool: ...
+    def val_checker(self, new_val:any) -> bool: ...
 
     @property
     @abstractmethod

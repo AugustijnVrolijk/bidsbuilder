@@ -89,15 +89,15 @@ class tableView():
 
         # set index column/ columns
         # Before checking for index_columns, as set_index needs the input to be wrapped in a list
-        ds = pa.DataFrameSchema(cls._create_col_schema(columns))
-        ds = ds.set_index(index_columns)
-
+        ds = pa.DataFrameSchema(cls._create_col_schema(columns,init_cols=set(initial_columns)))
+        ds = ds.set_index(index_columns, drop=False)
+        
         # create original dataframe        
         df = pd.DataFrame(columns=initial_columns)
         if index_columns:
             if len(index_columns) == 1:
                 index_columns = index_columns[0]
-            df.set_index(index_columns, inplace=True)
+            df.set_index(index_columns, inplace=True, drop=False)
         
         return cls(data=df, data_schema=ds, additional_columns_flag=flag_val, columns=columns)
 
@@ -110,10 +110,14 @@ class tableView():
         return self.data.iloc[0:0].copy()
 
     @staticmethod
-    def _create_col_schema(columns:dict[str, Union[Column, UserDefinedColumn]]):
+    def _create_col_schema(columns:dict[str, Union[Column, UserDefinedColumn]], init_cols:set=set()):
         check_data = {}
         for key, val in columns.items():
-            check_data[key] = pa.Column(object, pa.Check(lambda s: val.val_checker(s)))
+            if key in init_cols:
+                req = True
+            else:
+                req = False
+            check_data[key] = pa.Column(object, pa.Check(val.vectorized_val_checker), required=req)
         return check_data    
 
     def _update_meta(self, columns:dict):  
@@ -167,7 +171,7 @@ class tableView():
             if name != df.index.name:
                 if name not in df.columns:
                     raise ValueError(f"Given Dataframe {df} must have column '{name}'\n currently has {df.columns.to_list()}")
-                df.set_index(name, inplace=True)
+                df.set_index(name, inplace=True, drop=False)
 
         # ensure incoming dataframe has correct columns
         extra = df.columns.difference(self.data.columns)
@@ -192,7 +196,7 @@ class tableView():
             if pk is None:
                 raise ValueError(f"for dataframe with primary key index {self.data.index}, you must provide a primary key when using addRow")
         else:
-            pk = 0
+            pk = len(self.data) + 1
 
         df = self._template_df
 
@@ -200,11 +204,14 @@ class tableView():
             for key in values.keys():
                 if key not in df.columns:
                     raise KeyError(f"Column {key} not found in dataframe columns {df.columns.tolist()}")
+            values[self._index_col] = pk
         elif isinstance(values, list):
+            values.insert(0, pk) # add primary key to start of list
             if len(values) != len(df.columns):
                 raise ValueError(f"values length {len(values)} does not match number of columns {len(df.columns)}\nIf you want to specify fewer columns, use a dict and specify which columns data belongs to")
         elif values is None:
-            values = pd.NA
+            values = [pd.NA] * len(df.columns)
+            values[0] = pk
         else:
             raise TypeError(f"values must be a dict or list, got {type(values)}")
         
@@ -219,6 +226,7 @@ class tableView():
         if pk not in self.data.index:
             raise KeyError(f"Primary key {pk} not found.")
 
+        values[self._index_col] = pk
         candidate = self.data.loc[[pk]].copy()
         for col, val in values.items():
             candidate.at[pk, col] = val
@@ -244,6 +252,8 @@ class tableView():
             raise KeyError(f"Primary key {pk} not found.")
 
         for col in columns:
+            if col == self._index_col:
+                continue
             if col not in self.data.columns:
                 raise KeyError(f"Column {col} not found.")
             self.data.at[pk, col] = pd.NA
@@ -254,20 +264,18 @@ class tableView():
      
         if self.additional_columns_flag == NOT_ALLOWED:
             raise TypeError(f"Tabular file {self} does not allow adding columns")
-        elif self.additional_columns_flag == ALLOWED_IF_DEFINED:
-            if columnName not in self.columns:
-                raise TypeError(f"Tabular file {self} only allows adding one of the following columns {self.columns.keys()}")
+        elif self.additional_columns_flag == ALLOWED_IF_DEFINED and columnName not in self.columns:
+            raise TypeError(f"Tabular file {self} only allows adding one of the following columns {self.columns.keys()}")
         else:
             if isinstance(schema, dict):
                 schema = UserDefinedColumn.create(name=columnName, **schema)
 
-            # IF THIS IS UPDATED PLEASE UPDATE _UPDATE_META
-            s_cols = self._create_col_schema({columnName:schema})
-            self.data_schema = self.data_schema.add_columns(s_cols)
+                # IF THIS IS UPDATED PLEASE UPDATE _UPDATE_META
+                s_cols = self._create_col_schema({columnName:schema})
+                self.data_schema = self.data_schema.add_columns(s_cols)
 
-        self.data[columnName] = pd.Series([pd.NA] * len(self.data), dtype=object) #add ,dtype= etc... 
-        # print("IN METHOD ADDCOLUMN TABLEVIEW; ADD SCHEMA DRIVEN TYPE SETTING WHEN ADDING COLUMNS")
-        return
+        self.data[columnName] = pd.Series([pd.NA] * len(self.data), dtype=object) 
+
 
 def stringify_all(orig_df:pd.DataFrame, cols:dict[str, Column]):
     def stringify_lists(cell, delimiter:str):
@@ -298,7 +306,7 @@ class tabularFile(DatasetCore):
     columns:ClassVar[MinimalDict[str, Column]] = HookedDescriptor(columnView,factory=make_column_view,tags="columns")
 
     def _make_file(self, force:bool):
-        final_data = stringify_all(self.data, self.columns)
+        final_data = stringify_all(self.data.data, self.data.columns)
         """UserDefinedLists have specified delimiters, as such need to convert the lists to strings
         with the delimiter implemented, so that then the correct delimiter in the sublists is used"""
         _write_tsv(self._tree_link.path, final_data, force)
@@ -358,7 +366,7 @@ class tabularFile(DatasetCore):
     def addDataframe(self, df: pd.DataFrame):
         return self.data.addDataframe(df)
        
-    def addRow(self, pk:Any, values: dict[Any, Any]):
+    def addRow(self, pk:Any=None, values: dict[Any, Any]=None):
         return self.data.addRow(pk, values)
 
     def addValues(self, pk:Any, values: dict):
