@@ -55,7 +55,7 @@ class DatasetCore(ABC):
         return self._tree_link._name_link
 
     def _write_BIDS(self, force:bool):
-        if self._exists:
+        if self.exists:
             self._make_file(force)
 
     @abstractmethod

@@ -199,8 +199,7 @@ class nameValueBase(ValueBase):
 
         return (is_correct, error_msg)
 
-    @staticmethod
-    def _validate_array(is_correct:bool, new_val:list, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
+    def _validate_array(self, is_correct:bool, new_val:list, rules:'Namespace', error_msg:str) -> tuple[bool, str]:
         
         if max:=rules.get("maxItems", False):
             if not len(new_val) <= max:
@@ -217,8 +216,8 @@ class nameValueBase(ValueBase):
             # this will still have some duplicates, i.e. if item rules has multiple rules and one val failed 1, and the other failed
             # 2, including the one the first failed. But I can't be bothered to change the way error messages are propogated atm.
             is_sub_val_correct = True
-            for val in new_val: THIS WILL THROW AN ERROR; VALIDATENEW VAL NEEDS SELF TO BE DEFINED...
-                t_is_correct, sub_val_error_msg = nameValueBase._validate_new_val(self, is_correct, new_val=val, rules=item_rules, error_msg="")
+            for val in new_val:
+                t_is_correct, sub_val_error_msg = self._validate_new_val(new_val=val, rules=item_rules, error_msg="")
                 is_sub_val_correct = (t_is_correct and is_sub_val_correct)
                 error_msgs.add(sub_val_error_msg)
 
