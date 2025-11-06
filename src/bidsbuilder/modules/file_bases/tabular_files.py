@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import pandas as pd
 import pandera.pandas as pa
-from pandas.api.types import infer_dtype
 from attrs import define, field
-from typing import TYPE_CHECKING, ClassVar, Any, Union, Generator, Self
+from typing import TYPE_CHECKING, ClassVar, Any, Union, Self
 
 from ...util.io import _write_json, _write_tsv
 from ..core.dataset_core import DatasetCore
@@ -48,17 +47,12 @@ ALLOWED_IF_DEFINED = 1
 NOT_ALLOWED = 0
 
 """
-
-
-
 assuming ds : DataFrameSchema
 
 we can do ds.add_columns({...}) to add columns
 where {...} is just the dict of columnname:pa.Column
 
 and we can do ds.set_index([...]) to set index
-
-
 """
 
 
@@ -67,7 +61,6 @@ class tableView():
     
     data:pd.DataFrame = field(repr=True) # at the moment will not 
     data_schema:pa.DataFrameSchema = field(repr=False) # validator to check input data
-    index_columns:set = field() # 
     additional_columns_flag = field(repr=True) # allowed, allowed_if_defined, not_allowed
     columns:dict = field(repr=False)
 
@@ -142,23 +135,14 @@ class tableView():
         - Validates candidate dataframe against schema.
         - Updates existing rows and appends new rows.
         """
-        extra = candidate.columns.difference(self.data.columns)
-        if extra:
-            # add more helpful check to see if its an incorrect column or one that needs to be added
-            raise ValueError(f"Column mismatch between given dataframe and existing dataframe. Please first addColumn to resolve.\nCurrent columns are:{self.cur_cols}")
+        # removed checking of the dataframe. AddRow and AddValue do this automatically
+        # by taking the correct dataframe template from self.data
+        # instead moved this bit into addDataframe explicitly
 
         # enforce schema
         candidate = self.data_schema.validate(candidate)
-        if self._index_col is not None:
-            if self._index_col not in candidate.columns:
-                raise ValueError(f"Candidate must have column '{self._index_col}'.")
-            candidate = candidate.set_index(self._index_col)
-
-        missing_cols = self.data.columns.difference(candidate.columns)
-        na_values = [pd.NA] * len(candidate)
-        for col in missing_cols:
-            candidate[col] = pd.Series(na_values, dtype=self.data[col].dtype)
-
+       
+        # reorder candidate columns to match self.data
         candidate = candidate[self.data.columns]
 
         # updates: overlap in index
@@ -177,15 +161,32 @@ class tableView():
         """
         Add dataframe to current data
         """
+        
+        # set index if needed
         if name := self._index_col:
-            if name not in df.columns:
-                raise ValueError(f"Given Dataframe {df} must have column '{name}'\n currently has {df.columns.to_list()}")
-            df.set_index(name, inplace=True)
+            if name != df.index.name:
+                if name not in df.columns:
+                    raise ValueError(f"Given Dataframe {df} must have column '{name}'\n currently has {df.columns.to_list()}")
+                df.set_index(name, inplace=True)
+
+        # ensure incoming dataframe has correct columns
+        extra = df.columns.difference(self.data.columns)
+        if extra:
+            # add more helpful check to see if its an incorrect column or one that needs to be added
+            raise ValueError(f"Column mismatch between given dataframe and existing dataframe. Please first addColumn to resolve.\nCurrent columns are:{self.cur_cols}")
+
+        missing_cols = self.data.columns.difference(df.columns)
+        na_values = [pd.NA] * len(df)
+        for col in missing_cols:
+            df[col] = pd.Series(na_values, dtype=self.data[col].dtype)
+
         return self._merge_validated(df)
 
     def addRow(self, pk:Any=None, values: Union[dict, list]=None):
         """
         Add a single row, (with values if specified, defaults to NA)
+        pk: primary key value for the new row. If the dataframe uses a RangeIndex, this can be left as None.
+            i.e. for participants.tsv, where participantID is the primary key, this should be the value of that participantID whose values you want to add
         """
         if type(self.data.index) != pd.RangeIndex:
             if pk is None:
