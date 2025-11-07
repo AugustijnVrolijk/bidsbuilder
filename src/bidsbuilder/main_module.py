@@ -112,6 +112,6 @@ class BidsDataset():
 
         self.initialised = True
     
-    def addSubject(self, name:str) -> Subject:
+    def add_subject(self, name:str) -> Subject:
         sub = Subject.create(name, self.tree)
         return sub

@@ -5,7 +5,7 @@ def demo():
     myData = BidsDataset(folderPath)
     subjects = ["mariana", "erdi"]
     for sub in subjects:
-        t1 = myData.addSubject(sub)
+        t1 = myData.add_subject(sub)
         t1.add_session("IEMU")
     myData.build(force=True)
 

@@ -74,10 +74,6 @@ class CompositeFilename(filenameBase):
     suffix: ClassVar[Optional[Suffix]]
     datatype: ClassVar[Optional[raw_Datatype]]
 
-    _entities: dict[str, Optional[Entity]] = field(factory=dict, repr=True, alias="_entities")
-    _suffix: Optional[Suffix] = field(default=None, repr=True, alias="_suffix")
-    _datatype: Optional[raw_Datatype] = field(default=None, repr=True, alias="_datatype")
-
     @classmethod
     def create(cls, entities:Optional[dict]=None, suffix:Optional[str]=None, datatype:Optional[str]=None):
         
@@ -92,21 +88,27 @@ class CompositeFilename(filenameBase):
         if datatype:
             datatype = raw_Datatype(datatype)
 
-        return cls(_entities=entities, _suffix=suffix, _datatype=datatype)
+        instance = cls()
+        # initialise values without triggering callbacks
+        cls.entities._set_quiet(instance, entities)
+        cls.suffix._set_quiet(instance, suffix)
+        cls.datatype._set_quiet(instance, datatype)
+
+        return instance
 
     @property
     def name(self) -> str:
         """
         Construct the full filename by combining parent names and current name.
         """
-        return self._construct_name(self.entities, self.suffix, self.datatype)
+        return self._construct_name(self.resolved_entities, self.resolved_suffix, self.resolved_datatype)
     
     @property
     def local_name(self) -> str:
         """
         construct instance name from attributes unique to the instance.
         """
-        return self._construct_name(self._entities, self._suffix, self._datatype)
+        return self._construct_name(self.entities, self.suffix, self.datatype)
 
     @classmethod
     def _construct_name(cls, n_entities:dict={}, n_suffix:Suffix=None, n_datatype:raw_Datatype=None, extension:str=None) -> str:
@@ -157,22 +159,24 @@ class CompositeFilename(filenameBase):
         else:
             raise TypeError(f"changing entities for {instance} requires either a string or {type(cur_type)} object") 
     
+    """
+    old recursive getter method - replaced with resolved_* properties - cleaner so that the instance variable
+    keep just the local value.
+
     @staticmethod
     def _suf_dtype_getter(instance:Self, descriptor:DescriptorProtocol, owner) -> Union[Suffix, raw_Datatype, None]:
         cur_val = getattr(instance, descriptor.name)
         if cur_val is not None:
             return cur_val
         elif instance.parent is not None and isinstance(instance.parent, Self):
-            #descriptor_name = descriptor.name[1:] # strip the leading _ of descriptor.name
             return instance._suf_dtype_getter(instance.parent, descriptor, owner)
         else:
             return None
-
-    suffix: ClassVar[Suffix] = HookedDescriptor(Suffix,fget=_suf_dtype_getter, fval=_name_validator,tags="suffix",callback=_update_children_cback)
-    datatype: ClassVar[raw_Datatype] = HookedDescriptor(raw_Datatype,fget=_suf_dtype_getter,fval=_name_validator,tags="datatype",callback=_update_children_cback)
+    """
+            
+    suffix: ClassVar[Suffix] = HookedDescriptor(Suffix, fval=_name_validator,tags="suffix",callback=_update_children_cback)
+    datatype: ClassVar[raw_Datatype] = HookedDescriptor(raw_Datatype,fval=_name_validator,tags="datatype",callback=_update_children_cback)
     entities: ClassVar[dict[str, Entity]] = HookedDescriptor(dict,fval=_name_validator,tags="entities",callback=_update_children_cback)
-
-   
 
     @property
     def resolved_suffix(self) -> str: 

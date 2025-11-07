@@ -275,6 +275,8 @@ class tableView():
 
         self.data[columnName] = pd.Series([pd.NA] * len(self.data), dtype=object) 
 
+    def isRow(self, pk:Any) -> bool:
+        return pk in self.data.index
 
 def stringify_all(orig_df:pd.DataFrame, cols:dict[str, Column]):
     def stringify_lists(cell, delimiter:str):
@@ -386,7 +388,10 @@ class tabularFile(DatasetCore):
         
     def addColumn(self, columnName:str, schema:Union[Column, dict]=None):
         return self.data.addColumn(columnName, schema)
-       
+    
+    def isRow(self, pk:Any) -> bool:
+        return self.data.isRow(pk)
+
 class tabularJSONFile(DatasetCore):
     def _check_schema(self, *args, **kwargs):...
 

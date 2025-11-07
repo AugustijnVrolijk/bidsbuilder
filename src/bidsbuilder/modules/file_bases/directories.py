@@ -11,22 +11,22 @@ from pathlib import Path
 
 if TYPE_CHECKING:
     from .directories import folderBase
+    from .tabular_files import tabularFile
 
 @define(slots=True)
 class folderBase(DatasetCore):
     _cur_entity: ClassVar[str] = (None, None)
-
-    _val:str = field(repr=True, default=None, alias="_val")
 
     n:int = field(repr=False, init=False)
     children:list['folderBase'] = field(repr=False, init=False, factory=list)
 
     @property
     def val(self):
-        return self._val
+        return self._tree_link._name_link.local_name[4:]
 
     @classmethod
     def create(cls, name, tree:Directory):
+        # create method links the tree object, to this folderBase object to the filenameObject
         final_entity = Entity(cls._cur_entity[0], cls._cur_entity[1]) # entity format check
         final_entity.val = name
         foldername = CompositeFilename(_entities={cls._cur_entity[0]:final_entity})
@@ -39,12 +39,6 @@ class folderBase(DatasetCore):
     for the subject we can use a classmethod to check all names, but at the moment session and datatype have 
     no variable for their "parent" so can't easily check for duplicate names.
 
-    @val.setter
-    def val(self, new_val:str|None):
-
-        self._val = self._check_name(new_val)
-        self.foldername.update(self._cur_entity, self._val)
-    
     def _check_name(self, new_val:str|None) -> str:
     
         # another thing to consider is whether to allow None Values
@@ -90,35 +84,34 @@ class Subject(folderBase):
     required:
       - sessions
     """
-    _n_subjects: ClassVar[int] = 0 #to anonymise / give label if no name is given
-    _all_names: ClassVar[set[str]] = set() #ensure no duplicate names are given
-    _pair_session_count: ClassVar[int] = 0 #if 0, will omit creating the session subdir
+    _n_subjects: ClassVar[int] = 0 # to anonymise / give label if no name is given
+    _pair_session_count: ClassVar[int] = 0 # if 0, will omit creating the session subdir
 
     _n_sessions:int = field(default=0, init=False, repr=False)
 
     def __attrs_post_init__(self):
         # --- checking valid val ---
-        """
-        CAN MAKE A MUCH MORE ELEGANT METHOD WHICH DOESN'T STORE CLASS VARIABLES TO CHECK NAME
-        INSTEAD JUST USING PARTICIPANTS.TSV TO CHECK IT!!! 
-        """
-        temp_val = self._check_name(self._val) # check duplicates
-        self._val = temp_val # assign once passes both checks
+        
+        temp_val = self._check_name(self.val) # check duplicates
+        
+        self._val = temp_val # assign once passes checks
 
         Subject._n_subjects += 1
         self.n = Subject._n_subjects
-        Subject._all_names.add(self._val)
 
         # --- create subject entity
 
-    @folderBase.val.setter
-    def val(self, new_val:str):
+    @property
+    def participants(self) -> 'tabularFile':
+        return self._dataset.tree.fetch(r"/participants.tsv")
 
-        temp_val = self._check_name(new_val) # check for duplicates
-        self.foldername.update(self._cur_entity, temp_val) # entity itself checks for format
+    def set_val(self, new_val:str):
+
+        new_val = self._check_name(new_val) # check for duplicates
+        self._tree_link._name_link.update(self._cur_entity, new_val) # entity itself checks for format
         
         Subject._all_names.remove(self._val)
-        Subject._all_names.add(temp_val) 
+        Subject._all_names.add(new_val) 
 
     def add_session(self, ses:str=None):
         if ses == None:
@@ -167,16 +160,18 @@ class Subject(folderBase):
 
     def _check_name(self, new_val:str|None) -> str:
 
-        #new_val = super()._check_name(new_val)
-        if new_val in Subject._all_names:
-            raise ValueError(f"Duplicate subject val: '{new_val}' for {self}")
-
+        participant_key = f"sub-{new_val}"
+        if self.participants.isRow(participant_key):
+            raise ValueError(f"Duplicate subject val: '{new_val}' for {self}, already exists in dataset")
+        
         return new_val
 
     def anonymise(self):
         self.val = str(self.n)
 
     def __del__(self):
+        # have to be careful with anonymise here, when _n_subjects decrements it could lead to different subjects getting the same
+        # n label. Need a better system to manage this... i.e. decrement all n values above this one? -> need a store of the subjects
         Subject._n_subjects -= 1
         Subject._all_names.remove(self._val)
 

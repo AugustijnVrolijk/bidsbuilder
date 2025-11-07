@@ -47,6 +47,10 @@ class CallbackBase(Generic[VAL]): # generic base class to enable dynamic type hi
         also makes debugging easier as the instance owns its attributes"""
         self.name:str = f"{name}"
 
+    def _set_quiet(self, instance:INSTANCE, value:VAL) -> None:
+        """sets the value without triggering callbacks"""
+        self.variables[id(instance)] = value
+
 class CallbackGetterMixin():
     """
     Mixin for descriptors that have a custom getter method which is given as a parameter

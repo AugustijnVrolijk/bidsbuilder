@@ -33,6 +33,7 @@ def _write_tsv(path:str, data:pd.DataFrame, overwrite:bool = False):
 
     data.to_csv(fname,**args)
 
+    logger.info(f"writing TSV at '{path}'")
 
 def _write_json(path, data, overwrite = False):
     fname = Path(path)
