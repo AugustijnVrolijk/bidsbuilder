@@ -57,7 +57,7 @@ class BidsDataset():
 
     @property
     def dataset_description(self):
-        return self._tree_reference.fetch(r"/dataset_description.json")
+        return self.tree.fetch(r"/dataset_description.json")
 
     def build(self, force=False):
         #self._removeRedundant() deprecated

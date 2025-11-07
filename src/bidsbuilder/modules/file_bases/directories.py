@@ -29,7 +29,7 @@ class folderBase(DatasetCore):
         # create method links the tree object, to this folderBase object to the filenameObject
         final_entity = Entity(cls._cur_entity[0], cls._cur_entity[1]) # entity format check
         final_entity.val = name
-        foldername = CompositeFilename(_entities={cls._cur_entity[0]:final_entity})
+        foldername = CompositeFilename.create(entities={cls._cur_entity[0]:name})
         instance = cls(_val=final_entity.val)
         tree.add_child(foldername, instance, type_flag="directory")
         return instance
