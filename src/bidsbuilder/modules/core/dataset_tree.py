@@ -48,7 +48,7 @@ class FileEntry:
             fully_init += 1
 
         if fully_init == 2:
-            self._file_link.__core_post_init__()    
+            self._file_link.__core_post_init__()   
     
     @property
     def name(self) -> str:
@@ -71,9 +71,6 @@ class FileEntry:
     
     def __fspath__(self) -> str:
         return self.path
-
-    def fetch_instance(self) -> 'DatasetCore':
-        return self._file_link
 
     @property
     def relative_path(self) -> str:
@@ -127,16 +124,28 @@ class FileCollection(FileEntry):
     def fetch(self, relpath: str, reference:bool=True) -> Union[None, 'DatasetCore', FileEntry]:
         #reference tells whether to return the UserFileEntry|FileTree instance or its linked DatasetCore instance 
         
-        relpath = str(relpath)
-        assert relpath.startswith(self.name), f"{relpath} is not a child of {self} - {self.name}"
+        relpath = Path(relpath)
+        #remove the "\\" or "/" from path parts
 
-        child_name = relpath[len(self.name):]
-        child = self.children.get(child_name)
+        if relpath.root:
+            parts = relpath.parts
+            parts = parts[1:]
+
+            if not len(parts) == 1:
+                raise ValueError(f"relpath {relpath} is not a child of {self} - {self.name}")
+
+            relpath = str(parts[0])       
+        # two options, either directly a child, or merged with current name
+
+        child = self.children.get(relpath, None)
         if child is None:
-            return None
+            child_name = relpath[len(self.name):] # try cutting current name out of given relpath
+            child = self.children.get(child_name, None)
+        if child is None:
+            raise KeyError(f"given relpath {relpath} not found in {self}")
         
         if reference:
-            return child.fetch_instance()
+            return child._file_link
         return child
 
     @property
@@ -222,7 +231,7 @@ class Directory(FileCollection):
 
     def fetch(self, relpath: os.PathLike, reference:bool=True) -> Union[None, 'DatasetCore', FileEntry]:
         #reference tells whether to return the UserFileEntry|FileTree instance or its linked DatasetCore instance 
-
+        og_path = relpath
         relpath = Path(relpath)
         parts = relpath.parts
         if len(parts) == 0:
@@ -234,7 +243,14 @@ class Directory(FileCollection):
         
         child = self.children.get(parts[0])
         if child is None:
-            return None
+            # try data collection: i.e. split by .
+            head, _ = parts[0].split('.', 1)
+            child = self.children.get(head)
+            if child is None:
+                raise KeyError(f"given relpath {relpath} not found in {self}")
+            else:
+                return child.fetch(og_path, reference)
+
         
         if len(parts) == 1:
             if reference:

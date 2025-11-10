@@ -26,11 +26,12 @@ class folderBase(DatasetCore):
 
     @classmethod
     def create(cls, name, tree:Directory):
+        """
+        safe way of instantiating a folderbase object and linking it to the dataset tree
+        """
         # create method links the tree object, to this folderBase object to the filenameObject
-        final_entity = Entity(cls._cur_entity[0], cls._cur_entity[1]) # entity format check
-        final_entity.val = name
-        foldername = CompositeFilename.create(entities={cls._cur_entity[0]:name})
-        instance = cls(_val=final_entity.val)
+        foldername = CompositeFilename.create(entities={cls._cur_entity[0]:(cls._cur_entity[1], name)})
+        instance = cls()
         tree.add_child(foldername, instance, type_flag="directory")
         return instance
 
@@ -89,29 +90,31 @@ class Subject(folderBase):
 
     _n_sessions:int = field(default=0, init=False, repr=False)
 
-    def __attrs_post_init__(self):
+    @property
+    def val(self) -> str:
+        return self._tree_link._name_link.entities[self._cur_entity[0]].val
+
+    def __core_post_init__(self):
         # --- checking valid val ---
         
-        temp_val = self._check_name(self.val) # check duplicates
-        
-        self._val = temp_val # assign once passes checks
-
+        self._check_name(self.val) # check duplicates
+        self.participants.addRow(f"sub-{self.val}")
         Subject._n_subjects += 1
         self.n = Subject._n_subjects
-
-        # --- create subject entity
+        super().__core_post_init__()
 
     @property
     def participants(self) -> 'tabularFile':
         return self._dataset.tree.fetch(r"/participants.tsv")
 
-    def set_val(self, new_val:str):
+    @val.setter
+    def val(self, new_val:str):
 
         new_val = self._check_name(new_val) # check for duplicates
-        self._tree_link._name_link.update(self._cur_entity, new_val) # entity itself checks for format
-        
-        Subject._all_names.remove(self._val)
-        Subject._all_names.add(new_val) 
+        self.participants.delRow(f"sub-{self.val}")
+        self.participants.addRow(f"sub-{new_val}")
+        self._tree_link._name_link.update_entity(self._cur_entity, new_val) # entity itself checks for format
+
 
     def add_session(self, ses:str=None):
         if ses == None:
@@ -173,7 +176,6 @@ class Subject(folderBase):
         # have to be careful with anonymise here, when _n_subjects decrements it could lead to different subjects getting the same
         # n label. Need a better system to manage this... i.e. decrement all n values above this one? -> need a store of the subjects
         Subject._n_subjects -= 1
-        Subject._all_names.remove(self._val)
 
         to_inc = max(0, (self._n_sessions - 1)) # use max in case self._n_sessions is 0, in which case it would result in -1
         Subject._pair_session_count -= to_inc

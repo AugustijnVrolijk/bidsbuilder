@@ -5,7 +5,7 @@ from ..schema_objects import Entity, raw_Datatype, Suffix
 from ...util.hooks import *
 
 from abc import ABC, abstractmethod
-from typing import Union, ClassVar, TYPE_CHECKING, Self, Optional, Type
+from typing import Union, ClassVar, TYPE_CHECKING, Self, Optional, Type, Any
 
 if TYPE_CHECKING:
     from bidsschematools.types.namespace import Namespace
@@ -79,7 +79,13 @@ class CompositeFilename(filenameBase):
         
         if entities:
             for key, val in entities.items():
-                to_add = Entity(key, val)
+                if isinstance(val, (tuple, list, set)):
+                    if not len(val) == 2:
+                        raise ValueError(f"Entity value for {key} must be a either level, or a (level, val) pair, got {val}")
+                    to_add = Entity(key, val[0])
+                    to_add.val = val[1]
+                else:
+                    to_add = Entity(key, val)
                 entities[key] = to_add
 
         if suffix:
@@ -132,6 +138,15 @@ class CompositeFilename(filenameBase):
             entity_string += extension
 
         return entity_string
+    
+    def update_entity(self, key:str, value:Any):
+        """Update an entity value, triggering schema checks"""
+        if key not in self.entities:
+            raise KeyError(f"Entity {key} not found in entities for {self}")
+
+        self.entities[key].val = value
+        # trigger callback to update children
+        _update_children_cback(self, tags="entities")
 
     @staticmethod
     def _name_validator(instance:Self, descriptor:'DescriptorProtocol', value:Union[str, Entity, Suffix, raw_Datatype]) -> Entity:
@@ -177,7 +192,13 @@ class CompositeFilename(filenameBase):
     suffix: ClassVar[Suffix] = HookedDescriptor(Suffix, fval=_name_validator,tags="suffix",callback=_update_children_cback)
     datatype: ClassVar[raw_Datatype] = HookedDescriptor(raw_Datatype,fval=_name_validator,tags="datatype",callback=_update_children_cback)
     entities: ClassVar[dict[str, Entity]] = HookedDescriptor(dict,fval=_name_validator,tags="entities",callback=_update_children_cback)
-
+    # THERE IS A BUG HERE with how entities are handled...
+    # hookeddescriptor will intercept any changes to entities as a dict itself, or when a new value is assigned as the value for a key.
+    # However entities' values are an Entity object themselves, and usually changed by accessing the entitiy.val attribute
+    # this will only trigger the descriptor __get__ method and hence won't call the callback...
+    # this was overkill on my part and would've been better handled by simple setters and getters... but hindsight...
+    # the only safe way to modify is via update_entity method for now...
+    
     @property
     def resolved_suffix(self) -> str: 
         """The current instance's suffix if specified, otherwise inherited from parent folders"""
