@@ -35,15 +35,15 @@ Next features in order:
 * full schema object support
     * ~~Finish metadata class - recursive metadata containerisation (when metadata stores more metadata)~~
     * ~~Finish val setters for all types (suffix, datatype, entity, etc..)~~
-    * Finish columns class
+    * ~~Finish columns class~~
     * Add tests to verify values objects and name-value objetcs, as well as proper val setting checking
     * Add support to lookup info for value terms (modalities, etc..)
 * fix dataset data folders
     * Fix subject/session/datatype class
-    * Integrate subject with dataset files (participants.tsv, etc..)
+    * ~~Integrate subject with dataset files (participants.tsv, etc..)~~
     * Add support for folder level files (scans.tsv, sessions.tsv)
 * tabular file support
-    * Create tabular file class
+    * ~~Create tabular file class~~
     * Integrate seperate TSV-sidecar-JSON class with tabular
 * support for data adding
     * Update data_collections class
