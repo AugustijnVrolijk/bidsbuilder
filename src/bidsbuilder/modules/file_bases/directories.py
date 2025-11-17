@@ -20,14 +20,10 @@ class folderBase(DatasetCore):
     n:int = field(repr=False, init=False)
     children:list['folderBase'] = field(repr=False, init=False, factory=list)
 
-    @property
-    def val(self):
-        return self._tree_link._name_link.local_name[4:]
-
     @classmethod
     def create(cls, name, tree:Directory):
         """
-        safe way of instantiating a folderbase object and linking it to the dataset tree
+        safe way of instantiating a folderbase object and linking it to the dataset tree - Used for subject, session and datatype
         """
         # create method links the tree object, to this folderBase object to the filenameObject
         foldername = CompositeFilename.create(entities={cls._cur_entity[0]:(cls._cur_entity[1], name)})
@@ -113,7 +109,7 @@ class Subject(folderBase):
         new_val = self._check_name(new_val) # check for duplicates
         self.participants.delRow(f"sub-{self.val}")
         self.participants.addRow(f"sub-{new_val}")
-        self._tree_link._name_link.update_entity(self._cur_entity, new_val) # entity itself checks for format
+        self._tree_link._name_link.update_entity(self._cur_entity[0], new_val) # entity itself checks for format
 
 
     def add_session(self, ses:str=None):
@@ -125,11 +121,13 @@ class Subject(folderBase):
         #would enable the creation of floating sessions, which can be assigned to a subject later
         to_add = Session.create(ses, self._tree_link)
 
+        # check if we need to migrate existing datatype folders to session folder
         if self._n_sessions == 0:
             if len(self.children) > 0:
                 self._migrate_to_ses(to_add)
         else:
             Subject._pair_session_count += 1 #don't count 1 single session, needs to be 1 or more
+
 
         self._n_sessions += 1
         self.children.append(to_add)
@@ -140,16 +138,18 @@ class Subject(folderBase):
 
         #include new session to correctly ID children
         for child in self.children:
-            assert isinstance(child, Datatype), f"Failed to migrate {self}'s subfolders to session dir, expected {child} to be of type: Datatype"
-            child.foldername.parent = ses_parent.foldername
-        
+            if not isinstance(child, Datatype):
+                raise TypeError(f"Failed to migrate {self}'s subfolders to session dir, expected {child} to be of type: Datatype")
+            child._tree_link.parent = ses_parent._tree_link
+
         #reset children
         ses_parent.children = self.children
         self.children = [ses_parent]
 
     def _validate_child_name(self, new_name):
         for child in self.children:
-            assert child.val != new_name, f"Cannot add folder {new_name} with duplicate names/type for {self}"
+            if child.val == new_name:
+                raise ValueError(f"Cannot add folder {new_name} with duplicate names/type for {self}")
         
     def add_datatype(self, d_type:str):
         self._validate_child_name(d_type)
@@ -157,8 +157,7 @@ class Subject(folderBase):
         if self._n_sessions > 0:
             raise RuntimeError(f"Can't add datatype folder to a subject already containing sessions, please assign it to one of its sessions")
         
-        to_add = Datatype(d_type)
-        to_add.foldername.parent = self.foldername
+        to_add = Datatype.create(d_type)
         self.children.append(to_add)
 
     def _check_name(self, new_val:str|None) -> str:
@@ -190,26 +189,67 @@ class Session(folderBase):
     required:
         - ses_dirs
     """
-    def __attrs_post_init__(self):
-        # --- create session entity --- Creating the entitiy will validate the the name as well
-        #if created from a subject, it will reassign the parent later
-        pass
+    @property
+    def val(self) -> str:
+        return self._tree_link._name_link.entities[self._cur_entity[0]].val
 
-    def add_datatype(self, val):
-        to_add = Datatype(val)
-        to_add.foldername.parent = self.foldername
-        self.children.append(Datatype(val))
+    @val.setter
+    def val(self, new_val:str):
+        new_val = self._validate_child_name(new_val) # check for duplicates
+        self._tree_link._name_link.update_entity(self._cur_entity[0], new_val) # entity itself checks for format
+
+    def _validate_child_name(self, new_name):
+        for child in self.children:
+            if child.val == new_name:
+                raise ValueError(f"Cannot add folder {new_name} with duplicate names/type for {self}")
+        
+    def add_datatype(self, d_type:str):
+        self._validate_child_name(d_type)
+        #subject has either got only sessions, or only datatype folders
+        to_add = Datatype.create(d_type)
+        self.children.append(to_add)
     
 class Datatype(folderBase):
 
-    def __attrs_post_init__(self):
-        final_type = Datatype(self._val)
+    @classmethod
+    def create(cls, name, tree:Directory):
+        """
+        safe way of instantiating a folderbase object and linking it to the dataset tree
+        """
+        # check if suffix == 
         try:
-            is_suffix = Suffix(self._val)
-            self.foldername = CompositeFilename(parent=None, datatype=final_type, entities={}, suffix=is_suffix)
+            Suffix(name)
+            is_suffix = True
         except KeyError as e:
-            self.foldername = CompositeFilename(parent=None, datatype=final_type, entities={}, suffix=None)
-    
+            is_suffix = False
+
+        kwargs = {"datatype":name}
+        if is_suffix:
+            kwargs["suffix"] = name
+
+        foldername = CompositeFilename.create(**kwargs)
+        instance = cls()
+        tree.add_child(foldername, instance, type_flag="directory")
+        return instance
+
+    @property
+    def val(self) -> str:
+        return self._tree_link._name_link.datatype
+
+    @val.setter
+    def val(self, new_val:str):
+        new_val = self._validate_child_name(new_val) # check for duplicates
+
+        self._tree_link._name_link.datatype = new_val # datatype itself checks for format
+        try:
+            Suffix(new_val)
+            is_suffix = True
+        except KeyError as e:
+            is_suffix = False
+        if is_suffix:
+            self._tree_link._name_link.suffix = new_val
+
+
     def add_data(self):
         pass
     
